@@ -8,8 +8,12 @@ const fs = require('fs');
 app.use(express.json());
 
 // CORS headers
+const allowedOrigins = ['https://zigma.pro', 'https://www.zigma.pro'];
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://zigma.pro');
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') res.sendStatus(200);
