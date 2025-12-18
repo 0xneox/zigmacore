@@ -1,6 +1,7 @@
 const OpenAI = require('openai');
 const { getMarketAnalyzer, calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, stopPolling, getOrderBook } = require('./clob_price_cache');
+const { crossReferenceNews } = require('./processor');
 require('dotenv').config();
 
 // LLM Configuration - Support multiple providers for testing
