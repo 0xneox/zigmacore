@@ -31,9 +31,9 @@ let isPolling = false;
 /**
  * Fetch order book from CLOB API
  */
-async function fetchOrderBook(marketId) {
+async function fetchOrderBook(marketId, tokenId) {
   try {
-    const url = `${CLOB_BASE}/order-book/${marketId}`;
+    const url = tokenId ? `${CLOB_BASE}/book?token_id=${tokenId}` : `${CLOB_BASE}/order-book/${marketId}`;
     const response = await clobHttp.get(url);
 
     if (response.data && response.data.bids && response.data.asks) {
@@ -79,6 +79,8 @@ async function pollPrices(marketIds) {
             mid: mid,
             bid: parseFloat(orderBook.bids[0]?.price || 0),
             ask: parseFloat(orderBook.asks[0]?.price || 0),
+            bids: orderBook.bids,
+            asks: orderBook.asks,
             ts: Date.now()
           });
         }
@@ -146,5 +148,6 @@ module.exports = {
   stopPolling,
   getClobPrice,
   getOrderBook,
+  fetchOrderBook,
   clobPriceCache
 };

@@ -1,17 +1,12 @@
 # Oracle of Poly — Advanced Polymarket Intelligence Agent
 
-> **Professional Market Analysis with Real-Time Alerts & Premium Insights**
-> Oracle of Poly is an autonomous Virtuals agent that provides institutional-grade Polymarket analysis, real-time price alerts, and premium market intelligence through micro-transactions. **PRODUCTION READY — ZERO HALLUCINATION**
-
-## ✅ **STATUS: PRODUCTION READY — DEPLOYMENT SAFE**
-
-**All critical safety violations resolved. System is hardened for production deployment.**
+> **Professional Market Analysis with Real-Time Alerts & Insights**
 
 **Current Status:**
 - ✅ **SAFE_MODE implementation** - Zero risk of accidental charges/posts
 - ✅ **Concurrency protection** - No overlapping cron jobs
 - ✅ **API resilience layer** - Retry/backoff/circuit breakers for all APIs
-- ✅ **SQLite persistence** - ACID-compliant data storage (no race conditions)
+- ✅ **SQLite persistence** - ACID-compliant data storage 
 - ✅ **LLM protection** - Timeouts prevent hanging processes
 - ✅ **Structured logging** - Pino with production monitoring
 - ✅ **Health monitoring** - Accurate metrics tracking
@@ -27,13 +22,10 @@
 ```
 oracle-of-poly/
 ├── 📄 .env                    # Environment configuration (requires API keys)
-├── 📄 .env.example           # Environment template with SAFE_MODE=true
 ├── 📄 README.md              # This documentation
 ├── 📄 agent.yaml             # Virtuals agent metadata
 ├── 📄 package.json           # Dependencies & scripts
 ├── 📄 package-lock.json      # Dependency lock file
-├── 📄 plan.md                # Project development plan
-├── 📄 prd.md                 # Product requirements document
 ├── 📁 data/                  # SQLite database (created automatically)
 ├── 📁 node_modules/          # Installed dependencies
 ├── 📄 server.js              # Health monitoring server
@@ -54,20 +46,19 @@ oracle-of-poly/
     └── 📄 processor.test.js  # Data processing tests
 ```
 
-**Total Files: 21 | Total Code: ~65KB | Dependencies: 11 packages**
 
 ---
 
-## 🎯 **Core Features - PRODUCTION READY**
+## 🎯 **Core Features **
 
-### ✅ **Real-Time Price Alert System** (15 VIRTUAL/day)
+### ✅ **Real-Time Price Alert System** 
 - **WebSocket-powered** live market monitoring
 - **Customizable alerts** for price thresholds (above/below/change)
 - **Multiple durations** (hourly: 5V, daily: 15V, weekly: 75V, monthly: 250V)
 - **Instant notifications** via Virtuals ACP
 - **Revenue**: 50 subscribers = $750/day
 
-### ✅ **Premium Market Analysis** (15 VIRTUAL/report)
+### ✅ **arket Analysis** 
 - **Professional algorithmic analysis** (liquidity, spreads, volume, risk)
 - **Risk assessment scoring** (LOW/MEDIUM/HIGH with quantitative reasons)
 - **AI-powered recommendations** (SPECULATIVE BUY/TAIL-RISK BET/MARKET FAIRLY PRICED/AVOID with confidence %)
@@ -92,72 +83,19 @@ oracle-of-poly/
 
 ---
 
-## 📊 **Revenue Model**
 
-### **Pricing Tiers**
-| Feature | Price | Description | Target Users | Daily Revenue @50 Users |
-|---------|--------|-------------|--------------|-------------------------|
-| **Free X Posts** | $0 | Market decrees every 10min | Organic reach | - |
-| **Basic Deep Dives** | 5 VIRTUAL | Enhanced summaries via ACP | Casual traders | $250 |
-| **Premium Analysis** | 15 VIRTUAL | Professional reports + AI | Serious traders | $750 |
-| **Price Alerts** | 15 VIRTUAL/day | Real-time notifications | Active traders | $750 |
-| **TOTAL** | | | **170 transactions/day** | **$1,750/day** |
+## 🚀 ** Launch Instructions**
 
-### **Revenue Scenarios (illustrative only)**
 
-Projections depend on audience size, conversion rates, and acquisition costs. These are examples, not guarantees:
-
-| Scenario | Assumptions | Potential Daily Revenue |
-|----------|-------------|-------------------------|
-| **Conservative** | 100 DAU, 1% premium conversion | $15–$45/day |
-| **Moderate** | 1,000 DAU, 2% premium conversion | $150–$450/day |
-| **Aggressive** | Viral growth + token incentives | $1,000+/day |
-
-**Key Variables:**
-- DAU (Daily Active Users)
-- Conversion rate to premium features
-- Alert subscription duration
-- Market volatility driving demand
-- X follower growth and organic reach
-
----
-
-## 🚀 **Immediate Launch Instructions**
-
-### **Step 1: Environment Setup**
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Fill in your API keys (REQUIRED for launch):
-# - XAI_API_KEY (get from x.ai)
-# - X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET (Twitter Developer)
-# - VIRTUALS_API_KEY, VIRTUALS_PRIVATE_KEY (Virtuals platform)
-```
-
-### **Step 2: Install Dependencies**
+### **Step 1: Install Dependencies**
 ```bash
 npm install
 ```
 
-### **Step 3: Test Locally**
+### **Step 2: Test Locally**
 ```bash
 # Run once for testing (development mode)
 npm run dev
-
-# Expected output (current performance):
-# Oracle of Poly: Starting cycle at 2025-12-14T...
-# 🌐 FETCH: https://gamma-api.polymarket.com/markets... (Timeout: 20000ms)
-# ✅ Fetched 500 markets in 1325ms
-# 📊 After sanity filter: 500
-# Filter counts: !active=0, closed=0, expired=3, lowLiquidity=20
-# 📊 Filtered 500 → 477
-# 💰 322 markets with valid prices (filtered 155 dead markets)
-# 🕵️ DEBUG: First market structure: { ... JSON parsed correctly ... }
-# Generated premium analysis for "US recession in 2025?"...
-# Dev mode: Would post to X: [tweet content]
-# Dev mode: Would post premium analysis to ACP: [marketId]
-# Cycle completed successfully
 ```
 
 ### **Step 4: Deploy to Production**
@@ -199,42 +137,7 @@ curl http://localhost:3000/status  # If exposing API
 }
 ```
 
-### **Environment Variables**
-```bash
-# LLM Configuration
-XAI_API_KEY=your_xai_api_key_here
 
-# Polymarket APIs
-GAMMA_API_URL=https://gamma-api.polymarket.com
-CLOB_API_URL=https://clob.polymarket.com
-GAMMA_LIMIT=100
-
-# X (Twitter) API
-X_API_KEY=your_x_api_key
-X_API_SECRET=your_x_api_secret
-X_ACCESS_TOKEN=your_x_access_token
-X_ACCESS_SECRET=your_x_access_secret
-X_USERNAME=@OracleOfPoly
-
-# Virtuals Platform
-VIRTUALS_API_KEY=your_virtuals_api_key
-VIRTUALS_AGENT_ID=oracle-of-poly
-VIRTUALS_PRIVATE_KEY=0x_your_private_key
-VIRTUALS_TOKEN=VIRTUAL
-
-# Scheduling
-CRON_SCHEDULE=*/10 * * * *
-
-# Safety (CRITICAL - prevents accidental production charges)
-SAFE_MODE=true  # Set to false ONLY after ACP testnet validation
-
-# Optional
-SENTRY_DSN=
-PINATA_KEY=
-PINATA_SECRET=
-
-NODE_ENV=production
-```
 
 #### **`src/index.js`** - Main Orchestration
 - Cron scheduling (every 10 minutes) with concurrency locks
@@ -434,21 +337,21 @@ const status = getSystemStatus();
 - Market-type specific recommendation algorithms implemented
 - Signal quality improved from 0 markets to 322 valid markets processed
 
-### **Week 2-4: Enhancement Phase** (Next Priority)
+### **Week 1: Enhancement Phase** (Next Priority)
 - Advanced order book analysis with insider activity detection
 - Historical price trend analysis and momentum tracking
 - Multi-market correlation alerts and arbitrage opportunities
 - Portfolio tracking integration with Virtuals wallet
 - Mobile app API endpoints for on-the-go trading
 
-### **Month 2: Expansion Phase**
+### **Week 2: Expansion Phase**
 - Additional alert types (volume, spread)
 - Custom analysis parameters
 - Developer API access
 - Third-party integrations
 
-### **Month 3: Token Launch**
-- Deploy $ORACLE token on Virtuals
+### **Week 3: Token Launch**
+- Deploy $ORACLE token on Virtuals/Cyrene ai
 - Token utility for premium features
 - Community governance
 - Staking rewards program
@@ -517,36 +420,7 @@ const status = getSystemStatus();
 
 ---
 
-## 🤝 **Support & Community**
-
-Built for the Virtuals ecosystem with community-driven development.
-
-### **Getting Help**
-- Check logs for detailed error messages
-- Monitor system status via API
-- Review ACP transaction history
-- Community Discord/Telegram support
-
-### **Contributing**
-- Fork and submit PRs
-- Report bugs with full logs
-- Suggest features via GitHub issues
-- Join development discussions
-
 ---
-
-## 📞 **Contact & Resources**
-
-- **GitHub**: Repository with full source code
-- **Documentation**: Comprehensive API docs
-- **Support**: Community channels
-- **Updates**: Follow @OracleOfPoly on X
-
----
-
-**🎯 Oracle of Poly is PRODUCTION READY — All critical issues resolved.**
-
-**Status:** Zero-hallucination codebase with enterprise-grade resilience. System is fully operational with enhanced analysis capabilities.
 
 **Current Performance:**
 - ✅ **500 markets fetched** successfully from Polymarket API
@@ -556,10 +430,5 @@ Built for the Virtuals ecosystem with community-driven development.
 - ✅ **Market-type classification** working across all categories
 - ✅ **Real insights generated** and populated in oracle_insights.txt
 
-**Next Steps:**
-1. Complete pre-launch validation testing
-2. Deploy with SAFE_MODE=true for initial testing  
-3. Gradually enable revenue features after validation
-4. Scale based on real user data and feedback
 
-*Making Polymarket intelligence accessible, professional, and profitable — safely.* ✅
+---

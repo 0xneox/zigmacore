@@ -1,6 +1,9 @@
 const axios = require('axios');
 require('dotenv').config();
 
+// Singleton instance
+let analyzerInstance = null;
+
 // Enhanced Market Analysis (inspired by Polymarket MCP Server)
 class MarketAnalyzer {
   constructor() {
@@ -311,34 +314,53 @@ class MarketAnalyzer {
       // Analyze wallet patterns for insider detection
       const walletAnalysis = await this.analyzeWalletPatterns(marketId);
 
-      // Get current prices and orderbook
-      const [priceData, orderBook, volumeStats, liquidity, positionStats] = await Promise.all([
-        this.getCurrentPrice(yesTokenId),
-        this.getOrderBook(yesTokenId),
-        this.getVolumeStats(marketId),
-        this.getLiquidityMetrics(marketId),
-        this.getPositionStats(marketId)
-      ]);
+      // Get market details for volume stats
+      const marketDetails = await this.getMarketDetails(marketId);
 
-      analysis.metrics = {
-        currentPrice: {
-          yes: priceData.mid,
-          bid: priceData.bid,
-          ask: priceData.ask,
-          spread: priceData.spread,
-          spreadPercentage: priceData.spreadPercentage
-        },
-        volume: volumeStats,
-        liquidity: liquidity,
-        positions: positionStats,
-        orderBook: {
-          bidDepth: orderBook.bids.reduce((sum, b) => sum + b.size, 0),
-          askDepth: orderBook.asks.reduce((sum, a) => sum + a.size, 0),
-          bestBid: orderBook.bids[0]?.price || 0,
-          bestAsk: orderBook.asks[0]?.price || 0
-        },
-        walletAnalysis
+      // Get volume stats
+      const volumeStats = await this.getVolumeStats(marketId);
+
+      // Get liquidity
+      const liquidityMetrics = await this.getLiquidityMetrics(marketId);
+
+      // Get position stats
+      const positionStats = await this.getPositionStats(marketId);
+
+      // Get current price data
+      const orderBook = await this.getOrderBook(marketId);
+      const mid = orderBook.mid || (orderBook.bids && orderBook.asks ? (parseFloat(orderBook.bids[0]?.price || 0) + parseFloat(orderBook.asks[0]?.price || 0)) / 2 : null);
+      
+      let spread = 0;
+      let spreadPercentage = 0;
+      let depth = 0;
+      let liquidityQualityScore = 0;
+
+      if (orderBook.bid && orderBook.ask && mid) {
+        spread = orderBook.ask - orderBook.bid;
+        spreadPercentage = (spread / mid) * 100;
+        
+        // Calculate depth (sum of sizes in top 10 levels each side)
+        const bidDepth = orderBook.bids ? orderBook.bids.slice(0, 10).reduce((sum, b) => sum + (parseFloat(b.size) || 0), 0) : 0;
+        const askDepth = orderBook.asks ? orderBook.asks.slice(0, 10).reduce((sum, a) => sum + (parseFloat(a.size) || 0), 0) : 0;
+        depth = bidDepth + askDepth;
+        
+        // Liquidity quality score: lower spread and higher depth = better score (0-100)
+        const spreadScore = Math.max(0, 100 - spreadPercentage * 10); // Max 100 for 0% spread
+        const depthScore = Math.min(100, depth * 1000); // Scale depth to score
+        liquidityQualityScore = Math.round((spreadScore + depthScore) / 2);
+      }
+
+      const priceData = {
+        mid: mid,
+        spread: spread,
+        spreadPercentage: spreadPercentage,
+        depth: depth,
+        liquidityQualityScore: liquidityQualityScore,
+        volume: orderBook.volume
       };
+
+      // Classify market type
+      const marketType = this.classifyMarket(marketData.question);
 
       // Calculate price change from cache
       const lastPrice = cache[marketId]?.price;
@@ -371,7 +393,7 @@ class MarketAnalyzer {
     } catch (error) {
       console.error('Error in market analysis:', error);
       return {
-        marketId: marketData.id || marketData.slug,
+        marketId: marketData.slug || marketData.id,
         error: error.message,
         timestamp: Date.now()
       };
@@ -497,35 +519,39 @@ class MarketAnalyzer {
     // Crypto markets can tolerate higher spreads and lower liquidity
     if (liquidity >= 25000 && volume24h >= 5000) {
       if (Math.abs(priceChange) > 10) {
+        const reasoning = `Crypto market shows strong momentum (${priceChange > 0 ? 'bullish' : 'bearish'}) with adequate liquidity. Suitable for speculative positioning.`;
         return {
           action: 'SPECULATIVE BUY',
           confidence: Math.min(85, 60 + Math.abs(priceChange)),
-          reasoning: `Crypto market shows strong momentum (${priceChange > 0 ? 'bullish' : 'bearish'}) with adequate liquidity. Suitable for speculative positioning.`,
+          reasoning: spreadPct > 5 ? reasoning + ` ⚠️ High slippage warning: ${spreadPct.toFixed(2)}% spread detected.` : reasoning,
           riskLevel: riskAssessment.level,
           timestamp: Date.now()
         };
       } else {
+        const reasoning = `Crypto market trading in fair range with good liquidity ($${liquidity.toLocaleString()}) and volume.`;
         return {
           action: 'MARKET FAIRLY PRICED',
           confidence: 70,
-          reasoning: `Crypto market trading in fair range with good liquidity ($${liquidity.toLocaleString()}) and volume.`,
+          reasoning: spreadPct > 5 ? reasoning + ` ⚠️ High slippage warning: ${spreadPct.toFixed(2)}% spread detected.` : reasoning,
           riskLevel: riskAssessment.level,
           timestamp: Date.now()
         };
       }
     } else if (liquidity >= 10000) {
+      const reasoning = `Crypto market shows moderate activity. Consider tail-risk positioning with caution.`;
       return {
         action: 'TAIL-RISK BET',
         confidence: 55,
-        reasoning: `Crypto market shows moderate activity. Consider tail-risk positioning with caution.`,
+        reasoning: spreadPct > 5 ? reasoning + ` ⚠️ High slippage warning: ${spreadPct.toFixed(2)}% spread detected.` : reasoning,
         riskLevel: riskAssessment.level,
         timestamp: Date.now()
       };
     } else {
+      const reasoning = `Crypto market lacks sufficient liquidity for reliable trading.`;
       return {
         action: 'AVOID',
         confidence: 40,
-        reasoning: `Crypto market lacks sufficient liquidity for reliable trading.`,
+        reasoning: spreadPct > 5 ? reasoning + ` ⚠️ High slippage warning: ${spreadPct.toFixed(2)}% spread detected.` : reasoning,
         riskLevel: riskAssessment.level,
         timestamp: Date.now()
       };
@@ -564,175 +590,83 @@ class MarketAnalyzer {
       };
     }
   }
-
-  // Political market specific logic (high volatility, sentiment-driven)
-  generatePoliticalRecommendation(metrics, riskAssessment) {
-    const liquidity = metrics.liquidity.liquidityUSD;
-    const volume24h = metrics.volume.volume24h;
-    const priceChange = metrics.priceChange.value;
-
-    // Political markets can be volatile but meaningful
-    if (liquidity >= 30000 && volume24h >= 8000) {
-      if (Math.abs(priceChange) > 15) {
-        return {
-          action: 'SPECULATIVE BUY',
-          confidence: Math.min(75, 50 + Math.abs(priceChange) * 0.8),
-          reasoning: `Political market shows significant momentum, potentially reflecting news/events. High conviction signals detected.`,
-          riskLevel: riskAssessment.level,
-          timestamp: Date.now()
-        };
-      } else {
-        return {
-          action: 'MARKET FAIRLY PRICED',
-          confidence: 60,
-          reasoning: `Political market trading normally with adequate liquidity.`,
-          riskLevel: riskAssessment.level,
-          timestamp: Date.now()
-        };
-      }
-    } else {
-      return {
-        action: 'AVOID',
-        confidence: 35,
-        reasoning: `Political market lacks sufficient activity for reliable sentiment analysis.`,
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    }
-  }
-
-  // Financial market specific logic (traditional financial instruments)
-  generateFinancialRecommendation(metrics, riskAssessment) {
-    const liquidity = metrics.liquidity.liquidityUSD;
-    const volume24h = metrics.volume.volume24h;
-    const spreadPct = metrics.currentPrice.spreadPercentage;
-
-    if (liquidity >= 50000 && volume24h >= 15000 && spreadPct <= 2.5) {
-      return {
-        action: 'MARKET FAIRLY PRICED',
-        confidence: 75,
-        reasoning: `Financial market shows professional-grade liquidity and spreads. Suitable for informed trading.`,
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    } else if (liquidity >= 25000 && volume24h >= 8000) {
-      return {
-        action: 'TAIL-RISK BET',
-        confidence: 60,
-        reasoning: `Financial market shows moderate activity. Consider conservative positioning.`,
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    } else {
-      return {
-        action: 'AVOID',
-        confidence: 40,
-        reasoning: `Financial market lacks institutional-grade liquidity.`,
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    }
-  }
-
-  // Default event market logic (original implementation)
-  generateEventRecommendation(metrics, riskAssessment) {
-    const liquidity = metrics.liquidity.liquidityUSD;
-    const volume24h = metrics.volume.volume24h;
-    const spreadPct = metrics.currentPrice.spreadPercentage;
-    const priceChange = metrics.priceChange.value;
-
-    // High risk markets
-    if (riskAssessment.level === 'HIGH') {
-      return {
-        action: 'AVOID',
-        confidence: Math.max(30, 60 - riskAssessment.score * 5),
-        reasoning: `High risk event market: ${riskAssessment.reasons.join(', ')}. Not suitable for trading.`,
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    }
-    // Low liquidity or high spreads
-    else if (liquidity < 25000 || spreadPct > 3) {
-      return {
-        action: 'MARKET FAIRLY PRICED',
-        confidence: 50,
-        reasoning: 'Event market conditions are acceptable but not optimal. Consider waiting for better liquidity.',
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    }
-    // Good fundamentals
-    else if (liquidity >= 50000 && volume24h >= 10000 && spreadPct <= 2) {
-      return {
-        action: 'TAIL-RISK BET',
-        confidence: 75,
-        reasoning: `Healthy event market with strong liquidity ($${liquidity.toLocaleString()}) and volume ($${volume24h.toLocaleString()}). Good for position holding.`,
-
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    }
-    else {
-      return {
-        action: 'MARKET FAIRLY PRICED',
-        confidence: 60,
-        reasoning: 'Event market shows moderate activity. Monitor for improved conditions.',
-        riskLevel: riskAssessment.level,
-        timestamp: Date.now()
-      };
-    }
-  }
-
-  // Generate enhanced LLM prompt for analysis
-  generateAnalysisPrompt(marketData, analysis) {
-    const systemPrompt = `You are a professional market analyst for Polymarket prediction markets. Your analysis must be:
-
-PROFESSIONAL STANDARDS:
-- Use only provided data - no external knowledge or assumptions
-- Be objective and fact-based, never speculative
-- Include specific numbers and metrics in your analysis
-- Explain your reasoning clearly and logically
-- Rate confidence on a 0-100 scale based on data quality and market conditions
-
-OUTPUT FORMAT:
-- Executive Summary (2-3 sentences)
-- Key Metrics Analysis (bullet points with numbers)
-- Risk Assessment (LOW/MEDIUM/HIGH with specific reasons)
-- Recommendation (BUY/SELL/HOLD/AVOID with confidence %)
-- Price Targets (if applicable, based on current market structure)
-- Market Outlook (short-term momentum assessment)
-
-Remember: This is for educational purposes. Always DYOR and never risk more than you can afford to lose.`;
-
-    const userPrompt = `Analyze this Polymarket data and provide a comprehensive professional assessment:
-
-MARKET: ${marketData.question}
-
-CURRENT METRICS:
-- Price: ${analysis.metrics ? (analysis.metrics.currentPrice?.mid?.toFixed(4) || 'N/A') : 'N/A'}
-- Bid/Ask: ${analysis.metrics ? (analysis.metrics.currentPrice?.bid?.toFixed(4) || 'N/A') : 'N/A'} / ${analysis.metrics ? (analysis.metrics.currentPrice?.ask?.toFixed(4) || 'N/A') : 'N/A'}
-- Spread: ${analysis.metrics ? (analysis.metrics.currentPrice?.spreadPercentage?.toFixed(2) || 'N/A') : 'N/A'}%
-- Volume 24h: $${analysis.metrics ? (analysis.metrics.volume?.volume24h?.toLocaleString() || 'N/A') : (analysis.basicAnalysis?.volume24h?.toLocaleString() || 'N/A')}
-- Liquidity: $${analysis.metrics ? (analysis.metrics.liquidity?.liquidityUSD?.toLocaleString() || 'N/A') : (analysis.basicAnalysis?.liquidity?.toLocaleString() || 'N/A')}
-- Position Stats: YES: ${analysis.metrics?.positions?.yesPositions?.toLocaleString() || 'N/A'}, NO: ${analysis.metrics?.positions?.noPositions?.toLocaleString() || 'N/A'}, Total: ${analysis.metrics?.positions?.totalPositions?.toLocaleString() || 'N/A'}
-- Insider Activity: ${analysis.metrics?.positions?.insiderActivity ? `Detected ${analysis.metrics.positions.insiderActivity.count} large orders ($${analysis.metrics.positions.insiderActivity.totalSize.toLocaleString()}) - Largest: $${analysis.metrics.positions.insiderActivity.largestOrder.toLocaleString()} on ${analysis.metrics.positions.insiderActivity.side}` : 'None detected'}
-- Position Changes: ${analysis.metrics?.priceChange?.positionChange ? `YES: ${analysis.metrics.priceChange.positionChange.yesChange > 0 ? '+' : ''}${analysis.metrics.priceChange.positionChange.yesChange}, NO: ${analysis.metrics.priceChange.positionChange.noChange > 0 ? '+' : ''}${analysis.metrics.priceChange.positionChange.noChange}, Total: ${analysis.metrics.priceChange.positionChange.totalChange > 0 ? '+' : ''}${analysis.metrics.priceChange.positionChange.totalChange}` : 'First measurement'}
-- Price Change: ${analysis.metrics ? (analysis.metrics.priceChange?.value?.toFixed(2) || 'N/A') : 'N/A'}%
-
-TECHNICAL ANALYSIS:
-- Risk Level: ${analysis.analysis?.riskAssessment?.level || 'UNKNOWN'}
-- Risk Score: ${analysis.analysis?.riskAssessment ? `${analysis.analysis.riskAssessment.score}/${analysis.analysis.riskAssessment.maxScore}` : 'N/A'}
-- Risk Factors: ${analysis.analysis?.riskAssessment?.reasons?.join(', ') || 'None'}
-- AI Recommendation: ${analysis.recommendation?.action || 'UNKNOWN'} (${analysis.recommendation?.confidence || 0}% confidence)
-
-Provide your professional analysis following the format specified.`;
-
-    return { systemPrompt, userPrompt };
-  }
 }
 
-// Singleton instance
-let analyzerInstance = null;
+// Kelly Criterion calculation for optimal bet sizing
+function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
+  // Ensure all inputs are numbers
+  const p = Number(winProb);
+  const priceNum = Number(price);
+  const liqNum = Number(liquidity);
+
+  // 1. Safety check: No edge or invalid price
+  if (p <= (priceNum + edgeBuffer) || priceNum <= 0 || priceNum >= 1) {
+    return 0; 
+  }
+
+  // 2. Standard Kelly: (p*b - q) / b
+  // b = net odds (e.g., if price is 0.25, b is 3)
+  const b = (1 - priceNum) / priceNum;
+  const q = 1 - p;
+  let fullKelly = (p * b - q) / b;
+
+  // 3. Liquidity Scaling (Prevents betting too much on "thin" markets)
+  // If liquidity < 1000, we don't bet.
+  const liquidityMultiplier = liqNum < 1000 ? 0 : 
+                              liqNum < 5000 ? 0.2 : 
+                              liqNum < 20000 ? 0.5 : 1.0;
+
+  // Apply multipliers and cap at 10% of bankroll for safety (Quarter-Kelly)
+  const finalKelly = fullKelly * 0.25 * liquidityMultiplier;
+  
+  return Math.max(0, Math.min(finalKelly, 0.10));
+}
+
+// Simple in-memory cache for Tavily searches (expires after 1 hour)
+const tavilyCache = new Map();
+
+async function searchTavily(query) {
+  try {
+    // Check cache first
+    const cacheKey = query.toLowerCase().trim();
+    const cached = tavilyCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < 3600000) { // 1 hour cache
+      console.log('Using cached Tavily results for query:', query);
+      return cached.results;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    const response = await fetch('https://api.tavily.com/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: process.env.TAVILY_API_KEY,
+        query,
+        search_depth: 'basic'
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+    const data = await response.json();
+    const results = data.results || [];
+
+    // Cache the results
+    tavilyCache.set(cacheKey, { results, timestamp: Date.now() });
+    console.log('Fetched new Tavily results for query:', query);
+
+    return results;
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Tavily search timed out');
+    } else {
+      console.error('Tavily search error:', error);
+    }
+    return [];
+  }
+}
 
 function getMarketAnalyzer() {
   if (!analyzerInstance) {
@@ -741,4 +675,4 @@ function getMarketAnalyzer() {
   return analyzerInstance;
 }
 
-module.exports = { MarketAnalyzer, getMarketAnalyzer };
+module.exports = { MarketAnalyzer, getMarketAnalyzer, calculateKelly, searchTavily };

@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const axios = require('axios');
-const { postDeepDiveOnACP } = require('./acp');
+// ACP dependency removed - postDeepDiveOnACP no longer available
 
 class PriceAlertManager {
   constructor() {
@@ -129,48 +129,11 @@ class PriceAlertManager {
       // Update WebSocket subscriptions
       this.subscribeToActiveMarkets();
 
-      // Process ACP payment for subscription
-      await this.processSubscriptionPayment(userId, duration);
-
       console.log(`Price alert created for user ${userId}: ${condition} ${marketId} at ${price}`);
       return { success: true, alertId, message: 'Price alert subscription created successfully' };
-
     } catch (error) {
       console.error('Error creating price alert:', error);
       return { success: false, error: error.message };
-    }
-  }
-
-  async processSubscriptionPayment(userId, duration) {
-    try {
-      // Calculate price based on duration
-      const prices = {
-        'hourly': 5,
-        'daily': 15,
-        'weekly': 75,
-        'monthly': 250
-      };
-
-      const price = prices[duration] || 15;
-
-      const paymentPayload = {
-        type: 'price_alert_subscription',
-        userId,
-        duration,
-        price: price.toString(),
-        token: 'VIRTUAL',
-        timestamp: Date.now(),
-        description: `Price alert subscription (${duration})`
-      };
-
-      const result = await postDeepDiveOnACP(paymentPayload);
-      console.log(`Processed ${duration} subscription payment for user ${userId}: ${price} VIRTUAL`);
-
-      return result;
-
-    } catch (error) {
-      console.error('Error processing subscription payment:', error);
-      throw error;
     }
   }
 
@@ -221,9 +184,9 @@ class PriceAlertManager {
         message: `🚨 Price Alert: ${alert.marketId} ${alert.condition} ${alert.price} - Current: ${currentPrice}`
       };
 
-      // Send notification via Virtuals ACP
-      const result = await postDeepDiveOnACP(alertPayload);
-      console.log(`Alert triggered for user ${userId}: ${alert.marketId} at ${currentPrice}`);
+      // Send notification (ACP removed - mock success)
+      const result = { success: true, txId: 'mock-alert-' + Date.now() };
+      console.log(`Mock alert sent for user ${userId}: ${alert.marketId} at ${currentPrice} (ACP removed)`);
 
       // Optionally remove one-time alerts
       if (alert.duration === 'once') {

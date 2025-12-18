@@ -39,16 +39,30 @@ function initDb() {
         active INTEGER DEFAULT 1
       );
 
-      CREATE TABLE IF NOT EXISTS acp_receipts (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        marketId TEXT,
-        type TEXT NOT NULL,
-        price REAL NOT NULL,
-        token TEXT NOT NULL,
-        timestamp INTEGER NOT NULL,
-        txId TEXT,
-        status TEXT DEFAULT 'completed'
+      CREATE TABLE IF NOT EXISTS analysis_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        market_id TEXT UNIQUE,
+        last_price REAL,
+        reasoning TEXT,
+        confidence REAL,
+        timestamp INTEGER
+      );
+
+      CREATE TABLE IF NOT EXISTS volume_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        market_id TEXT,
+        volume REAL,
+        timestamp INTEGER
+      );
+
+      CREATE TABLE IF NOT EXISTS trade_signals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        market_id TEXT,
+        action TEXT,
+        price REAL,
+        confidence REAL,
+        kelly_fraction REAL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
@@ -118,43 +132,53 @@ function deactivateAlertSubscription(alertId) {
   db.prepare('UPDATE alert_subscriptions SET active = 0 WHERE id = ?').run(alertId);
 }
 
-// ACP receipt operations
-function saveAcpReceipt(receipt) {
-  const db = initDb();
-  const insert = db.prepare(`
-    INSERT INTO acp_receipts
-    (id, userId, marketId, type, price, token, timestamp, txId, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  insert.run(
-    receipt.id || `receipt_${Date.now()}`,
-    receipt.userId,
-    receipt.marketId,
-    receipt.type,
-    receipt.price,
-    receipt.token || 'VIRTUAL',
-    receipt.timestamp || Date.now(),
-    receipt.txId,
-    receipt.status || 'completed'
-  );
-}
-
-function getUserAcpHistory(userId, limit = 50) {
-  const db = initDb();
-  return db.prepare('SELECT * FROM acp_receipts WHERE userId = ? ORDER BY timestamp DESC LIMIT ?')
-    .all(userId, limit);
-}
-
 // Database health check
 function getDbStats() {
   const db = initDb();
   const stats = {
     priceCacheEntries: db.prepare('SELECT COUNT(*) as count FROM price_cache').get().count,
     activeAlerts: db.prepare('SELECT COUNT(*) as count FROM alert_subscriptions WHERE active = 1').get().count,
-    totalAcpTransactions: db.prepare('SELECT COUNT(*) as count FROM acp_receipts').get().count
+    analysisCacheEntries: db.prepare('SELECT COUNT(*) as count FROM analysis_cache').get().count,
+    tradeSignalsCount: db.prepare('SELECT COUNT(*) as count FROM trade_signals').get().count
   };
   return stats;
+}
+
+// Analysis cache operations
+function saveAnalysisCache(marketId, lastPrice, reasoning, confidence) {
+  const db = initDb();
+  const insert = db.prepare('INSERT OR REPLACE INTO analysis_cache (market_id, last_price, reasoning, confidence) VALUES (?, ?, ?, ?)');
+  insert.run(marketId, lastPrice, reasoning, confidence);
+}
+
+function getAnalysisCache(marketId) {
+  const db = initDb();
+  return db.prepare('SELECT * FROM analysis_cache WHERE market_id = ?').get(marketId);
+}
+
+// Trade signals operations
+function saveTradeSignal(signal) {
+  const db = initDb();
+  const insert = db.prepare('INSERT INTO trade_signals (market_id, action, price, confidence, kelly_fraction) VALUES (?, ?, ?, ?, ?)');
+  insert.run(signal.marketId, signal.action, signal.price, signal.confidence, signal.kellyFraction);
+}
+
+function getTradeSignals(limit = 50) {
+  const db = initDb();
+  return db.prepare('SELECT * FROM trade_signals ORDER BY timestamp DESC LIMIT ?').all(limit);
+}
+
+// Volume snapshots operations
+function saveVolumeSnapshot(marketId, volume, timestamp) {
+  const db = initDb();
+  const insert = db.prepare('INSERT INTO volume_snapshots (market_id, volume, timestamp) VALUES (?, ?, ?)');
+  insert.run(marketId, volume, timestamp);
+}
+
+function getVolumeSnapshots(marketId, sinceTimestamp) {
+  const db = initDb();
+  const select = db.prepare('SELECT volume, timestamp FROM volume_snapshots WHERE market_id = ? AND timestamp > ? ORDER BY timestamp ASC');
+  return select.all(marketId, sinceTimestamp);
 }
 
 // Close database connection (for graceful shutdown)
@@ -172,8 +196,12 @@ module.exports = {
   saveAlertSubscription,
   getUserAlertSubscriptions,
   deactivateAlertSubscription,
-  saveAcpReceipt,
-  getUserAcpHistory,
   getDbStats,
-  closeDb
+  closeDb,
+  saveAnalysisCache,
+  getAnalysisCache,
+  saveTradeSignal,
+  getTradeSignals,
+  saveVolumeSnapshot,
+  getVolumeSnapshots
 };

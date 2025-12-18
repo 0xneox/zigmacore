@@ -24,9 +24,9 @@ const logger = pino({
 });
 
 // Add convenience methods for common operations
-logger.cycleStart = (cycleId) => logger.info({ cycleId }, 'Oracle of Poly cycle started');
-logger.cycleComplete = (cycleId, stats) => logger.info({ cycleId, stats }, 'Oracle of Poly cycle completed successfully');
-logger.cycleError = (cycleId, error) => logger.error({ cycleId, error: error.message, stack: error.stack }, 'Oracle of Poly cycle failed');
+logger.cycleStart = (cycleId) => logger.info({ cycleId }, 'Agent Zigma cycle started');
+logger.cycleComplete = (cycleId, stats) => logger.info({ cycleId, stats }, 'Agent Zigma cycle completed successfully');
+logger.cycleError = (cycleId, error) => logger.error({ cycleId, error: error.message, stack: error.stack }, 'Agent Zigma cycle failed');
 
 logger.apiCall = (service, operation, params) => logger.debug({ service, operation, params }, `API call to ${service}`);
 logger.apiSuccess = (service, operation, duration) => logger.info({ service, operation, duration }, `API call successful`);
