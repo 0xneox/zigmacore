@@ -8,7 +8,7 @@ const fs = require('fs');
 app.use(express.json());
 
 // CORS headers
-const allowedOrigins = ['https://zigma.pro', 'https://www.zigma.pro'];
+const allowedOrigins = ['https://zigma.pro', 'https://www.zigma.pro', 'http://localhost:8080'];
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {

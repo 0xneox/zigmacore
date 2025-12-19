@@ -1,0 +1,15 @@
+2025-12-19T12:40:43.849Z: Weed rescheduled in 2025? -> AVOID (50.0%)
+Reasoning: Fallback analysis due to LLM failure
+
+2025-12-19T12:40:45.635Z: Khamenei out as Supreme Leader of Iran in 2025? -> AVOID (50.0%)
+Reasoning: Fallback analysis due to LLM failure
+
+2025-12-19T12:40:48.835Z: Russia x Ukraine ceasefire in 2025? -> AVOID (50.0%)
+Reasoning: Fallback analysis due to LLM failure
+
+2025-12-19T12:40:50.550Z: Will SpaceX have between 160-179 launches in 2025? -> AVOID (50.0%)
+Reasoning: Fallback analysis due to LLM failure
+
+2025-12-19T12:40:52.325Z: Will NVIDIA be the largest company in the world by -> AVOID (50.0%)
+Reasoning: Fallback analysis due to LLM failure
+

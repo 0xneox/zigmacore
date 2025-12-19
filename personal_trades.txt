@@ -150,3 +150,271 @@
 
 2025-12-18T19:37:33.602Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
 
+2025-12-18T20:20:36.095Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-18T20:20:40.591Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-18T20:20:43.272Z: AVOID on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:20:48.487Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-18T20:26:26.826Z: AVOID on Weed rescheduled in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:26:27.476Z: AVOID on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:26:28.042Z: AVOID on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:26:28.808Z: AVOID on Will NVIDIA be the largest company in the world by - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:30:24.547Z: AVOID on Weed rescheduled in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:30:25.842Z: AVOID on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:30:27.028Z: AVOID on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:30:27.727Z: AVOID on Will NVIDIA be the largest company in the world by - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:37:23.753Z: AVOID on Weed rescheduled in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:37:24.967Z: AVOID on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:37:25.595Z: AVOID on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-18T20:37:26.828Z: AVOID on Will NVIDIA be the largest company in the world by - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T12:44:00.962Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T12:44:04.519Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T12:44:07.714Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T12:44:09.955Z: NO_TRADE on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T12:44:11.791Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T15:38:40.014Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:38:44.251Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:38:49.465Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:38:54.391Z: NO_TRADE on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:38:58.786Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T15:49:25.047Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:49:27.521Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:49:29.521Z: BUY YES on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:49:34.527Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:49:38.346Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T15:54:25.380Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:55:59.320Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:56:01.540Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:56:04.015Z: BUY YES on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:56:06.267Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:56:09.361Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T15:58:23.559Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:58:25.242Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:58:26.884Z: BUY YES on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:58:28.975Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T15:58:30.566Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T16:05:25.429Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:05:27.172Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:05:29.924Z: BUY YES on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:05:31.759Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:05:33.984Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T16:08:23.479Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:08:25.415Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:08:27.562Z: BUY YES on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:08:30.214Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T16:08:32.776Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T17:49:06.533Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:49:10.062Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:49:13.811Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:49:16.941Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:49:21.738Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:50:46.499Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:50:48.712Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:50:50.831Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:50:52.410Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:50:56.239Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:52:22.048Z: BUY NO on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:52:24.057Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:52:27.218Z: BUY NO on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:52:29.769Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:52:33.109Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:56:44.370Z: BUY NO on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:56:46.332Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:56:48.972Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T17:56:52.688Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T17:56:55.451Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T18:00:18.853Z: BUY NO on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:21.296Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:24.002Z: BUY NO on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:27.552Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:30.602Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:36.184Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T18:00:39.246Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:42.281Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:45.312Z: NO_TRADE on Will Lana Del Rey release an album in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:48.344Z: BUY NO on Will Trump announce Kevin Warsh as next Fed Chair  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:00:52.413Z: NO_TRADE on U.S. withdraws from Syria in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:16:48.037Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:16:50.893Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:16:53.451Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:16:56.102Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:17:01.850Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:17:07.230Z: NO_TRADE on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T18:17:10.213Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:17:12.153Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:17:16.098Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:17:18.112Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:17:20.454Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 3.00%
+
+2025-12-19T18:17:24.172Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:19:22.035Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:19:23.799Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:37.187Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:39.075Z: HOLD on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:42.012Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:44.431Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:46.408Z: HOLD on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:48.192Z: HOLD on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:50.610Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:52.951Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:55.417Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:57.566Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:20:59.921Z: HOLD on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:21:02.437Z: HOLD on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:23:53.994Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:23:55.942Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:23:58.291Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:00.507Z: BUY YES on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:02.587Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:04.380Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:06.345Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:08.506Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:10.674Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:12.567Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:14.857Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:24:16.941Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:25:58.207Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:00.405Z: BUY YES on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:02.726Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:04.795Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:06.882Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:08.923Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:11.108Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:13.362Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:15.961Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:17.775Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:19.628Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:26:21.935Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:30:25.920Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+

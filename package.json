@@ -1,5 +1,5 @@
 {
-  "name": "oracle-of-poly",
+  "name": "zigma-oracle",
   "version": "1.0.0",
   "description": "Neutral, data-first Virtuals agent for Polymarket analysis with premium features",
   "main": "src/index.js",

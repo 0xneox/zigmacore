@@ -443,8 +443,11 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     }
 
     try {
+      console.log(`[LLM] Starting API call for ${marketData.id}`);
       response = await llmCall();
+      console.log(`[LLM] API call completed for ${marketData.id}`);
     } catch (error) {
+      console.log(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
       if (error.name === 'AbortError') {
         console.log('LLM call timed out');
       } else {
@@ -465,8 +468,34 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
           deltaNews_magnitude = Math.min(0.30, (headline_count * 0.03) * source_weight * novelty_decay);
         }
 
-        const enhanced = await generateEnhancedAnalysis(marketData, orderBook, news);
-        return enhanced;
+        // Direct fallback analysis instead of recursive call
+        return {
+          marketId: marketData.slug || marketData.id,
+          question: marketData.question,
+          algorithmicAnalysis: {},
+          llmAnalysis: {
+            executiveSummary: `${marketData.question || 'Market'} shows current YES price at ${(marketData.yesPrice || 0.5) * 100}%. Volume: $${(marketData.volume || 0).toLocaleString()}.`,
+            technicalMetrics: {
+              currentPrice: marketData.yesPrice || 0.5,
+              volume: marketData.volume || 0,
+              liquidity: marketData.liquidity || 0
+            },
+            riskAssessment: { level: 'UNKNOWN', confidence: 0.5, reasons: ['Data analysis incomplete'] },
+            recommendation: { action: 'HOLD', confidence: 50, reasoning: 'Insufficient analysis data' },
+            priceAnalysis: `Current price: ${marketData.yesPrice || 0.5}`,
+            marketOutlook: "Limited data available for outlook.",
+            confidence: 50,
+            timestamp: Date.now()
+          },
+          premium: true,
+          generatedAt: Date.now(),
+          error: error.message,
+          fallback: true,
+          confidence: 50,
+          action: 'AVOID',
+          probability: 0.5,
+          reasoning: 'Fallback analysis due to LLM failure'
+        };
       }
     }
 
@@ -574,7 +603,8 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
         deltaNews: result.deltaNews,
         deltaStructure: result.deltaStructure,
         deltaBehavior: result.deltaBehavior,
-        deltaTime: result.deltaTime
+        deltaTime: result.deltaTime,
+        time: -10
       },
       entropy: entropy,
       effectiveEdge: effectiveEdge,

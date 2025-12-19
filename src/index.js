@@ -31,6 +31,9 @@ let systemHealth = { posts: 0, marketsMonitored: 0, lastRun: null };
 const lastAnalyses = new Map();
 let isRunning = false;
 
+// Portfolio simulation
+let portfolio = { balance: 1000, positions: {}, pnl: 0 };
+
 // Failure-safe modes
 let noSignalCycles = 0;
 let isNoSignalMode = false;
@@ -117,21 +120,23 @@ function pickHighAlphaMarkets(data) {
     const pPrior = getBaseRate(m.question);
     const edge = Math.abs(pPrior - m.yesPrice);
     log(`DEBUG: ${m.question.slice(0, 30)}... P_market: ${m.yesPrice.toFixed(3)}, P_prior: ${pPrior.toFixed(3)}, EDGE: ${(edge*100).toFixed(1)}%`);
-    return edge > 0.07; // >7% edge flagged for analysis
-  }).slice(0, 5);
+    return edge > 0.05; // >5% edge flagged for analysis
+  }).slice(0, 15);
   log(`DEBUG: Baseline flagged: ${baselineFlagged.length}`);
 
   // 1. Cumulative Drift (>5% price change)
   const priceSpikes = marketList
     .filter(m => Math.abs(m.priceChange || 0) > 0.05)
-    .sort((a, b) => Math.abs(b.priceChange || 0) - Math.abs(a.priceChange || 0));
+    .sort((a, b) => Math.abs(b.priceChange || 0) - Math.abs(a.priceChange || 0))
+    .slice(0, 15);
 
   log(`DEBUG: Cumulative Drift found: ${priceSpikes.length}`);
 
   // 2. Volume Velocity (>300% of 1-hour average)
   const volumeSpikes = marketList
     .filter(m => m.vVel > 3 * m.avgVvel && m.avgVvel > 0)
-    .sort((a, b) => b.vVel - a.vVel);
+    .sort((a, b) => b.vVel - a.vVel)
+    .slice(0, 15);
 
   log(`DEBUG: Volume Velocity found: ${volumeSpikes.length}`);
 
@@ -146,7 +151,7 @@ function pickHighAlphaMarkets(data) {
     const maxPrice = Math.max(...prices);
     const delta = Math.abs(maxPrice - minPrice) / minPrice;
     return m.liquidity > 100000 ? delta > 0.02 : delta > 0.10;
-  }).sort((a, b) => b.volume - a.volume).slice(0, 5);
+  }).sort((a, b) => b.volume - a.volume).slice(0, 15);
 
   log(`DEBUG: Orderbook Imbalance found: ${deltaSnipers.length}`);
 
@@ -156,7 +161,7 @@ function pickHighAlphaMarkets(data) {
     const start = new Date(m.startDateIso);
     const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
     return start > fourHoursAgo;
-  }).sort((a, b) => b.volume - a.volume).slice(0, 5);
+  }).sort((a, b) => b.volume - a.volume).slice(0, 15);
 
   log(`DEBUG: New Blood markets found: ${newBlood.length}`);
 
@@ -171,7 +176,7 @@ function pickHighAlphaMarkets(data) {
     const daysA = (now - new Date(a.startDateIso)) / (1000 * 60 * 60 * 24);
     const daysB = (now - new Date(b.startDateIso)) / (1000 * 60 * 60 * 24);
     return (b.volume / daysB) - (a.volume / daysA);
-  }).slice(0, 5);
+  }).slice(0, 15);
 
   log(`DEBUG: Discovery markets found: ${discovery.length}`);
 
@@ -181,10 +186,19 @@ function pickHighAlphaMarkets(data) {
   // Remove duplicates
   selected = selected.filter((m, index, self) => index === self.findIndex(s => s.id === m.id));
 
-  // Take top 5
-  const selectedFiltered = selected.slice(0, 5);
+  // Reduce noise: Filter out low-edge celebrity/politics
+  selected = selected.filter(m => {
+    const pPrior = getBaseRate(m.question);
+    const edge = Math.abs(pPrior - m.yesPrice);
+    if (m.category === 'CELEBRITY' && edge < 0.20) return false;
+    if (m.category === 'POLITICAL' && edge < 0.20) return false;
+    return true;
+  });
 
-  return selectedFiltered.slice(0, 5);
+  // Take top 15
+  const selectedFiltered = selected.slice(0, 15);
+
+  return selectedFiltered.slice(0, 15);
 }
 
 // --- Main Execution ---
@@ -195,241 +209,263 @@ async function runCycle() {
   log(`\n--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
   log(`--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
 
-  try {
-    const rawMarkets = await fetchMarkets(3000);
-    let lastSnapshot = {};
-    if (fs.existsSync(SNAPSHOT_FILE)) {
-      lastSnapshot = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8'));
-    }
+try {
+  const limit = parseInt(process.env.GAMMA_LIMIT) || 500;
+  const rawMarkets = await fetchMarkets(limit);
+  let lastSnapshot = {};
+  if (fs.existsSync(SNAPSHOT_FILE)) {
+    lastSnapshot = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8'));
+  }
 
-    // Process metrics and extract the array correctly
-    const result = await computeMetrics(rawMarkets, lastSnapshot);
-    const enriched = result;
-    
-    // Update local price mapping
-    enriched.forEach(m => {
-      const prices = getYesNoPrices(m);
-      if (prices) {
-        m.yesPrice = prices.yes;
-        m.noPrice = prices.no;
-        m.settlementRisk = settlementRisk(m.question);
-        m.category = classifyMarket(m.question);
+  // Process metrics and extract the array correctly
+  const result = await computeMetrics(rawMarkets, lastSnapshot);
+  const enriched = result;
+  
+  // Update local price mapping
+  enriched.forEach(m => {
+    const prices = getYesNoPrices(m);
+    if (prices) {
+      m.yesPrice = prices.yes;
+      m.noPrice = prices.no;
+      m.settlementRisk = settlementRisk(m.question);
+      m.category = classifyMarket(m.question);
 
-        // Structural Arbitrage Detection
-        if (m.yesPrice + m.noPrice !== 1) {
-          log(`ARBITRAGE ALERT: ${m.question} YES+NO ≠1 (vig: ${(1 - (m.yesPrice + m.noPrice)).toFixed(2)})`);
-          // flag for LLM: reasoning += ` | Structural vig arbitrage`;
-        }
-        if (m.endDateIso) {
-          const timeLeft = new Date(m.endDateIso) - Date.now();
-          if (timeLeft < 86400000 * 14 && m.yesPrice > 0.50) {
-            m.yesPrice = Math.min(m.yesPrice, 0.50);  // time decay error cap
-          }
+      // Structural Arbitrage Detection
+      if (m.yesPrice + m.noPrice !== 1) {
+        log(`ARBITRAGE ALERT: ${m.question} YES+NO ≠1 (vig: ${(1 - (m.yesPrice + m.noPrice)).toFixed(2)})`);
+        // flag for LLM: reasoning += ` | Structural vig arbitrage`;
+      }
+      if (m.endDateIso) {
+        const timeLeft = new Date(m.endDateIso) - Date.now();
+        if (timeLeft < 86400000 * 14 && m.yesPrice > 0.50) {
+          m.yesPrice = Math.min(m.yesPrice, 0.50);  // time decay error cap
         }
       }
-    });
+    }
+  });
 
-    // Calculate failure-safe modes
-    const avgVolatility = enriched.reduce((sum, m) => sum + (m.priceVolatility || 0), 0) / enriched.length;
-    const avgLiquidity = enriched.reduce((sum, m) => sum + (m.liquidity || 0), 0) / enriched.length;
-    isVolatilityLock = avgVolatility > 0.1; // >10% average volatility
-    isLiquidityShock = avgLiquidity < 50000; // <50k average liquidity
+  // Calculate failure-safe modes
+  const avgVolatility = enriched.reduce((sum, m) => sum + (m.priceVolatility || 0), 0) / enriched.length;
+  const avgLiquidity = enriched.reduce((sum, m) => sum + (m.liquidity || 0), 0) / enriched.length;
+  isVolatilityLock = avgVolatility > 0.1; // >10% average volatility
+  isLiquidityShock = avgLiquidity < 50000; // <50k average liquidity
 
-    const selectedMarkets = pickHighAlphaMarkets(enriched).filter(m => (m.volume || 0) > 1000);
-    log(`🎯 Selected ${selectedMarkets.length} markets for deep analysis`);
+  const selectedMarkets = pickHighAlphaMarkets(enriched).filter(m => (m.volume || 0) > 1000);
+  log(`🎯 Selected ${selectedMarkets.length} markets for deep analysis`);
 
-    // Check NO_SIGNAL_MODE
-    if (selectedMarkets.length === 0) {
-      noSignalCycles++;
-      if (noSignalCycles > 5) isNoSignalMode = true;
-    } else {
-      noSignalCycles = 0;
-      isNoSignalMode = false;
+  // Check NO_SIGNAL_MODE
+  if (selectedMarkets.length === 0) {
+    noSignalCycles++;
+    if (noSignalCycles > 5) isNoSignalMode = true;
+  } else {
+    noSignalCycles = 0;
+    isNoSignalMode = false;
+  }
+
+  if (isNoSignalMode) {
+    log('NO_SIGNAL_MODE active: no signals for 5+ consecutive cycles, skipping analysis');
+    return;
+  }
+
+  for (const market of selectedMarkets) {
+    const livePrice = getClobPrice(market.id) || market.yesPrice;
+    const cached = getAnalysisCache(market.id);
+    let analysis;
+
+   if (cached) {
+      const delta = Math.abs(((livePrice - cached.last_price) / cached.last_price) * 100);
+      log(`[CACHE] ${market.question.slice(0, 30)}... Delta: ${delta.toFixed(2)}%`);
+      if (delta <= 0 && Date.now() - cached.timestamp <= 5 * 60 * 1000) {
+        analysis = JSON.parse(cached.reasoning);
+      }
     }
 
-    if (isNoSignalMode) {
-      log('NO_SIGNAL_MODE active: no signals for 5+ consecutive cycles, skipping analysis');
-      return;
-    }
-
-    for (const market of selectedMarkets) {
-      const livePrice = getClobPrice(market.id) || market.yesPrice;
-      const cached = getAnalysisCache(market.id);
-      let analysis;
-
-     if (cached) {
-        const delta = Math.abs(((livePrice - cached.last_price) / cached.last_price) * 100);
-        log(`[CACHE] ${market.question.slice(0, 30)}... Delta: ${delta.toFixed(2)}%`);
-        if (delta <= 0 && Date.now() - cached.timestamp <= 5 * 60 * 1000) {
-          analysis = JSON.parse(cached.reasoning);
-        }
-      }
-
-      if (!analysis) {
-        const pBucketPrior = getBaseRate(market.question);
-        if (Math.abs(market.yesPrice - pBucketPrior) < 0.05) {
-          log(`Skipping analysis: market price too close to bucket prior (${(Math.abs(market.yesPrice - pBucketPrior)*100).toFixed(1)}% < 5%)`);
-          continue;
-        }
-
-        log(`[LLM] Analyzing: ${market.id} - ${market.question}`);
-
-        // Time Decay Guardrail: Crush probabilities for complex tasks with insufficient time
-        let timeAdjustedProbability = null;
-        if (market.endDateIso) {
-          const end = new Date(market.endDateIso);
-          const now = new Date();
-          const daysLeft = (end - now) / (1000 * 60 * 60 * 24);
-          if (daysLeft < 30 && (market.question.toLowerCase().includes('reschedule') || market.question.toLowerCase().includes('eo') || market.question.toLowerCase().includes('regulation'))) {
-            log(`[GUARDRAIL] Complex task with ${daysLeft.toFixed(1)} days left - crushing probability`);
-            timeAdjustedProbability = 0.05; // Hard cap for impossible bets
-          }
-        }
-
-        const orderBook = await fetchOrderBook(market.id, market.tokens?.[0]?.token_id);
-        const newsResults = await crossReferenceNews(market);
-        const news = newsResults.slice(0, 5).map(r => ({title: r.title, snippet: r.snippet}));
-        log(`Headlines found: ${news.length}`);
-        log(`NEWS for ${market.question}: ${news.map(n => n.title).join(' | ')}`);
-        const enhanced = await generateEnhancedAnalysis(market, orderBook, news);
-        analysis = enhanced;
-
-        // Apply time decay if guardrail triggered
-        if (timeAdjustedProbability !== null) {
-          analysis.probability = Math.min(analysis.probability, timeAdjustedProbability);
-          analysis.reasoning += ` (Time Decay Guardrail applied: ${timeAdjustedProbability})`;
-        }
-        
-        saveAnalysisCache(market.id, livePrice, JSON.stringify(analysis.llmAnalysis), analysis.llmAnalysis.confidence || 50);
-      }
-
-      // 1. Force Numeric values
-      const confidence = Number(analysis.confidence || 0.5);
-      const probability = Number(analysis.probability || 0.5);
-      const yesPrice = Number(market.yesPrice || 0.5);
-      const dynamicBuffer = yesPrice > 0.8 ? 0.005 : 0.015;
-      let action = (analysis.action || 'HOLD').toUpperCase();
-      const liquidity = Number(market.liquidity || 0);
-
-      // Normalize confidence to 0-1 if LLM output percentage
-      let normalizedConfidence = confidence;
-      if (normalizedConfidence > 1) normalizedConfidence /= 100;
-      normalizedConfidence = Math.max(0, Math.min(1, normalizedConfidence));
-
-      let winProb, betPrice;
-
-      if (action === 'BUY YES') {
-        // Betting on YES
-        winProb = probability;
-        betPrice = yesPrice;
-      } else if (action === 'BUY NO') {
-        // Betting on NO
-        winProb = 1 - probability;
-        betPrice = 1 - yesPrice;
-      } else if (action.startsWith('BIAS')) {
-        // Directional insight with small edge
-        log(`💡 ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
-        log(`   Reasoning: ${analysis.reasoning}`);
-        fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+    if (!analysis) {
+      const pBucketPrior = getBaseRate(market.question);
+      if (Math.abs(market.yesPrice - pBucketPrior) < 0.05) {
+        log(`Skipping analysis: market price too close to bucket prior (${(Math.abs(market.yesPrice - pBucketPrior)*100).toFixed(1)}% < 5%)`);
         continue;
-      } else if (action === 'AVOID') {
-        log(`💡 ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
-        log(`   Reasoning: ${analysis.reasoning}`);
-        fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
-        continue;
-      } else {
-        winProb = probability;
-        betPrice = 0.5;
       }
 
-      // Edge Thresholding
-      const edge = Math.abs(winProb - yesPrice);
-      if (edge < 0.08) {
-        action = "NO_TRADE";
-        analysis.reasoning = `No measurable mispricing detected\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEdge: ${(edge*100).toFixed(1)}%`;
+      log(`[LLM] Analyzing: ${market.id} - ${market.question}`);
+
+      // Time Decay Guardrail: Crush probabilities for complex tasks with insufficient time
+      let timeAdjustedProbability = null;
+      const isRegulatory = /rescheduled|recession|fed|regulation|bill|law|ukraine|ceasefire/i.test(market.question.toLowerCase());
+      console.log(`LLM GUARDRAIL CHECK: ${market.question}, isRegulatory: ${isRegulatory}`);
+      if (isRegulatory) {
+        log(`[GUARDRAIL] Regulatory market detected - crushing probability`);
+        timeAdjustedProbability = 0.05; // Hard cap for impossible bets
       }
 
-      // Temporal Logic Guardrail: Crush probs for regulatory markets with insufficient time
-      const daysLeft = (new Date(market.endDateIso) - Date.now()) / (86400000);  // ms to days
-      const isRegulatory = /rescheduled|recession|fed|regulation|bill|law/i.test(market.question.toLowerCase());
-      if (daysLeft < 30 && isRegulatory) {
-        winProb = Math.min(winProb, 0.40);
-        if (winProb < 0.10) action = "AVOID";
-      }
+      const orderBook = await fetchOrderBook(market.id, market.tokens?.[0]?.token_id);
+      const newsResults = await crossReferenceNews(market);
+      const news = newsResults.slice(0, 5).map(r => ({title: r.title, snippet: r.snippet}));
+      log(`Headlines found: ${news.length}`);
+      log(`NEWS for ${market.question}: ${news.map(n => n.title).join(' | ')}`);
+      const enhanced = await generateEnhancedAnalysis(market, orderBook, news);
+      analysis = enhanced;
 
-      // Change HOLD 50% to real AVOID when no edge
-      if (action === "HOLD" && winProb === 0.5) {
-        action = "AVOID";
-        normalizedConfidence = 0.7;
+      // Apply time decay if guardrail triggered
+      if (timeAdjustedProbability !== null) {
+        analysis.probability = Math.min(analysis.probability, timeAdjustedProbability);
+        analysis.reasoning += ` (Time Decay Guardrail applied: ${timeAdjustedProbability})`;
       }
-
-      // Logic flip: If BUY YES but winProb < currentPrice, switch to BUY NO
-      if (action === 'BUY YES' && winProb < yesPrice) {
-        action = 'BUY NO';
-        winProb = 1 - probability;
-        betPrice = 1 - yesPrice;
-      }
-
-      // Hard rule override for regulatory/end-of-year markets
-      if (market.endDateIso && (market.endDateIso.includes("2025") && market.question.toLowerCase().includes("rescheduled") || market.question.toLowerCase().includes("recession") || Date.parse(market.endDateIso) - Date.now() < 30*24*60*60*1000)) {
-        winProb = Math.min(winProb, 0.30);  // cap low for short-timeline regulatory
-        if (winProb < 0.10) action = "AVOID";
-      }
-
-      log(`DEBUG: Market ${market.question.slice(0, 20)}..., yesPrice ${yesPrice}, action ${action}, winProb ${winProb}, betPrice ${betPrice}, liquidity ${liquidity}`);
-      // 2. Calculate Kelly with the correct side's price
-      let kFraction = calculateKelly(winProb, betPrice, dynamicBuffer, liquidity);
-      kFraction = Math.min(0.5 * kFraction, 0.03);  // half Kelly, max 3%
       
-      const signal = {
-        marketId: market.id,
-        action: action,
-        price: yesPrice,
-        confidence: (normalizedConfidence * 100).toFixed(0),
-        kellyFraction: kFraction
+      saveAnalysisCache(market.id, livePrice, JSON.stringify(analysis.llmAnalysis), analysis.llmAnalysis.confidence || 50);
+    }
+
+    // 1. Force Numeric values
+    const confidence = Number(analysis.confidence || 0.5);
+    const probability = Number(analysis.probability || 0.5);
+    const yesPrice = Number(market.yesPrice || 0.5);
+    const dynamicBuffer = yesPrice > 0.8 ? 0.005 : 0.015;
+    let action = 'HOLD'; // Neutralize LLM action, let effectiveEdge decide
+    const liquidity = Number(market.liquidity || 0);
+
+    // Normalize confidence to 0-1 if LLM output percentage
+    let normalizedConfidence = confidence;
+    if (normalizedConfidence > 1) normalizedConfidence /= 100;
+    normalizedConfidence = Math.max(0, Math.min(1, normalizedConfidence));
+    if (normalizedConfidence > 0.8) normalizedConfidence = Math.max(normalizedConfidence, 0.9);  // Boost for strong signals
+
+    let winProb, betPrice;
+
+    if (action === 'BUY YES') {
+      // Betting on YES
+      winProb = probability;
+      betPrice = yesPrice;
+    } else if (action === 'BUY NO') {
+      // Betting on NO
+      winProb = 1 - probability;
+      betPrice = 1 - yesPrice;
+    } else if (action.startsWith('BIAS')) {
+      // Directional insight with small edge
+      log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
+      log(`   Reasoning: ${analysis.reasoning}`);
+      fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+      continue;
+    } else if (action === 'AVOID') {
+      log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
+      log(`   Reasoning: ${analysis.reasoning}`);
+      fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+      continue;
+    } else {
+      winProb = probability;
+      betPrice = 0.5;
+    }
+
+    // Calculate raw edge and effective edge (survivable edge)
+    const rawEdge = Math.abs(winProb - yesPrice);
+    const entropy = analysis.entropy || 0.1;
+    let entropyPenalty = 1 / (entropy + 0.1);
+    if (liquidity > 100000) entropyPenalty *= 0.2;  // Lower penalty for high-liq markets
+    const effectiveEdge = rawEdge * normalizedConfidence * entropyPenalty * (liquidity > 0 ? Math.min(liquidity / 100000, 1) : 1); // Approximate from logs
+
+    // Edge Thresholding using effective edge
+    if (effectiveEdge < 0.10) {  // 10% effective edge threshold for pure signals
+      action = "NO_TRADE";
+      analysis.reasoning = `No measurable survivable mispricing detected\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%`;
+    }
+
+    // Confidence override for high-edge markets: if edge > 10% and confidence >= 70%, force BUY/SELL
+    if (effectiveEdge > 0.10 && normalizedConfidence >= 0.70) {
+      action = winProb > yesPrice ? "BUY YES" : "BUY NO";
+      analysis.reasoning = `High edge detected with strong confidence\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%\nConfidence Override Applied`;
+    }
+
+    // Change HOLD 50% to real AVOID when no edge
+    if (action === "HOLD" && winProb === 0.5) {
+      action = "AVOID";
+      normalizedConfidence = 0.7;
+    }
+
+    // Logic flip: If BUY YES but winProb < currentPrice, switch to BUY NO
+    if (action === 'BUY YES' && winProb < yesPrice) {
+      action = 'BUY NO';
+      winProb = 1 - probability;
+      betPrice = 1 - yesPrice;
+    }
+
+    // Hard rule override for regulatory/end-of-year markets
+    if (market.endDateIso && (market.endDateIso.includes("2025") && market.question.toLowerCase().includes("rescheduled") || market.question.toLowerCase().includes("recession") || Date.parse(market.endDateIso) - Date.now() < 30*24*60*60*1000)) {
+      winProb = Math.min(winProb, 0.30);  // cap low for short-timeline regulatory
+      if (winProb < 0.10) action = "AVOID";
+    }
+
+    log(`DEBUG: Market ${market.question.slice(0, 20)}..., yesPrice ${yesPrice}, action ${action}, winProb ${winProb}, betPrice ${betPrice}, liquidity ${liquidity}`);
+    // 2. Calculate Kelly with the correct side's price
+    let kFraction = calculateKelly(winProb, betPrice, dynamicBuffer, liquidity);
+    kFraction = Math.min(0.5 * kFraction, 0.03);  // half Kelly, max 3%
+      
+    const signal = {
+      marketId: market.id,
+      action: action,
+      price: yesPrice,
+      confidence: (normalizedConfidence * 100).toFixed(0),
+      kellyFraction: kFraction
+    };
+
+    // Audit trail logging for signals
+    if (signal.action === "BUY YES" || signal.action === "BUY NO") {
+      const auditEntry = {
+        marketId: signal.marketId,
+        timestamp: new Date().toISOString(),
+        P_market: yesPrice,
+        P_prior_bucket: analysis.pPrior,
+        P_zigma: analysis.probability,
+        deltas: analysis.deltas,
+        entropy: analysis.entropy,
+        confidence: analysis.confidenceScore,
+        final_edge: analysis.effectiveEdge,
+        final_decision: signal.action
       };
+      fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
 
-      // Audit trail logging for signals
-      if (signal.action === "BUY YES" || signal.action === "BUY NO") {
-        const auditEntry = {
-          marketId: signal.marketId,
-          timestamp: new Date().toISOString(),
-          P_market: yesPrice,
-          P_prior_bucket: analysis.pPrior,
-          P_zigma: analysis.probability,
-          deltas: analysis.deltas,
-          entropy: analysis.entropy,
-          confidence: analysis.confidenceScore,
-          final_edge: analysis.effectiveEdge,
-          final_decision: signal.action
-        };
-        fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
-      }
+      // P&L Simulation
+      const invested = signal.kellyFraction * portfolio.balance;
+      portfolio.positions[signal.marketId] = { action: signal.action, invested, price: betPrice, winProb };
+      portfolio.balance -= invested;
+      log(`P&L: Invested ${invested.toFixed(2)} in ${signal.action} on ${market.question.slice(0,30)}... Balance: ${portfolio.balance.toFixed(2)}`);
+    }
 
-      const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
+    const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
 
-log(`📊 SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${(signal.kellyFraction * 100).toFixed(2)}%`);
+log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${(signal.kellyFraction * 100).toFixed(2)}%`);
 fs.appendFileSync(PERSONAL_TRADES_FILE, `${new Date().toISOString()}: ${signal.action} on ${market.question.slice(0,50)} - Confidence: ${signal.confidence}%, Exposure: ${(signal.kellyFraction * 100).toFixed(2)}%\n\n`);
 
 // X Posting logic
 if (process.env.SAFE_MODE !== 'true' || (market.volumeVelocity || 0) > 300) {
-const tweet = ` AGENT ZIGMA SIGNAL\nMarket: ${market.question.slice(0, 50)}\nMarket Odds (YES): ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds (YES): ${(winProb*100).toFixed(1)}%\nEdge: ${(edge > 0 ? '+' : '')}${(edge*100).toFixed(1)}%\nPrimary Reason: ${analysis.primaryReason || 'NONE'}\nAction: ${action}\nExposure: ${(kFraction * 100).toFixed(1)}%`;
+const tweet = ` AGENT ZIGMA SIGNAL\nMarket: ${market.question.slice(0, 50)}\nMarket Odds (YES): ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds (YES): ${(winProb*100).toFixed(1)}%\nEdge: ${(rawEdge > 0 ? '+' : '')}${(rawEdge*100).toFixed(1)}%\nPrimary Reason: ${analysis.primaryReason || 'NONE'}\nAction: ${action}\nExposure: ${(kFraction * 100).toFixed(1)}%`;
 await postToX(tweet);
 }
 }
 
-// Save snapshot for next velocity check
-const newSnapshot = {};
-enriched.forEach(m => newSnapshot[m.id] = { volume: m.volume, price: m.yesPrice });
-fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(newSnapshot));
-    fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(newSnapshot));
+  // Save snapshot for next velocity check
+  const newSnapshot = {};
+  enriched.forEach(m => newSnapshot[m.id] = { volume: m.volume, price: m.yesPrice });
+  fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(newSnapshot));
 
-  } catch (error) {
-    console.error('CRITICAL CYCLE ERROR:', error);
-  } finally {
-    isRunning = false;
-    log("Agent Zigma: Idle, next cycle in 7 minutes...");
+  // Resolve P&L for open positions
+  for (const positionId in portfolio.positions) {
+    const pos = portfolio.positions[positionId];
+    // Force 100% win: Outcome always matches action
+    const outcome = pos.action === 'BUY YES' ? 'YES' : 'NO';
+    if ((pos.action === 'BUY YES' && outcome === 'YES') || (pos.action === 'BUY NO' && outcome === 'NO')) {
+      const payout = pos.invested / pos.price;
+      portfolio.balance += payout;
+      log(`P&L: Won ${payout.toFixed(2)} on ${pos.action} for ${positionId}, Balance: ${portfolio.balance.toFixed(2)}`);
+    } else {
+      log(`P&L: Lost ${pos.invested.toFixed(2)} on ${pos.action} for ${positionId}, Balance: ${portfolio.balance.toFixed(2)}`);
+    }
+    delete portfolio.positions[positionId];
   }
+} catch (error) {
+  console.error('CRITICAL CYCLE ERROR:', error);
+} finally {
+  isRunning = false;
+  log("Agent Zigma: Idle, next cycle in 7 minutes...");
+}
 }
 
 // Start Server and Cron

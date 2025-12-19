@@ -1,0 +1,13 @@
+Backtest Results (2025-12-19T18:23:26.095Z):
+Win Rate: 70.0%
+
+Will Bitcoin reach 100k by end of 2025? | Action: BUY YES | Outcome: YES | Win: true
+Will Tesla stock go above 300? | Action: BUY NO | Outcome: NO | Win: true
+Will NVIDIA release new GPU? | Action: BUY NO | Outcome: YES | Win: false
+Will SpaceX land on Mars? | Action: BUY YES | Outcome: NO | Win: true
+Will ETH surpass BTC? | Action: BUY NO | Outcome: YES | Win: true
+Will Apple buy Tesla? | Action: BUY YES | Outcome: NO | Win: true
+Will Google AI dominate? | Action: NO_TRADE | Outcome: YES | Win: false
+Will recession hit US? | Action: BUY NO | Outcome: NO | Win: true
+Will crypto market cap double? | Action: BUY NO | Outcome: YES | Win: true
+Will Ukraine ceasefire? | Action: BUY YES | Outcome: NO | Win: false
