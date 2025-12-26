@@ -1,0 +1,12 @@
+.env
+node_modules/
+data/
+*.log
+cache/
+last_snapshot.json
+personal_trades.txt
+trades.log
+audit_trails.log
+console_output.log
+oracle_insights.txt
+backtest_results.txt
