@@ -8,7 +8,7 @@ const fs = require('fs');
 app.use(express.json());
 
 // CORS headers
-const allowedOrigins = ['https://zigma.pro', 'https://www.zigma.pro', 'http://localhost:8080'];
+const allowedOrigins = ['https://zigma.pro', 'https://www.zigma.pro', 'http://localhost:8080', 'http://localhost:5173'];
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -102,7 +102,7 @@ app.get('/logs', (req, res) => {
         if (line.includes('DEBUG:')) return false;
         if (line.includes('Using cached LLM response')) return false;
         if (line.includes('Probability chain:')) return false;
-        if (line.includes('Effective Edge:')) return false;
+        // if (line.includes('Effective Edge:')) return false; // Allow for UI parsing
         if (line.includes('Survivability test:')) return false;
         if (line.includes('SAFE_MODE:')) return false;
         if (line.includes('Fetched new Tavily results')) return false;

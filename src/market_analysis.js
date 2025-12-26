@@ -593,7 +593,7 @@ class MarketAnalyzer {
 }
 
 // Kelly Criterion calculation for optimal bet sizing
-function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
+function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000, displayMode = false) {
   // Ensure all inputs are numbers
   const p = Number(winProb);
   const priceNum = Number(price);
@@ -612,9 +612,14 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
 
   // 3. Liquidity Scaling (Prevents betting too much on "thin" markets)
   // If liquidity < 1000, we don't bet.
-  const liquidityMultiplier = liqNum < 1000 ? 0 : 
-                              liqNum < 5000 ? 0.2 : 
-                              liqNum < 20000 ? 0.5 : 1.0;
+  let liquidityMultiplier;
+  if (displayMode) {
+    liquidityMultiplier = 1.0; // Show hypothetical sizing ignoring liquidity
+  } else {
+    liquidityMultiplier = liqNum < 1000 ? 0 : 
+                          liqNum < 5000 ? 0.2 : 
+                          liqNum < 20000 ? 0.5 : 1.0;
+  }
 
   // Apply multipliers and cap at 10% of bankroll for safety (Quarter-Kelly)
   const finalKelly = fullKelly * 0.25 * liquidityMultiplier;

@@ -418,3 +418,877 @@
 
 2025-12-19T18:30:25.920Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
 
+2025-12-19T18:51:46.145Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:51:48.339Z: AVOID on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:51:52.859Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:51:56.072Z: NO_TRADE on Netanyahu out by 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:51:59.700Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:52:00.713Z: AVOID on Will NVIDIA be the largest company in the world by - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:52:03.284Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:52:04.239Z: AVOID on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:52:05.226Z: AVOID on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:52:09.475Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:52:11.375Z: AVOID on Kraken IPO in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:52:13.983Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-19T18:53:36.676Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 50%, Exposure: 0.00%
+
+2025-12-19T18:53:37.674Z: AVOID on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:38.661Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 50%, Exposure: 0.00%
+
+2025-12-19T18:53:39.646Z: AVOID on Netanyahu out by 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:40.592Z: AVOID on Will SpaceX have between 160-179 launches in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:41.549Z: AVOID on Will NVIDIA be the largest company in the world by - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:42.567Z: AVOID on Will Apple be the largest company in the world by  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:43.588Z: AVOID on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:44.631Z: AVOID on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:45.587Z: AVOID on Israel withdraws from Gaza in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:46.561Z: AVOID on Kraken IPO in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-19T18:53:47.571Z: AVOID on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:16:43.052Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 50%, Exposure: 0.00%
+
+2025-12-22T16:16:45.592Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 50%, Exposure: 0.00%
+
+2025-12-22T16:16:47.565Z: NO_TRADE on Will SpaceX have between 160-179 launches in 2025? - Confidence: 50%, Exposure: 0.00%
+
+2025-12-22T16:16:49.608Z: AVOID on Will NVIDIA be the largest company in the world by - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:16:51.636Z: AVOID on Will Apple be the largest company in the world by  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:16:53.560Z: AVOID on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:16:55.519Z: AVOID on MicroStrategy sells any Bitcoin in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:16:57.227Z: AVOID on Will 2025 be the hottest year on record? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:16:59.130Z: AVOID on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:17:01.181Z: AVOID on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:17:03.615Z: AVOID on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-22T16:23:51.142Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:23:53.956Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:23:57.021Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:00.350Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:04.362Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:06.474Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:10.789Z: BUY YES on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:13.549Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:15.730Z: BUY YES on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:19.084Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:24:21.525Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:25.570Z: NO_TRADE on Weed rescheduled in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:27.827Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:30.895Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:33.830Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:35.837Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:38.161Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:40.287Z: NO_TRADE on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:43.145Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:45.980Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:48.032Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T16:37:50.061Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:15:56.238Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:15:59.331Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:02.283Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:05.832Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:08.827Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:11.989Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:16.150Z: BUY YES on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:19.092Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:22.454Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:25.988Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:29.316Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:16:32.246Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:13.149Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:15.535Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:19.361Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:21.359Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:24.574Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:26.641Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:29.110Z: BUY YES on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:31.619Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:33.625Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:36.122Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:38.796Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:19:40.741Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:19.604Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:22.634Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:26.050Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:27.844Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:29.729Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:33.113Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:36.137Z: BUY YES on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:38.138Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:40.690Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:42.621Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:44.537Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-22T17:30:47.073Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:26.060Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:29.914Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:33.269Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:37.651Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:41.563Z: BUY YES on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:45.186Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:50.407Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:56.281Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:30:59.959Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:31:03.004Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:31:05.588Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T04:31:08.410Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:19.202Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:21.011Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:23.541Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:25.925Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:28.123Z: BUY YES on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:30.540Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:32.193Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:34.007Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:35.882Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:38.570Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:41.402Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T05:30:43.427Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:21.256Z: NO_TRADE on US recession in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:24.174Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:28.097Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:30.771Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:34.675Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:38.319Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:41.310Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:44.682Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:48.404Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:51.784Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:55.560Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T06:30:58.661Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:18.816Z: NO_TRADE on US recession in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:20.942Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:22.429Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:24.192Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:26.222Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:29.184Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:31.337Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:33.084Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:35.210Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:37.245Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:39.862Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T07:30:44.466Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:21.638Z: BUY YES on US recession in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:24.887Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:28.693Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:32.183Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:36.203Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:42.889Z: BUY YES on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:46.770Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:49.897Z: NO_TRADE on Israel withdraws from Gaza in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:53.196Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:56.224Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:30:59.205Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:31:02.680Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T08:31:05.542Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:18.273Z: BUY YES on US recession in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:20.775Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:23.249Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:25.340Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:27.742Z: BUY YES on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:29.822Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:32.568Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:34.537Z: NO_TRADE on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:36.723Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:38.609Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:40.396Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:45.152Z: BUY NO on Will Trump deport 250,000-500,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T09:30:48.802Z: NO_TRADE on Will Trump deport 750,000-1,000,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:21.262Z: NO_TRADE on US recession in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:25.847Z: NO_TRADE on Khamenei out as Supreme Leader of Iran in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:29.113Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:33.304Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:37.279Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:40.449Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:44.288Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:47.725Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:50.814Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:53.753Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:57.015Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:30:59.482Z: BUY NO on Will Trump deport 250,000-500,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T10:31:02.591Z: NO_TRADE on Will Trump deport 750,000-1,000,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:21.927Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:23.994Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:26.272Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:29.556Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:31.674Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:34.563Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:36.405Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:38.689Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:41.112Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:43.783Z: BUY NO on Will Trump deport 250,000-500,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:45.674Z: NO_TRADE on Will Trump deport 750,000-1,000,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T11:30:49.992Z: NO_TRADE on Will the next UK election be called by December 31 - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:25.231Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:28.004Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:31.048Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:34.461Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:38.431Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:41.496Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:44.564Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:48.360Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:51.370Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:54.886Z: BUY NO on Will Trump deport 250,000-500,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:30:57.697Z: NO_TRADE on Will Trump deport 750,000-1,000,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T12:31:01.376Z: NO_TRADE on Will the next UK election be called by December 31 - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:24.738Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:31.062Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:36.205Z: NO_TRADE on Will Apple be the largest company in the world by  - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:40.241Z: NO_TRADE on Will Bitcoin dip to $70,000 by December 31, 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:44.493Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:47.414Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:50.209Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:53.324Z: NO_TRADE on AI wins IMO gold medal in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:30:57.288Z: NO_TRADE on Cardano ETF in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:31:00.693Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:31:03.401Z: BUY NO on Will Trump deport 250,000-500,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-23T14:31:07.105Z: NO_TRADE on Will Trump deport 750,000-1,000,000 people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:25.765Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:29.653Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:35.545Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:41.235Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:46.953Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:49.952Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:54.230Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:40:57.553Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:41:00.972Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:26.084Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:28.088Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:31.504Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:33.695Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:36.446Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:38.749Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:41.306Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:43.408Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T12:49:46.353Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:19.845Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:22.696Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:24.881Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:26.374Z: NO_TRADE on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:28.439Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:31.234Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:33.738Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:30:35.787Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:02.499Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:06.138Z: BUY NO on Will SpaceX have between 160-179 launches in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:08.651Z: BUY NO on Will NVIDIA be the largest company in the world by - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:11.629Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:15.068Z: BUY YES on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:17.685Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:21.897Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:24.498Z: NO_TRADE on Will Trump deport less than 250,000? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T13:41:27.205Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:27:44.915Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:27:52.853Z: NO_TRADE on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:27:57.456Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:28:01.923Z: BUY YES on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:28:05.178Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:28:08.102Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:28:12.134Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:28:16.262Z: BUY YES on Will Anthropic have a #1 AI model this year? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.495Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.496Z: BUY YES on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.534Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.535Z: BUY YES on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.539Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.541Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.542Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:33:07.543Z: BUY YES on Will Anthropic have a #1 AI model this year? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:39:23.546Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:39:23.547Z: NO_TRADE on MicroStrategy sells any Bitcoin in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:39:23.593Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:39:23.595Z: BUY YES on Maduro out in 2025? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:39:23.647Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 80%, Exposure: 3.00%
+
+2025-12-26T17:39:23.648Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 80%, Exposure: 3.00%
+
+2025-12-26T17:39:23.649Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:39:23.649Z: BUY NO on Will Anthropic have a #1 AI model this year? - Confidence: 80%, Exposure: 0.00%
+
+2025-12-26T17:57:29.093Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T17:57:29.095Z: BUY YES on MicroStrategy sells any Bitcoin in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T17:57:29.096Z: NO_TRADE on Will 2025 be the hottest year on record? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T17:57:29.149Z: BUY YES on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T17:57:29.151Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T17:57:29.152Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T17:57:29.153Z: NO_TRADE on Will Trump deport 500,000-750,000- people? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T17:57:29.154Z: BUY NO on Will Anthropic have a #1 AI model this year? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.513Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.514Z: BUY YES on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.515Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:06:55.516Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:06:55.517Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.518Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.519Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.520Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.521Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.522Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:06:55.524Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.535Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.537Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.538Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.539Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.540Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.542Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.542Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.543Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.544Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.546Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:13:48.612Z: BUY NO on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.433Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.509Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.545Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.600Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.602Z: BUY NO on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.603Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.604Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.605Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.610Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.616Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:20:41.618Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.337Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.356Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.440Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:26:45.476Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:26:45.478Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.479Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.480Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.481Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.482Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.484Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:26:45.488Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.473Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.547Z: BUY YES on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.617Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:32:00.643Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:32:00.646Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.649Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.661Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.665Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.667Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.715Z: BUY YES on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:32:00.724Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.578Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.579Z: BUY YES on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.762Z: BUY NO on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:35:00.763Z: BUY YES on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:35:00.764Z: BUY NO on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.766Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.766Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.767Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.768Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.769Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:35:00.771Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.060Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.061Z: BUY YES on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.062Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.063Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.064Z: BUY NO on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.065Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.066Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.067Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.068Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.070Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:39:56.071Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.525Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.526Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.528Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.530Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.531Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.533Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.534Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.535Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.536Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.538Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:44:10.539Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.835Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.861Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.925Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.963Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.965Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.965Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.967Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.971Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.973Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.974Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:46:44.975Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.712Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.737Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.812Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.844Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.864Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.876Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.879Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.880Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.883Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.893Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:49:44.897Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:53:02.961Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:02.962Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.006Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T18:53:03.062Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 2.88%
+
+2025-12-26T18:53:03.097Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.098Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.099Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.099Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.100Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.101Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:53:03.102Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.25%
+
+2025-12-26T18:56:08.340Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.341Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.391Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.446Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.448Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.448Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.449Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.450Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.451Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.452Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T18:56:08.491Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.189Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.190Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.205Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 300.00%
+
+2025-12-26T19:02:53.260Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 300.00%
+
+2025-12-26T19:02:53.284Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 300.00%
+
+2025-12-26T19:02:53.287Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.288Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.289Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.291Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:02:53.292Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 300.00%
+
+2025-12-26T19:02:53.312Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 300.00%
+
+2025-12-26T19:05:32.856Z: NO_TRADE on Russia x Ukraine ceasefire in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:05:32.857Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:05:32.858Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T19:05:32.860Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T19:05:32.861Z: BUY YES on Ukraine agrees not to join NATO in 2025?  - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T19:05:32.862Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:05:32.863Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:05:32.864Z: NO_TRADE on Will the Tampa Bay Buccaneers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:05:32.865Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-26T19:05:32.866Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-26T19:05:32.870Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
+

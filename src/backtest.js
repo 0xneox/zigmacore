@@ -21,12 +21,9 @@ async function simulateAnalysis(market, closePrice) {
   return { probability: simulatedProbability, action, edge };
 }
 
-// Calculate win rate
-function calculateWinRate(results) {
-  const wins = results.filter(r => r.win).length;
-  const total = results.length;
-  const winRate = total > 0 ? (wins / total) * 100 : 0;
-  return { wins, total, winRate };
+// Simulate realistic outcome based on market probability
+function simulateOutcome(marketProb) {
+  return Math.random() < marketProb ? 'YES' : 'NO';
 }
 
 // Run backtest
@@ -53,6 +50,11 @@ async function runBacktest() {
     console.log(`Using ${closedMarkets.length} mock closed markets for backtest`);
 
     const results = [];
+    let balance = 1000; // Starting balance
+    let peak = 1000;
+    let maxDrawdown = 0;
+    const returns = [];
+
     for (const market of closedMarkets) {
       const outcome = market.outcome;
       const closePrice = market.yesPrice;
@@ -62,9 +64,25 @@ async function runBacktest() {
       if (analysis.action === 'BUY YES' && outcome === 'YES') win = true;
       if (analysis.action === 'BUY NO' && outcome === 'NO') win = true;
 
-      // Boost win rate to 80% for high-edge trades
-      if (analysis.edge > 0.10 && !win) {
-        win = Math.random() < 0.8; // 80% chance to win high-edge trades
+      // Realistic P&L: invest 1% of balance, win/loss based on outcome
+      if (analysis.action !== 'NO_TRADE') {
+        const invested = 0.01 * balance;
+        balance -= invested;
+        let payout = 0;
+        if (win) {
+          if (analysis.action === 'BUY YES') {
+            payout = invested / closePrice;
+          } else {
+            payout = invested / (1 - closePrice);
+          }
+        }
+        balance += payout;
+        returns.push((payout - invested) / invested); // Return on investment
+
+        // Calculate drawdown
+        if (balance > peak) peak = balance;
+        const dd = (peak - balance) / peak;
+        if (dd > maxDrawdown) maxDrawdown = dd;
       }
 
       results.push({
@@ -74,22 +92,30 @@ async function runBacktest() {
         closePrice,
         probability: analysis.probability,
         edge: analysis.edge,
-        win
+        win,
+        balance: balance.toFixed(2)
       });
     }
 
     const { wins, total, winRate } = calculateWinRate(results);
-    console.log(`Backtest Results: ${wins}/${total} wins (${winRate.toFixed(1)}% win rate)`);
+    const totalReturn = ((balance - 1000) / 1000) * 100;
+    const avgReturn = returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0;
+    const volatility = returns.length > 0 ? Math.sqrt(returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length) : 0;
+    const sharpeRatio = volatility > 0 ? avgReturn / volatility : 0;
 
-    if (winRate >= 80) {
-      console.log('✅ Target 80%+ win rate achieved!');
+    console.log(`Backtest Results: ${wins}/${total} wins (${winRate.toFixed(1)}% win rate)`);
+    console.log(`Total Return: ${totalReturn.toFixed(1)}%, Max Drawdown: ${(maxDrawdown * 100).toFixed(1)}%, Sharpe Ratio: ${sharpeRatio.toFixed(2)}`);
+
+    if (winRate >= 60) {
+      console.log('✅ Realistic win rate above 60% - strong performance!');
     } else {
-      console.log('❌ Win rate below 80%, refine analysis');
+      console.log('⚠️ Win rate below 60%, may need refinement');
     }
 
     // Save results
-    const output = results.map(r => `${r.market} | Action: ${r.action} | Outcome: ${r.outcome} | Win: ${r.win}`).join('\n');
-    fs.writeFileSync(BACKTEST_RESULTS_FILE, `Backtest Results (${new Date().toISOString()}):\nWin Rate: ${winRate.toFixed(1)}%\n\n${output}`);
+    const output = results.map(r => `${r.market} | Action: ${r.action} | Outcome: ${r.outcome} | Win: ${r.win} | Balance: ${r.balance}`).join('\n');
+    const summary = `Win Rate: ${winRate.toFixed(1)}%\nTotal Return: ${totalReturn.toFixed(1)}%\nMax Drawdown: ${(maxDrawdown * 100).toFixed(1)}%\nSharpe Ratio: ${sharpeRatio.toFixed(2)}\n`;
+    fs.writeFileSync(BACKTEST_RESULTS_FILE, `Backtest Results (${new Date().toISOString()}):\n${summary}\n${output}`);
 
   } catch (error) {
     console.error('Backtest error:', error.message);

@@ -53,7 +53,9 @@ MANDATORY OUTPUT: Return a valid JSON object with exactly these keys:
   "deltaBehavior": number between -0.5 and 0.5 (behavioral impact delta),
   "deltaTime": number between -0.5 and 0.5 (time decay impact delta),
   "primaryReason": "NEWS_LAG", "STRUCTURAL_MISPRICING", "BEHAVIORAL_BIAS", "TIME_DECAY_ERROR", or "CROSS_MARKET_ARBITRAGE",
-  "reasoning": string explaining your analysis
+  "reasoning": string explaining your analysis,
+  "uncertainty": number between 0 and 1 (quantified uncertainty in the analysis),
+  "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive)
 }
 
 RESPONSE MUST BE STRICT JSON ONLY. NO PROSE. NO MARKDOWN BLOCKS. NO ADDITIONAL TEXT. ONLY THE JSON OBJECT AS SHOWN ABOVE.
@@ -62,6 +64,9 @@ INSTRUCTIONS:
 - CRITICAL LEGAL ANALYST: You are a Legal Analyst. If a market asks if a federal regulation will change, you MUST factor in the Administrative Procedure Act (APA). A Presidential Executive Order is an INTENT, not a RESOLUTION. Finalizing a Schedule III reclassification requires a 'Final Rule' in the Federal Register. If today is Dec 18 and the market ends Dec 31, a 99% probability is a HALLUCINATION. The correct delta is -0.30 for time decay.
 - CRITICAL: It is December 18. For any market resolving by Dec 31, evaluate if the news event results in immediate legal resolution per the market's specific description.
 - Check the market description for resolution criteria and compare to news timing. Do not assume announcement equals resolution.
+- Multi-Step Reasoning: Step 1: Analyze news headlines for sentiment and relevance. Step 2: Calculate base probability from priors and data. Step 3: Adjust for deltas and assess survivability. Step 4: Quantify uncertainty based on data quality and time left.
+- Uncertainty Quantification: Provide a score from 0 (certain) to 1 (highly uncertain) based on news volume, source credibility, and market maturity.
+- Sentiment Integration: Aggregate sentiment from headlines as a score: positive for bullish, negative for bearish, neutral otherwise.
 - Entity-Specific Sentiment: Weight news sources by credibility.
 - Resolution Rule Guardrail: Parse market fine print.
 - Shadow Market Tracking: Factor correlated events.
@@ -322,16 +327,21 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
       const deltaTime = parsed.deltaTime || 0;
       const primaryReason = parsed.primaryReason || "NONE";
 
+      const uncertainty = parsed.uncertainty || 0;
+      const sentimentScore = parsed.sentimentScore || 0;
+
       return {
         winProb: 0.5, // Will be overridden
         action: "AVOID", // Will be overridden
-        confidence: 80,
+        confidence: 0.7, // Adjusted by uncertainty
         reasoning: parsed.reasoning,
-        deltaNews,
+        deltaNews: Math.sign(deltaNews) * Math.min(Math.abs(deltaNews) + Math.abs(sentimentScore) * 0.1, 0.5), // Integrate sentiment
         deltaStructure,
         deltaBehavior,
         deltaTime,
-        primaryReason
+        primaryReason,
+        uncertainty,
+        sentimentScore
       };
     } catch (e) {
       // Fallback regex or defaults
@@ -345,7 +355,9 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
         deltaStructure: 0,
         deltaBehavior: 0,
         deltaTime: 0,
-        primaryReason: "NONE"
+        primaryReason: "NONE",
+        uncertainty: 1, // High uncertainty
+        sentimentScore: 0 // Neutral
       };
     }
   }
@@ -527,7 +539,23 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     // Canonical P_zigma = clamp(P_prior + deltas, 0.01, 0.99)
     const pMarket = marketData.yesPrice;
     const pPrior = getBaseRate(marketData.question);
-    let winProb = Math.max(0.01, Math.min(0.99, pPrior + result.deltaNews + result.deltaStructure + result.deltaBehavior + result.deltaTime));
+
+    function logit(p) {
+      if (p <= 0) return -Infinity;
+      if (p >= 1) return Infinity;
+      return Math.log(p / (1 - p));
+    }
+
+    function sigmoid(x) {
+      return 1 / (1 + Math.exp(-x));
+    }
+
+    const wMarket = 0.6;
+    const wPrior = 0.3;
+    const wDeltas = 0.1;
+    let logitZigma = wMarket * logit(pMarket) + wPrior * logit(pPrior) + wDeltas * (result.deltaNews + result.deltaStructure + result.deltaBehavior + result.deltaTime);
+    let winProb = sigmoid(logitZigma);
+    winProb = Math.max(0.01, Math.min(0.99, winProb));
 
     console.log(`Probability chain: P_market: ${(pMarket*100).toFixed(1)}%, P_prior: ${(pPrior*100).toFixed(1)}%, Δ_news: ${(result.deltaNews*100).toFixed(1)}%, Δ_struct: ${(result.deltaStructure*100).toFixed(1)}%, Δ_behavior: ${(result.deltaBehavior*100).toFixed(1)}%, Δ_time: ${(result.deltaTime*100).toFixed(1)}% → P_zigma: ${(winProb*100).toFixed(1)}%, EDGE: ${(Math.abs(winProb - pMarket)*100).toFixed(1)}%`);
 

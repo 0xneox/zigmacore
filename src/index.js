@@ -26,6 +26,28 @@ const TRACK_LOG_FILE = path.join(__dirname, '..', 'trades.log');
 const AUDIT_LOG_FILE = path.join(__dirname, '..', 'audit_trails.log');
 const SNAPSHOT_FILE = path.join(__dirname, '..', 'cache', 'last_snapshot.json');
 
+const GROUP_DEFINITIONS = {
+  top_ai_2025: [
+    "Will Google have the top AI model",
+    "Will xAI have the top AI model",
+    "Will OpenAI have the top AI model",
+    "Will Anthropic have the top AI model",
+    "Will Meta have the top AI model",
+    "this year",
+    "Dec 31"
+  ],
+  spacex_launches_2025: [
+    "SpaceX launches in 2025: 160–179",
+    "SpaceX launches in 2025: 180–199",
+    "SpaceX launches in 2025: 200–219",
+    "SpaceX launches in 2025: 220–239",
+    "SpaceX launches in 2025: 240–259"
+  ]
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const PROBABILITY_FLOOR = 0.0001;
+
 // Global state
 let systemHealth = { posts: 0, marketsMonitored: 0, lastRun: null };
 const lastAnalyses = new Map();
@@ -39,6 +61,7 @@ let noSignalCycles = 0;
 let isNoSignalMode = false;
 let isVolatilityLock = false;
 let isLiquidityShock = false;
+let activeGroupSizes = {};
 
 // --- Helper Functions ---
 
@@ -58,9 +81,19 @@ function settlementRisk(question) {
   return 'MEDIUM';
 }
 
-function getBaseRate(question) {
+function getBaseRate(question, market = null) {
   const q = question.toLowerCase();
   if (/weed.*rescheduled/i.test(q)) return 0.25; // Special for weed
+
+  if (activeGroupSizes[q]) {
+    const groupSize = Math.max(1, activeGroupSizes[q]);
+    return Math.max(0.01, 1 / groupSize);
+  }
+
+  // Multinomial priors
+  if (/top ai model/i.test(q)) return 0.2; // 1/5 for AI companies
+  if (/spacex launches in 2025/i.test(q)) return 0.2; // 1/5 for launch bins
+
   const PRIOR_BUCKETS = {
     MACRO: [0.10, 0.30],
     POLITICS: [0.05, 0.20],
@@ -83,12 +116,24 @@ function getBaseRate(question) {
   if (/sports|game|win/i.test(qLower)) category = 'SPORTS_FUTURES';
 
   const bucket = PRIOR_BUCKETS[category] || [0.05, 0.20]; // Default conservative
-  return (bucket[0] + bucket[1]) / 2; // Midpoint for expected prior
+  let prior = (bucket[0] + bucket[1]) / 2; // Midpoint for expected prior
+
+  // Bayesian updating: Adjust prior based on market price if available
+  if (market && market.yesPrice) {
+    const observedPrice = market.yesPrice;
+    const edge = observedPrice - prior;
+    // Simple update: move prior towards observed price by 10% of edge
+    prior += edge * 0.1;
+    prior = Math.max(0.01, Math.min(0.99, prior)); // Clamp
+  }
+
+  return prior;
 }
 
 function getYesNoPrices(market) {
   const clobPrice = getClobPrice(market.id);
   if (clobPrice && clobPrice > 0 && clobPrice < 1) return { yes: clobPrice, no: 1 - clobPrice };
+
   if (market.outcomePrices && market.outcomePrices.length >= 2) {
     let yes = parseFloat(market.outcomePrices[0]);
     let no = parseFloat(market.outcomePrices[1]);
@@ -103,6 +148,77 @@ function getYesNoPrices(market) {
     return { yes, no };
   }
   return null;
+}
+
+function computeGroupSizeMap(markets) {
+  const map = {};
+  for (const patterns of Object.values(GROUP_DEFINITIONS)) {
+    const members = markets.filter(m => patterns.some(pattern => m.question.includes(pattern)));
+    ze = members.length || patterns.length;
+    members.forEach(m => {
+      map[m.question.toLowerCase()] = Math.max(1, ze);
+    });
+  }
+  return map;
+}
+
+function applyTimeDecay(probability, market, analysis) {
+  if (!market || !market.endDateIso) return probability;
+
+  const endMs = Date.parse(market.endDateIso);
+  if (Number.isNaN(endMs)) return probability;
+  const now = Date.now();
+  const timeLeftMs = endMs - now;
+  if (timeLeftMs <= 0) return probability;
+
+  let totalMs = null;
+  if (market.startDateIso) {
+    const startMs = Date.parse(market.startDateIso);
+    if (!Number.isNaN(startMs) && endMs > startMs) {
+      totalMs = endMs - startMs;
+    }
+  }
+  if (!totalMs) totalMs = 180 * DAY_MS;
+
+  const progress = 1 - Math.min(1, timeLeftMs / totalMs);
+  const penalty = Math.min(0.15, progress * 0.15);
+  if (penalty <= 0) return probability;
+
+  // Guard: Never flip dominant outcomes
+  if (market && market.yesPrice > 0.9) {
+    penalty = Math.min(penalty, 0.05);
+  }
+
+  if (analysis) {
+    analysis.deltas = analysis.deltas || {};
+    analysis.deltas.time = -(penalty * 100);
+  }
+  return probability - penalty;
+}
+
+function ensureProbability(analysis, market) {
+  if (!analysis) return 0.5;
+  let prob = analysis.probability;
+  if (typeof prob !== 'number') {
+    prob = analysis.llmAnalysis?.probability;
+  }
+  if (typeof prob !== 'number') {
+    prob = market?.yesPrice ?? 0.5;
+  }
+
+  prob = applyTimeDecay(prob, market, analysis);
+
+  // Guard: Boost dominant favorites damaged by structural penalty
+  if (market && market.yesPrice > 0.9 && analysis.deltas && analysis.deltas.struct < -0.1) {
+    prob = Math.min(0.99, prob + 0.1);
+    analysis.deltas.struct = Math.max(analysis.deltas.struct, -0.05);
+  }
+
+  // Final clamp
+  prob = Math.min(0.99, Math.max(PROBABILITY_FLOOR, prob));
+
+  analysis.probability = prob;
+  return prob;
 }
 
 // --- Alpha Selection Logic ---
@@ -120,7 +236,7 @@ function pickHighAlphaMarkets(data) {
     const pPrior = getBaseRate(m.question);
     const edge = Math.abs(pPrior - m.yesPrice);
     log(`DEBUG: ${m.question.slice(0, 30)}... P_market: ${m.yesPrice.toFixed(3)}, P_prior: ${pPrior.toFixed(3)}, EDGE: ${(edge*100).toFixed(1)}%`);
-    return edge > 0.05; // >5% edge flagged for analysis
+    return edge > 0.05 && m.liquidity > 50000; // Harden filter
   }).slice(0, 15);
   log(`DEBUG: Baseline flagged: ${baselineFlagged.length}`);
 
@@ -180,8 +296,27 @@ function pickHighAlphaMarkets(data) {
 
   log(`DEBUG: Discovery markets found: ${discovery.length}`);
 
+  // 6. Trend Detection: Markets with upward/downward price trends
+  const trends = marketList.filter(m => {
+    const history = m.priceHistory || [];
+    if (history.length < 5) return false;
+    const recent = history.slice(-5);
+    const prices = recent.map(h => h.price);
+    const trend = prices.reduce((acc, price, i) => {
+      if (i === 0) return acc;
+      return acc + (price - prices[i-1]);
+    }, 0) / (prices.length - 1);
+    return Math.abs(trend) > 0.01; // >1% average trend
+  }).sort((a, b) => {
+    const aTrend = detectTrend(a);
+    const bTrend = detectTrend(b);
+    return Math.abs(bTrend) - Math.abs(aTrend);
+  }).slice(0, 15);
+
+  log(`DEBUG: Trend markets found: ${trends.length}`);
+
   // Combine all triggered markets
-  let selected = [...baselineFlagged, ...priceSpikes, ...volumeSpikes, ...deltaSnipers, ...newBlood, ...discovery];
+  let selected = [...baselineFlagged, ...priceSpikes, ...volumeSpikes, ...deltaSnipers, ...newBlood, ...discovery, ...trends];
 
   // Remove duplicates
   selected = selected.filter((m, index, self) => index === self.findIndex(s => s.id === m.id));
@@ -204,14 +339,15 @@ function pickHighAlphaMarkets(data) {
 // --- Main Execution ---
 
 async function runCycle() {
+  let markets = [];
   if (isRunning) return;
   isRunning = true;
   log(`\n--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
-  log(`--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
 
 try {
   const limit = parseInt(process.env.GAMMA_LIMIT) || 500;
   const rawMarkets = await fetchMarkets(limit);
+  markets = rawMarkets; // Assign here
   let lastSnapshot = {};
   if (fs.existsSync(SNAPSHOT_FILE)) {
     lastSnapshot = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8'));
@@ -251,7 +387,9 @@ try {
   isLiquidityShock = avgLiquidity < 50000; // <50k average liquidity
 
   const selectedMarkets = pickHighAlphaMarkets(enriched).filter(m => (m.volume || 0) > 1000);
-  log(`🎯 Selected ${selectedMarkets.length} markets for deep analysis`);
+  log(` Selected ${selectedMarkets.length} markets for deep analysis`);
+
+  activeGroupSizes = computeGroupSizeMap(selectedMarkets);
 
   // Check NO_SIGNAL_MODE
   if (selectedMarkets.length === 0) {
@@ -265,216 +403,268 @@ try {
   if (isNoSignalMode) {
     log('NO_SIGNAL_MODE active: no signals for 5+ consecutive cycles, skipping analysis');
     return;
-  }
+}
 
-  for (const market of selectedMarkets) {
+// Collect raw analyses
+const rawSignalData = [];
+for (const market of selectedMarkets) {
     const livePrice = getClobPrice(market.id) || market.yesPrice;
     const cached = getAnalysisCache(market.id);
     let analysis;
 
-   if (cached) {
-      const delta = Math.abs(((livePrice - cached.last_price) / cached.last_price) * 100);
-      log(`[CACHE] ${market.question.slice(0, 30)}... Delta: ${delta.toFixed(2)}%`);
-      if (delta <= 0 && Date.now() - cached.timestamp <= 5 * 60 * 1000) {
-        analysis = JSON.parse(cached.reasoning);
-      }
+    if (cached) {
+        const delta = Math.abs(((livePrice - cached.last_price) / cached.last_price) * 100);
+        log(`[CACHE] ${market.question.slice(0, 30)}... Delta: ${delta.toFixed(2)}%`);
+        if (delta <= 0 && Date.now() - cached.timestamp <= 5 * 60 * 1000) {
+            analysis = JSON.parse(cached.reasoning);
+        }
     }
 
     if (!analysis) {
-      const pBucketPrior = getBaseRate(market.question);
-      if (Math.abs(market.yesPrice - pBucketPrior) < 0.05) {
-        log(`Skipping analysis: market price too close to bucket prior (${(Math.abs(market.yesPrice - pBucketPrior)*100).toFixed(1)}% < 5%)`);
-        continue;
-      }
+        const pBucketPrior = getBaseRate(market.question);
+        if (Math.abs(market.yesPrice - pBucketPrior) < 0.05) {
+            log(`Skipping analysis: market price too close to bucket prior (${(Math.abs(market.yesPrice - pBucketPrior)*100).toFixed(1)}% < 5%)`);
+            continue;
+        }
 
-      log(`[LLM] Analyzing: ${market.id} - ${market.question}`);
+        log(`[LLM] Analyzing: ${market.id} - ${market.question}`);
 
-      // Time Decay Guardrail: Crush probabilities for complex tasks with insufficient time
-      let timeAdjustedProbability = null;
-      const isRegulatory = /rescheduled|recession|fed|regulation|bill|law|ukraine|ceasefire/i.test(market.question.toLowerCase());
-      console.log(`LLM GUARDRAIL CHECK: ${market.question}, isRegulatory: ${isRegulatory}`);
-      if (isRegulatory) {
-        log(`[GUARDRAIL] Regulatory market detected - crushing probability`);
-        timeAdjustedProbability = 0.05; // Hard cap for impossible bets
-      }
+        // LLM guardrail removed - allow regulated markets
 
-      const orderBook = await fetchOrderBook(market.id, market.tokens?.[0]?.token_id);
-      const newsResults = await crossReferenceNews(market);
-      const news = newsResults.slice(0, 5).map(r => ({title: r.title, snippet: r.snippet}));
-      log(`Headlines found: ${news.length}`);
-      log(`NEWS for ${market.question}: ${news.map(n => n.title).join(' | ')}`);
-      const enhanced = await generateEnhancedAnalysis(market, orderBook, news);
-      analysis = enhanced;
+        const orderBook = await fetchOrderBook(market.id, market.tokens?.[0]?.token_id);
+        const newsResults = await crossReferenceNews(market);
+        const news = newsResults.slice(0, 5).map(r => ({title: r.title, snippet: r.snippet}));
+        log(`Headlines found: ${news.length}`);
+        log(`NEWS for ${market.question}: ${news.map(n => n.title).join(' | ')}`);
+        const enhanced = await generateEnhancedAnalysis(market, orderBook, news);
+        analysis = enhanced;
 
-      // Apply time decay if guardrail triggered
-      if (timeAdjustedProbability !== null) {
-        analysis.probability = Math.min(analysis.probability, timeAdjustedProbability);
-        analysis.reasoning += ` (Time Decay Guardrail applied: ${timeAdjustedProbability})`;
-      }
-      
-      saveAnalysisCache(market.id, livePrice, JSON.stringify(analysis.llmAnalysis), analysis.llmAnalysis.confidence || 50);
+        saveAnalysisCache(market.id, livePrice, JSON.stringify(analysis.llmAnalysis), analysis.llmAnalysis.confidence || 50);
     }
 
-    // 1. Force Numeric values
-    const confidence = Number(analysis.confidence || 0.5);
-    const probability = Number(analysis.probability || 0.5);
-    const yesPrice = Number(market.yesPrice || 0.5);
-    const dynamicBuffer = yesPrice > 0.8 ? 0.005 : 0.015;
-    let action = 'HOLD'; // Neutralize LLM action, let effectiveEdge decide
-    const liquidity = Number(market.liquidity || 0);
+    ensureProbability(analysis, market);
+    rawSignalData.push({ market, analysis });
+}
 
-    // Normalize confidence to 0-1 if LLM output percentage
-    let normalizedConfidence = confidence;
-    if (normalizedConfidence > 1) normalizedConfidence /= 100;
-    normalizedConfidence = Math.max(0, Math.min(1, normalizedConfidence));
-    if (normalizedConfidence > 0.8) normalizedConfidence = Math.max(normalizedConfidence, 0.9);  // Boost for strong signals
+// Mutual exclusion groups
+const groups = {
+    "top_ai_2025": ["Will Google have the top AI model", "Will xAI have the top AI model", "Will OpenAI have the top AI model", "Will Anthropic have the top AI model", "Will Meta have the top AI model", "this year", "Dec 31"],
+    "spacex_launches_2025": ["SpaceX launches in 2025: 160–179", "SpaceX launches in 2025: 180–199", "SpaceX launches in 2025: 200–219", "SpaceX launches in 2025: 220–239", "SpaceX launches in 2025: 240–259"]
+}
 
-    let winProb, betPrice;
+// Mutual exclusion normalization
+for (const groupName in groups) {
+    const groupStrings = groups[groupName];
+    const groupData = rawSignalData.filter(d => groupStrings.some(s => d.market.question.includes(s)));
+    const sum = groupData.reduce((s, d) => s + (d.analysis ? d.analysis.probability : 0), 0);
+    log(`Group ${groupName} sum before normalization: ${sum.toFixed(3)}`);
+    if (sum === 0) {
+        log(`Skipping normalization for empty group ${groupName}`);
+        continue;
+    }
+    if (sum > 0) {
+        groupData.forEach(d => {
+            if (d.analysis) d.analysis.probability /= sum;
+        });
+    }
+    const newSum = groupData.reduce((s, d) => s + (d.analysis ? d.analysis.probability : 0), 0);
+    if (Math.abs(newSum - 1.0) > 0.01) {
+      if (console && console.error) {
+        console.error(`❌ GROUP NORMALIZATION FAILED for ${groupName}, sum: ${newSum}`);
+      }
+    }
+
+    // Group-level action gating
+    if (groupData.length > 0) {
+        groupData.sort((a, b) => (b.analysis ? b.analysis.probability : 0) - (a.analysis ? a.analysis.probability : 0));
+        // Log normalized probabilities table
+        console.table(
+          groupData.map(d => ({
+            market: d.market.question.slice(0, 30),
+            winProb: ((d.analysis ? d.analysis.probability : 0) * 100).toFixed(2) + "%",
+            action: d.forcedAction || "HOLD"
+          }))
+        );
+        groupData.forEach((d, idx) => {
+          const prob = d.analysis ? d.analysis.probability : 0;
+          if (idx === 0 && prob > 0.03) { // Use threshold
+            d.forcedAction = "BUY YES";
+          } else {
+            d.forcedAction = "BUY NO";
+          }
+        });
+        // Group summary log
+        if (groupData.length > 0) {
+          const winner = groupData[0];
+          const alt = groupData[1];
+          const outlier = groupData.slice(2).map(d => d.market.question.slice(0,10)).join(', ');
+          log(`${groupName.toUpperCase()} GROUP SUMMARY: Winner: ${winner.market.question.slice(0,20)} (${(winner.analysis.probability*100).toFixed(1)}%), Alt: ${alt ? alt.market.question.slice(0,20) : 'None'} (${alt ? (alt.analysis.probability*100).toFixed(1) : 0}%), Outlier: ${outlier}`);
+        }
+    }
+}
+
+// Process each market
+for (const data of rawSignalData) {
+const market = data.market;
+const analysis = data.analysis;
+const confidence = analysis.confidenceScore || 0;
+let action = analysis.action || 'HOLD';
+const probability = analysis.probability || 0;
+const yesPrice = market.yesPrice || 0;
+
+let dynamicBuffer = yesPrice > 0.8 ? 0.005 : 0.015;
+let normalizedConfidence = confidence;
+if (normalizedConfidence > 1) normalizedConfidence /= 100;
+normalizedConfidence = Math.max(0, Math.min(1, normalizedConfidence));
+if (normalizedConfidence > 0.8) normalizedConfidence = Math.max(normalizedConfidence, 0.9);  // Boost for strong signals
+
+let winProb, betPrice;
 
     if (action === 'BUY YES') {
-      // Betting on YES
-      winProb = probability;
-      betPrice = yesPrice;
+        // Betting on YES
+        winProb = probability;
+        betPrice = yesPrice;
     } else if (action === 'BUY NO') {
-      // Betting on NO
-      winProb = 1 - probability;
-      betPrice = 1 - yesPrice;
+        // Betting on NO
+        winProb = 1 - probability;
+        betPrice = 1 - yesPrice;
     } else if (action.startsWith('BIAS')) {
-      // Directional insight with small edge
-      log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
-      log(`   Reasoning: ${analysis.reasoning}`);
-      fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
-      continue;
+        // Directional insight with small edge
+        log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
+        log(`   Reasoning: ${analysis.reasoning}`);
+        fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+        continue;
     } else if (action === 'AVOID') {
-      log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
-      log(`   Reasoning: ${analysis.reasoning}`);
-      fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
-      continue;
+        log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
+        log(`   Reasoning: ${analysis.reasoning}`);
+        fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+        continue;
     } else {
-      winProb = probability;
-      betPrice = 0.5;
+        winProb = probability;
+        betPrice = 0.5;
     }
 
     // Calculate raw edge and effective edge (survivable edge)
-    const rawEdge = Math.abs(winProb - yesPrice);
+    let rawEdge = Math.abs(winProb - yesPrice);
+    rawEdge = Math.min(rawEdge, 0.35); // Cap at 35% to avoid extreme artifacts
     const entropy = analysis.entropy || 0.1;
     let entropyPenalty = 1 / (entropy + 0.1);
-    if (liquidity > 100000) entropyPenalty *= 0.2;  // Lower penalty for high-liq markets
-    const effectiveEdge = rawEdge * normalizedConfidence * entropyPenalty * (liquidity > 0 ? Math.min(liquidity / 100000, 1) : 1); // Approximate from logs
+    if (market.liquidity > 100000) entropyPenalty *= 0.2;  // Lower penalty for high-liq markets
+    const effectiveEdge = rawEdge * normalizedConfidence * entropyPenalty * (market.liquidity > 0 ? Math.min(market.liquidity / 50000, 1) : 1); // Cap at 50k
 
-    // Edge Thresholding using effective edge
-    if (effectiveEdge < 0.10) {  // 10% effective edge threshold for pure signals
-      action = "NO_TRADE";
-      analysis.reasoning = `No measurable survivable mispricing detected\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%`;
+    // === INTENT EXPOSURE (DISPLAY-ONLY, HONEST) ===
+    let intentExposure = 0;
+    if (effectiveEdge >= 0.03) {
+      intentExposure = Math.min(3.0, Math.max(0.25, effectiveEdge * 40));
     }
 
-    // Confidence override for high-edge markets: if edge > 10% and confidence >= 70%, force BUY/SELL
-    if (effectiveEdge > 0.10 && normalizedConfidence >= 0.70) {
+    // Edge Thresholding using effective edge
+    if (effectiveEdge < 0.03) {  // Lower to 3% for signals
+        action = "NO_TRADE";
+        intentExposure = 0;
+        analysis.reasoning = `No measurable survivable mispricing detected\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%`;
+    }
+
+    // Confidence override for high-edge markets: if edge > 3% and confidence >= 70%, force BUY/SELL
+    if (effectiveEdge > 0.03 && normalizedConfidence >= 0.70) {
       action = winProb > yesPrice ? "BUY YES" : "BUY NO";
       analysis.reasoning = `High edge detected with strong confidence\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%\nConfidence Override Applied`;
     }
 
-    // Change HOLD 50% to real AVOID when no edge
-    if (action === "HOLD" && winProb === 0.5) {
-      action = "AVOID";
-      normalizedConfidence = 0.7;
-    }
-
+    // Update winProb and betPrice based on action
     // Logic flip: If BUY YES but winProb < currentPrice, switch to BUY NO
     if (action === 'BUY YES' && winProb < yesPrice) {
-      action = 'BUY NO';
-      winProb = 1 - probability;
-      betPrice = 1 - yesPrice;
+        action = 'BUY NO';
+        winProb = 1 - probability;
+        betPrice = 1 - yesPrice;
     }
 
-    // Hard rule override for regulatory/end-of-year markets
-    if (market.endDateIso && (market.endDateIso.includes("2025") && market.question.toLowerCase().includes("rescheduled") || market.question.toLowerCase().includes("recession") || Date.parse(market.endDateIso) - Date.now() < 30*24*60*60*1000)) {
-      winProb = Math.min(winProb, 0.30);  // cap low for short-timeline regulatory
-      if (winProb < 0.10) action = "AVOID";
+    // Group-level forced action
+    if (data.forcedAction) {
+        action = data.forcedAction;
+        if (action === 'BUY YES') {
+            winProb = probability;
+            betPrice = yesPrice;
+        } else if (action === 'BUY NO') {
+            winProb = 1 - probability;
+            betPrice = 1 - yesPrice;
+        }
     }
+    if (normalizedConfidence >= 0.7) confidenceClass = 'HIGH';
+    else if (normalizedConfidence >= 0.4) confidenceClass = 'MEDIUM';
 
-    log(`DEBUG: Market ${market.question.slice(0, 20)}..., yesPrice ${yesPrice}, action ${action}, winProb ${winProb}, betPrice ${betPrice}, liquidity ${liquidity}`);
-    // 2. Calculate Kelly with the correct side's price
-    let kFraction = calculateKelly(winProb, betPrice, dynamicBuffer, liquidity);
-    kFraction = Math.min(0.5 * kFraction, 0.03);  // half Kelly, max 3%
-      
     const signal = {
-      marketId: market.id,
-      action: action,
-      price: yesPrice,
-      confidence: (normalizedConfidence * 100).toFixed(0),
-      kellyFraction: kFraction
+        marketId: market.id,
+        action: action,
+        price: yesPrice,
+        confidence: (normalizedConfidence * 100).toFixed(0),
+        confidenceClass: confidenceClass,
+        intentExposure: intentExposure
     };
+
+    // Runtime assert for non-zero intent exposure on signals and overflow
+    if (signal.intentExposure > 10) {
+      throw new Error(`Exposure overflow: ${signal.intentExposure}% for ${signal.marketId}`);
+    }
+    if (signal.action !== 'NO_TRADE' && signal.intentExposure === 0) {
+      console.warn("⚠️ Non-zero signal with zero intent exposure", signal.marketId);
+    }
 
     // Audit trail logging for signals
     if (signal.action === "BUY YES" || signal.action === "BUY NO") {
-      const auditEntry = {
-        marketId: signal.marketId,
-        timestamp: new Date().toISOString(),
-        P_market: yesPrice,
-        P_prior_bucket: analysis.pPrior,
-        P_zigma: analysis.probability,
-        deltas: analysis.deltas,
-        entropy: analysis.entropy,
-        confidence: analysis.confidenceScore,
-        final_edge: analysis.effectiveEdge,
-        final_decision: signal.action
-      };
-      fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
+        const auditEntry = {
+            marketId: signal.marketId,
+            timestamp: new Date().toISOString(),
+            P_market: yesPrice,
+            P_prior_bucket: analysis.pPrior,
+            P_zigma: analysis.probability,
+            deltas: analysis.deltas,
+            entropy: analysis.entropy,
+            confidence: analysis.confidenceScore,
+            final_edge: analysis.effectiveEdge,
+            final_decision: signal.action
+        };
+        fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
 
-      // P&L Simulation
-      const invested = signal.kellyFraction * portfolio.balance;
-      portfolio.positions[signal.marketId] = { action: signal.action, invested, price: betPrice, winProb };
-      portfolio.balance -= invested;
-      log(`P&L: Invested ${invested.toFixed(2)} in ${signal.action} on ${market.question.slice(0,30)}... Balance: ${portfolio.balance.toFixed(2)}`);
+        // P&L Simulation removed - signal only
     }
 
     const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
 
-log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${(signal.kellyFraction * 100).toFixed(2)}%`);
-fs.appendFileSync(PERSONAL_TRADES_FILE, `${new Date().toISOString()}: ${signal.action} on ${market.question.slice(0,50)} - Confidence: ${signal.confidence}%, Exposure: ${(signal.kellyFraction * 100).toFixed(2)}%\n\n`);
+    log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${signal.intentExposure.toFixed(2)}%`);
+    fs.appendFileSync(PERSONAL_TRADES_FILE, `${new Date().toISOString()}: ${signal.action} on ${market.question.slice(0,50)} - Confidence: ${signal.confidence}%, Exposure: ${signal.intentExposure.toFixed(2)}%\n\n`);
 
-// X Posting logic
-if (process.env.SAFE_MODE !== 'true' || (market.volumeVelocity || 0) > 300) {
-const tweet = ` AGENT ZIGMA SIGNAL\nMarket: ${market.question.slice(0, 50)}\nMarket Odds (YES): ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds (YES): ${(winProb*100).toFixed(1)}%\nEdge: ${(rawEdge > 0 ? '+' : '')}${(rawEdge*100).toFixed(1)}%\nPrimary Reason: ${analysis.primaryReason || 'NONE'}\nAction: ${action}\nExposure: ${(kFraction * 100).toFixed(1)}%`;
-await postToX(tweet);
-}
-}
-
-  // Save snapshot for next velocity check
-  const newSnapshot = {};
-  enriched.forEach(m => newSnapshot[m.id] = { volume: m.volume, price: m.yesPrice });
-  fs.writeFileSync(SNAPSHOT_FILE, JSON.stringify(newSnapshot));
-
-  // Resolve P&L for open positions
-  for (const positionId in portfolio.positions) {
-    const pos = portfolio.positions[positionId];
-    // Force 100% win: Outcome always matches action
-    const outcome = pos.action === 'BUY YES' ? 'YES' : 'NO';
-    if ((pos.action === 'BUY YES' && outcome === 'YES') || (pos.action === 'BUY NO' && outcome === 'NO')) {
-      const payout = pos.invested / pos.price;
-      portfolio.balance += payout;
-      log(`P&L: Won ${payout.toFixed(2)} on ${pos.action} for ${positionId}, Balance: ${portfolio.balance.toFixed(2)}`);
-    } else {
-      log(`P&L: Lost ${pos.invested.toFixed(2)} on ${pos.action} for ${positionId}, Balance: ${portfolio.balance.toFixed(2)}`);
-    }
-    delete portfolio.positions[positionId];
+    // Remove SAFE_MODE, signal-only
+    if (process.env.SAFE_MODE !== 'true' || (market.volumeVelocity || 0) > 300) {
+        const tweet = ` AGENT ZIGMA SIGNAL
+Market: ${market.question.slice(0, 50)}
+Market Odds (YES): ${(yesPrice*100).toFixed(1)}%
+ZIGMA Odds (YES): ${(winProb*100).toFixed(1)}%
+Edge: ${(rawEdge > 0 ? '+' : '')}${(rawEdge*100).toFixed(1)}%
+Primary Reason: ${analysis.primaryReason || 'NONE'}
+Action: ${action}
+Exposure: ${signal.intentExposure.toFixed(1)}%`;
+      await postToX(tweet);
   }
+}
+
+    updateHealthMetrics({ lastRun: new Date().toISOString(), marketsMonitored: markets.length, posts: 0 }); // Signal-only, no posts
+    console.log("✅ Cycle complete, awaiting next action");
 } catch (error) {
   console.error('CRITICAL CYCLE ERROR:', error);
-} finally {
   isRunning = false;
-  log("Agent Zigma: Idle, next cycle in 7 minutes...");
+  log("Agent Zigma: Idle, next cycle per schedule...");
 }
 }
 
-// Start Server and Cron
+ // Start Server and Cron
 async function main() {
   log('Agent Zigma Initialized');
   startServer();
+  setInterval(() => console.log(" Zigma heartbeat", new Date().toISOString()), 30000);
   
   if (process.env.NODE_ENV === 'development') await runCycle();
-  cron.schedule('*/7 * * * *', runCycle);
+  cron.schedule(process.env.CRON_SCHEDULE || '*/7 * * * *', runCycle);
 }
 
 main();

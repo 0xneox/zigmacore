@@ -157,6 +157,26 @@ npm run start  # Production cron (7min intervals)
 - **UX**: Terminal-style, CRT glitches, typewriter effects
 - **Deploy**: Static site (Netlify/Vercel)
 
+#### Console Features
+- Live signal feed with exposure calculations
+- Market monitoring dashboard
+- Bayesian probability displays
+- Audit trails and logging
+- Terminal-style UI (green/black theme)
+
+#### Console Tech Stack
+- **Frontend**: React + TypeScript
+- **Build Tool**: Vite
+- **UI Framework**: shadcn/ui + Tailwind CSS
+- **Styling**: Tailwind CSS with custom terminal theme
+- **Backend Integration**: Connects to Zigma Oracle API (Node.js/Express)
+
+#### Console Branding
+- **Tagline**: "Oracle, Not Opinion"
+- **Slogan**: "Defaults to NO_TRADE. Speaks Only When Edge Survives"
+- **Colors**: Black (#000000), Green (#00ff00), Yellow (#ffff00), Red (#ff0000)
+- **Tone**: Mysterious, data-driven, no hype
+
 ---
 
 ## 📊 Performance Metrics
