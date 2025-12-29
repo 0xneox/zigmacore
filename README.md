@@ -11,33 +11,6 @@
 - ✅ Resilience: Retries, timeouts, fallbacks on API failures
 - ✅ Social distribution via X (Twitter)
 - ✅ No hanging: Recursive bug fixed, fallbacks work
-
----
-
-## 📁 Project Structure
-
-```
-zigma-oracle/
-├── .env                    # API keys & config (GAMMA_LIMIT=500, LLM_PROVIDER=openai/xai)
-├── README.md              # This file
-├── package.json           # Node.js deps (axios, better-sqlite3, openai, twitter-api-v2, etc.)
-├── server.js              # Express API server (status, logs endpoints)
-├── src/
-│   ├── index.js           # Main cycle: Cron (7min), fetch, filter, analyze, signal, post
-│   ├── db.js              # SQLite: Price cache, alerts, analysis cache, signals
-│   ├── fetcher.js         # Polymarket Gamma API fetcher with retries
-│   ├── market_analysis.js # Algo analysis: Liquidity, volume, risk, recommendations
-│   ├── llm.js             # OpenAI/xAI Grok: Prompt building, API calls, deltas parsing
-│   ├── clob_price_cache.js # CLOB polling: Order books, mid prices
-│   ├── processor.js       # News cross-reference via Tavily
-│   └── utils/
-│       └── metrics.js     # Market metrics computation
-├── data/                  # SQLite DB files (auto-created)
-├── console_output.log     # Cycle logs
-├── audit_trails.log       # Signal audit logs
-└── personal_trades.txt    # Trade records
-```
-
 ---
 
 ## 🎯 Core Features
@@ -70,46 +43,6 @@ zigma-oracle/
 
 ---
 
-## 🚀 Setup & Usage
-
-### Prerequisites
-- Node.js >=18
-- API Keys: Polymarket Gamma, Tavily, OpenAI/xAI, X (Twitter)
-
-### Install
-```bash
-npm install
-```
-
-### Configure
-Edit `.env`:
-```
-GAMMA_API_URL=https://gamma-api.polymarket.com
-GAMMA_LIMIT=500
-TAVILY_API_KEY=...
-OPENAI_API_KEY=...  # Or XAI_API_KEY for Grok
-LLM_PROVIDER=openai  # or xai
-USE_MOCK_LLM=false
-X_API_KEY=...
-X_API_SECRET=...
-X_BEARER_TOKEN=...
-X_ACCESS_TOKEN=...
-X_ACCESS_SECRET=...
-SAFE_MODE=true  # Set false for live posts
-```
-
-### Run
-```bash
-npm run dev  # Single cycle test
-npm start    # Production cron (7min intervals)
-```
-
-### Monitor
-- Logs: Console output with cycle status
-- Health: Server runs on 3001 (logs show "Agent Zigma server running")
-
----
-
 ## 🛠 Technical Architecture
 
 ### Dependencies (from package.json)
@@ -120,38 +53,6 @@ npm start    # Production cron (7min intervals)
 - `dotenv`: Config
 - `node-cron`: Scheduling
 - `ws`: WebSockets (not used yet)
-
-### Key Files
-
-#### `src/index.js` (Main)
-- Cron: Every 7min cycle
-- Pipeline: Fetch → Filter → Select high-edge → LLM analyze → Generate signals → Post X
-- Concurrency: Locks prevent overlap
-- SAFE_MODE: Simulates posts/charges
-
-#### `src/fetcher.js`
-- Gamma API: Markets endpoint with limit/offset
-- Filters: !active, closed, expired, lowLiquidity
-- Retries: On fail
-
-#### `src/market_analysis.js`
-- Class MarketAnalyzer: Analyze liquidity/volume/risk
-- Kelly Criterion: Bet sizing
-- Recommendations: Based on market type (crypto/macro/etc.)
-
-#### `src/llm.js`
-- generateEnhancedAnalysis: Build prompt (market + orderBook + news) → LLM call → Parse JSON → Structured output
-- Fallback: On error, basic AVOID
-- Cache: MD5 hash for reproducibility
-
-#### `src/clob_price_cache.js`
-- Polling: Fetch order books every 3-5s
-- Cache: Mid prices, timestamps
-- Get cached prices for analysis
-
-#### `server.js`
-- Express server: /status and /logs endpoints
-- Sanitizes logs for UI consumption
 
 ---
 
@@ -174,6 +75,3 @@ npm start    # Production cron (7min intervals)
 
 ---
 
-## 🎯 Launch Status
-
-**V1 Ready**: Core functional, tested via logs. Premium via subscriptions (future). Organic launch viable.
