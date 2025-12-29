@@ -1292,3 +1292,197 @@
 
 2025-12-26T19:05:32.870Z: BUY YES on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
 
+2025-12-29T07:39:32.142Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T07:39:32.143Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T07:39:32.145Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T07:39:32.150Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T07:39:32.157Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T07:39:32.160Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T07:39:32.167Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T07:39:32.171Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.33%
+
+2025-12-29T07:39:32.173Z: NO_TRADE on Will the Pittsburgh Steelers win the AFC North? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:43:17.328Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:43:17.332Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:43:17.336Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:43:17.338Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:43:17.438Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:43:17.442Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:43:17.449Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:43:17.456Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:43:17.474Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:43:17.480Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:43:17.482Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.37%
+
+2025-12-29T08:43:17.483Z: NO_TRADE on Will the Pittsburgh Steelers win the AFC North? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:53:25.267Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:53:25.271Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:53:25.273Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:53:25.275Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:53:25.277Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:53:25.278Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:53:25.280Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:53:25.282Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:53:25.283Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:53:25.286Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:53:25.290Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.37%
+
+2025-12-29T08:53:25.292Z: NO_TRADE on Will the Pittsburgh Steelers win the AFC North? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:54:20.257Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:54:20.259Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:54:20.261Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:54:20.263Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:54:20.266Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:54:20.269Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:54:20.271Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:54:20.274Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:54:20.275Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T08:54:20.277Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T08:54:20.282Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.37%
+
+2025-12-29T08:54:20.285Z: NO_TRADE on Will the Pittsburgh Steelers win the AFC North? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:00:50.418Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:00:50.420Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:00:50.422Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:00:50.423Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:00:50.424Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:00:50.426Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:00:50.428Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:00:50.429Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:00:50.431Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 1.24%
+
+2025-12-29T09:00:50.434Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:00:50.436Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:00:50.438Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.27%
+
+2025-12-29T09:03:19.186Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:03:19.188Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:03:19.189Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:03:19.190Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:03:19.191Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:03:19.193Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:03:19.194Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:03:19.196Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:03:19.197Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:03:19.199Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:03:19.200Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:03:19.202Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.27%
+
+2025-12-29T09:25:06.034Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.037Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:25:06.040Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:25:06.043Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.046Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.049Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.051Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.054Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.064Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:25:06.068Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:25:06.072Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:25:06.081Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:25:06.086Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:25:06.089Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.14%
+
+2025-12-29T09:47:09.242Z: NO_TRADE on Maduro out in 2025? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.247Z: BUY YES on Will Google have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:47:09.251Z: BUY NO on Will xAI have the top AI model on December 31? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:47:09.253Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.255Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.257Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.261Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.263Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.268Z: BUY YES on Will the Panthers win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:47:09.271Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:47:09.272Z: NO_TRADE on Will the Eagles win the 2026 NFC Championship? - Confidence: 70%, Exposure: 0.00%
+
+2025-12-29T09:47:09.318Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:47:09.388Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 70%, Exposure: 3.00%
+
+2025-12-29T09:47:09.392Z: BUY NO on Will the Baltimore Ravens win the AFC North? - Confidence: 70%, Exposure: 2.04%
+

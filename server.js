@@ -99,7 +99,7 @@ app.get('/logs', (req, res) => {
         if (line.toLowerCase().includes('error') && line.toLowerCase().includes('internal')) return false;
 
         // Remove debug details and calculation logs
-        if (line.includes('DEBUG:')) return false;
+        // if (line.includes('DEBUG:')) return false; // Temporarily allow for UI parsing
         if (line.includes('Using cached LLM response')) return false;
         if (line.includes('Probability chain:')) return false;
         // if (line.includes('Effective Edge:')) return false; // Allow for UI parsing
@@ -115,11 +115,10 @@ app.get('/logs', (req, res) => {
         if (line.includes('📊 After sanity filter:')) return false;
         if (line.includes('💰')) return false;
         if (line.includes('[CACHE]')) return false;
-        if (line.includes('[LLM] Analyzing:')) return false;
+        // if (line.includes('[LLM] Analyzing:')) return false; // Allow for UI parsing
 
         return true;
       })
-      .slice(-50) // Show last 50 lines of essential info
       .join('\n');
 
     res.json({ logs: sanitizedLogs });

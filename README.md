@@ -17,21 +17,25 @@
 ## 📁 Project Structure
 
 ```
-oracle-of-poly/ (Backend)
+zigma-oracle/
 ├── .env                    # API keys & config (GAMMA_LIMIT=500, LLM_PROVIDER=openai/xai)
 ├── README.md              # This file
 ├── package.json           # Node.js deps (axios, better-sqlite3, openai, twitter-api-v2, etc.)
+├── server.js              # Express API server (status, logs endpoints)
 ├── src/
 │   ├── index.js           # Main cycle: Cron (7min), fetch, filter, analyze, signal, post
 │   ├── db.js              # SQLite: Price cache, alerts, analysis cache, signals
 │   ├── fetcher.js         # Polymarket Gamma API fetcher with retries
 │   ├── market_analysis.js # Algo analysis: Liquidity, volume, risk, recommendations
 │   ├── llm.js             # OpenAI/xAI Grok: Prompt building, API calls, deltas parsing
-│   └── clob_price_cache.js # CLOB polling: Order books, mid prices
-└── zigma-oracle-console/ (UI)
-    ├── src/               # React app (Hero, OracleLogic, SignalPhilosophy, etc.)
-    ├── package.json       # Vite, Tailwind, shadcn/ui
-    └── index.html         # Landing page with terminal-style UX
+│   ├── clob_price_cache.js # CLOB polling: Order books, mid prices
+│   ├── processor.js       # News cross-reference via Tavily
+│   └── utils/
+│       └── metrics.js     # Market metrics computation
+├── data/                  # SQLite DB files (auto-created)
+├── console_output.log     # Cycle logs
+├── audit_trails.log       # Signal audit logs
+└── personal_trades.txt    # Trade records
 ```
 
 ---
@@ -97,13 +101,12 @@ SAFE_MODE=true  # Set false for live posts
 ### Run
 ```bash
 npm run dev  # Single cycle test
-npm run start  # Production cron (7min intervals)
+npm start    # Production cron (7min intervals)
 ```
 
 ### Monitor
 - Logs: Console output with cycle status
 - Health: Server runs on 3001 (logs show "Agent Zigma server running")
-- DB: data/ folder created auto
 
 ---
 
@@ -115,14 +118,14 @@ npm run start  # Production cron (7min intervals)
 - `openai`: LLM API
 - `twitter-api-v2`: X posting
 - `dotenv`: Config
-- `pino`: Logging (optional)
+- `node-cron`: Scheduling
 - `ws`: WebSockets (not used yet)
 
 ### Key Files
 
 #### `src/index.js` (Main)
 - Cron: Every 7min cycle
-- Pipeline: Fetch → Filter → Select 5 high-edge → LLM analyze → Generate signals → Post X
+- Pipeline: Fetch → Filter → Select high-edge → LLM analyze → Generate signals → Post X
 - Concurrency: Locks prevent overlap
 - SAFE_MODE: Simulates posts/charges
 
@@ -141,41 +144,14 @@ npm run start  # Production cron (7min intervals)
 - Fallback: On error, basic AVOID
 - Cache: MD5 hash for reproducibility
 
-#### `src/db.js`
-- Tables: price_cache, alert_subscriptions, analysis_cache, trade_signals
-- Functions: save/load caches, signals
-
 #### `src/clob_price_cache.js`
 - Polling: Fetch order books every 3-5s
 - Cache: Mid prices, timestamps
 - Get cached prices for analysis
 
-### UI (zigma-oracle-console)
-- **Framework**: React + Vite + TypeScript
-- **Styling**: Tailwind + shadcn/ui
-- **Pages**: Hero (boot sequence), OracleLogic, SignalPhilosophy, SampleSignal, Differentiators, TokenUtility, LogsDisplay, Footer
-- **UX**: Terminal-style, CRT glitches, typewriter effects
-- **Deploy**: Static site (Netlify/Vercel)
-
-#### Console Features
-- Live signal feed with exposure calculations
-- Market monitoring dashboard
-- Bayesian probability displays
-- Audit trails and logging
-- Terminal-style UI (green/black theme)
-
-#### Console Tech Stack
-- **Frontend**: React + TypeScript
-- **Build Tool**: Vite
-- **UI Framework**: shadcn/ui + Tailwind CSS
-- **Styling**: Tailwind CSS with custom terminal theme
-- **Backend Integration**: Connects to Zigma Oracle API (Node.js/Express)
-
-#### Console Branding
-- **Tagline**: "Oracle, Not Opinion"
-- **Slogan**: "Defaults to NO_TRADE. Speaks Only When Edge Survives"
-- **Colors**: Black (#000000), Green (#00ff00), Yellow (#ffff00), Red (#ff0000)
-- **Tone**: Mysterious, data-driven, no hype
+#### `server.js`
+- Express server: /status and /logs endpoints
+- Sanitizes logs for UI consumption
 
 ---
 
@@ -200,4 +176,4 @@ npm run start  # Production cron (7min intervals)
 
 ## 🎯 Launch Status
 
-**V1 Ready**: Core functional, tested via logs. Add UI for full UX. Premium via subscriptions (future). Organic launch viable.
+**V1 Ready**: Core functional, tested via logs. Premium via subscriptions (future). Organic launch viable.

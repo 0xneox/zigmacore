@@ -400,13 +400,10 @@ try {
     isNoSignalMode = false;
   }
 
-  if (isNoSignalMode) {
-    log('NO_SIGNAL_MODE active: no signals for 5+ consecutive cycles, skipping analysis');
-    return;
-}
 
 // Collect raw analyses
 const rawSignalData = [];
+let signalsGenerated = 0;
 for (const market of selectedMarkets) {
     const livePrice = getClobPrice(market.id) || market.yesPrice;
     const cached = getAnalysisCache(market.id);
@@ -593,6 +590,8 @@ let winProb, betPrice;
     if (normalizedConfidence >= 0.7) confidenceClass = 'HIGH';
     else if (normalizedConfidence >= 0.4) confidenceClass = 'MEDIUM';
 
+    if (action === 'BUY YES' || action === 'BUY NO') signalsGenerated++;
+
     const signal = {
         marketId: market.id,
         action: action,
@@ -632,6 +631,7 @@ let winProb, betPrice;
     const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
 
     log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${signal.intentExposure.toFixed(2)}%`);
+    log(`Effective Edge: ${(effectiveEdge * 100).toFixed(2)}% (raw ${(rawEdge*100).toFixed(1)}%, conf ${(normalizedConfidence*100).toFixed(1)}, entropy ${entropy.toFixed(3)}, liqFactor ${(market.liquidity > 0 ? Math.min(market.liquidity / 50000, 1) : 1).toFixed(3)})`);
     fs.appendFileSync(PERSONAL_TRADES_FILE, `${new Date().toISOString()}: ${signal.action} on ${market.question.slice(0,50)} - Confidence: ${signal.confidence}%, Exposure: ${signal.intentExposure.toFixed(2)}%\n\n`);
 
     // Remove SAFE_MODE, signal-only
@@ -648,7 +648,7 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
   }
 }
 
-    updateHealthMetrics({ lastRun: new Date().toISOString(), marketsMonitored: markets.length, posts: 0 }); // Signal-only, no posts
+    updateHealthMetrics({ lastRun: new Date().toISOString(), marketsMonitored: selectedMarkets.length, posts: signalsGenerated });
     console.log("✅ Cycle complete, awaiting next action");
 } catch (error) {
   console.error('CRITICAL CYCLE ERROR:', error);
