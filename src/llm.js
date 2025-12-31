@@ -6,14 +6,39 @@ require('dotenv').config();
 
 // LLM Configuration - Support multiple providers for testing
 const USE_MOCK = process.env.USE_MOCK_LLM === 'true'; // Set to true for free testing
-const PROVIDER = process.env.LLM_PROVIDER || 'xai'; // 'xai', 'openai', or 'mock'
-
-// XAI Configuration
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const XAI_API_KEY = process.env.XAI_API_KEY;
 const XAI_BASE_URL = 'https://api.x.ai/v1';
 
-// OpenAI Configuration (free credits often available for new accounts)
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const PROVIDER = process.env.LLM_PROVIDER
+  || (OPENAI_API_KEY ? 'openai' : 'xai'); // default to OpenAI when available
+
+const DEFAULT_OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const DEFAULT_XAI_MODEL = process.env.XAI_MODEL || 'grok-beta';
+const LLM_MODEL = process.env.LLM_MODEL || (PROVIDER === 'openai' ? DEFAULT_OPENAI_MODEL : DEFAULT_XAI_MODEL);
+const NEWS_DELTA_MODEL = process.env.NEWS_DELTA_MODEL || LLM_MODEL;
+
+let sharedLLMClient = null;
+function getLLMClient() {
+  if (sharedLLMClient) return sharedLLMClient;
+
+  if (PROVIDER === 'openai') {
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is required when LLM_PROVIDER=openai');
+    }
+    sharedLLMClient = new OpenAI({ apiKey: OPENAI_API_KEY });
+  } else {
+    if (!XAI_API_KEY) {
+      throw new Error('XAI_API_KEY is required when LLM_PROVIDER=xai');
+    }
+    sharedLLMClient = new OpenAI({
+      apiKey: XAI_API_KEY,
+      baseURL: XAI_BASE_URL,
+    });
+  }
+
+  return sharedLLMClient;
+}
 
 // Mock LLM for testing without API calls
 function generateMockAnalysis(marketData) {
@@ -43,8 +68,8 @@ function generateMockAnalysis(marketData) {
 }
 
 // Enhanced system prompt for professional analysis
-const ENHANCED_SYSTEM_PROMPT = `
-You are the Agent Zigma. Today is December 18, 2025. You are aware that Google's Gemini 3 Pro holds the #1 spot on Artificial Analysis, ahead of OpenAI's GPT-5.2 Garlic. Every trade must be cross-referenced against the BOJ Dec 19 rate hike decision (likely causing Yen Carry Trade unwind, -15% Bitcoin probability penalty) and the Trump 'Directive' vs 'Final Rule' legal framework.
+const ENHANCED_SYSTEM_PROMPT_TEMPLATE = `
+You are the Agent Zigma. Today is {{todayDate}}. You are aware that Google's Gemini 3 Pro holds the #1 spot on Artificial Analysis, ahead of OpenAI's GPT-5.2 Garlic. Every trade must be cross-referenced against the BOJ Dec 19 rate hike decision (likely causing Yen Carry Trade unwind, -15% Bitcoin probability penalty) and the Trump 'Directive' vs 'Final Rule' legal framework. Reference market microstructure context: spread {{spread}}%, depth {{depth}}, liquidity score {{liquidityScore}}, recommended Kelly fraction {{kelly}}%.
 
 MANDATORY OUTPUT: Return a valid JSON object with exactly these keys:
 {
@@ -74,6 +99,21 @@ INSTRUCTIONS:
 - Output deltas that adjust the market price to the true probability.
 - NEVER output probabilities, confidence, or actions. Only deltas and reasoning.
 `;
+
+function buildEnhancedSystemPrompt(context = {}) {
+  const todayDate = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  return ENHANCED_SYSTEM_PROMPT_TEMPLATE
+    .replace('{{todayDate}}', todayDate)
+    .replace('{{spread}}', context.spread ?? 'N/A')
+    .replace('{{depth}}', context.depth ?? 'N/A')
+    .replace('{{liquidityScore}}', context.liquidityScore ?? 'N/A')
+    .replace('{{kelly}}', context.kelly ?? 'N/A');
+}
 
 const BASIC_SYSTEM_PROMPT = `You are the Agent Zigma — a neutral, analytical observer of prediction market price and volume movement. Your purpose is to summarize market movement and liquidity signals; you must NOT make forecasts, probabilities, or predictions about future outcomes. Use only data provided in the input. Output short, factual, consistent lines that are easily readable on X and in an on-chain Deep Dive.
 
@@ -110,8 +150,19 @@ function buildEnhancedAnalysisPrompt(marketData, analysis, orderBook, news = [])
   const orderBookJson = JSON.stringify(orderBook, null, 2);
   const newsText = news.length > 0 ? news.map(n => `- ${n.title}: ${n.snippet}`).join('\n') : 'No recent news available.';
 
-  return `You are a professional Polymarket analyst. Analyze this market data and provide a comprehensive assessment:
+  return `You are a professional Polymarket analyst. You must return STRICT JSON ONLY (no markdown) that matches this schema:
+{
+  "deltaNews": number between -0.5 and 0.5,
+  "deltaStructure": number between -0.5 and 0.5,
+  "deltaBehavior": number between -0.5 and 0.5,
+  "deltaTime": number between -0.5 and 0.5,
+  "primaryReason": "NEWS_LAG" | "STRUCTURAL_MISPRICING" | "BEHAVIORAL_BIAS" | "TIME_DECAY_ERROR" | "CROSS_MARKET_ARBITRAGE",
+  "reasoning": string explaining the quantitative logic behind the deltas,
+  "uncertainty": number between 0 and 1 (0 = certain, 1 = highly uncertain),
+  "sentimentScore": number between -1 and 1 summarizing the news tone
+}
 
+Context for your assessment:
 MARKET DATA:
 ${marketJson}
 
@@ -126,29 +177,13 @@ ${newsText}
 
 Current YES price: ${marketData.yesPrice}
 
-Provide a professional analysis covering:
-1. Executive Summary (2-3 sentences)
-2. Technical Metrics Analysis (with specific numbers including spread percentage, order book depth, and liquidity quality score)
-3. Risk Assessment (LOW/MEDIUM/HIGH with quantitative reasons)
-4. Precise Probability and Recommendation: Provide a precise probability p (e.g., 94.7%) of the event occurring based on your analysis. Only recommend BUY YES if p > current YES price + 2%, BUY NO if p > (1 - current YES price) + 2%, otherwise AVOID with confidence based on your analysis.
-5. Price Analysis (levels, spread, momentum)
-6. Market Outlook (based on available data)
+Rules:
+- Base each delta on the provided data only.
+- Time-sensitive markets (resolving within 30 days) should include a negative deltaTime if no final rule or resolution event is scheduled.
+- Do not output confidence percentages or trading instructions—only the JSON described above.
+- Keep reasoning concise (<80 words) and cite specific datapoints when possible.
 
-Format as structured text with clear sections:
-
-Executive Summary: [2-3 sentences summarizing key findings]
-
-Risk Assessment: [LOW/MEDIUM/HIGH] - [specific quantitative reasons]
-
-Recommendation: [BUY YES/BUY NO/AVOID] ([0-100]% confidence) - [detailed reasoning with precise probability p]
-
-Price Analysis: [current levels, spread analysis, momentum indicators]
-
-Market Outlook: [short-term momentum based on available data]
-
-News Delta: [±X%] - [brief explanation of probability adjustment based on news sentiment vs. market price, cap at ±20%]
-
-Include disclaimer: "This analysis is for educational purposes only and should not be considered financial advice."`;
+Return ONLY the JSON object—no prose or extra text.`;
 }
 
 async function generateDecrees(markets) {
@@ -270,6 +305,7 @@ const crypto = require('crypto');
 const reproducibleCache = new Map();
 
 function getBaseRate(question) {
+  if (!question) return 0.05;
   const PRIOR_BUCKETS = {
     MACRO: [0.10, 0.30],
     POLITICS: [0.05, 0.20],
@@ -301,12 +337,46 @@ function getBaseRate(question) {
     return SPORTS_PRIORS[question];
   }
 
+  if (category === 'SPORTS_FUTURES') {
+    let prior = 0.10; // default for sports
+    const q = question.toLowerCase();
+    if (/super bowl.*winner/i.test(q)) prior = 0.04;
+    else if (/championship.*winner/i.test(q)) prior = 0.125;
+    else if (/division.*winner/i.test(q)) prior = 0.25;
+    return prior;
+  }
+
   const bucket = PRIOR_BUCKETS[category] || [0.05, 0.20]; // Default conservative
   return (bucket[0] + bucket[1]) / 2; // Midpoint for expected prior
 }
 
 // Enhanced analysis for premium reports
 async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache = {}) {
+  if (!marketData || typeof marketData.yesPrice !== 'number') {
+    return {
+      marketId: marketData?.id || 'unknown',
+      question: marketData?.question || 'Unknown',
+      algorithmicAnalysis: {},
+      llmAnalysis: {
+        executiveSummary: 'Market data incomplete',
+        technicalMetrics: {},
+        riskAssessment: { level: 'UNKNOWN', confidence: 0.5, reasons: ['Data incomplete'] },
+        recommendation: { action: 'AVOID', confidence: 50, reasoning: 'Incomplete market data' },
+        priceAnalysis: 'N/A',
+        marketOutlook: 'N/A',
+        confidence: 50,
+        timestamp: Date.now()
+      },
+      premium: true,
+      generatedAt: Date.now(),
+      error: 'Invalid market data',
+      fallback: true,
+      confidence: 50,
+      action: 'AVOID',
+      probability: 0.5,
+      reasoning: 'Invalid market data'
+    };
+  }
   function getEntropy(question, daysLeft) {
     let entropy = 0.1; // base
     const q = question.toLowerCase();
@@ -318,6 +388,21 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
   }
 
   function safeParseLLM(responseText) {
+    if (!responseText) {
+      return {
+        winProb: 0.5,
+        action: "AVOID",
+        confidence: 50,
+        reasoning: "LLM response undefined",
+        deltaNews: 0,
+        deltaStructure: 0,
+        deltaBehavior: 0,
+        deltaTime: 0,
+        primaryReason: "NONE",
+        uncertainty: 1,
+        sentimentScore: 0
+      };
+    }
     // Find JSON block
     const jsonStart = responseText.indexOf('{');
     const jsonEnd = responseText.lastIndexOf('}') + 1;
@@ -403,52 +488,40 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
 
     // Get order book for spread calculation
     const orderBook = await getOrderBook(marketData.id);
-    const spreadPercentage = orderBook && orderBook.ask && orderBook.bid ? ((orderBook.ask - orderBook.bid) / orderBook.mid) * 100 : 0;
-    const depth = orderBook ? (orderBook.bids?.slice(0, 10).reduce((sum, b) => sum + (parseFloat(b.size) || 0), 0) || 0) + (orderBook.asks?.slice(0, 10).reduce((sum, a) => sum + (parseFloat(a.size) || 0), 0) || 0) : 0;
+    const spreadPercentage = orderBook && orderBook.ask && orderBook.bid && orderBook.mid
+      ? ((orderBook.ask - orderBook.bid) / orderBook.mid) * 100
+      : 0;
+    const depth = orderBook
+      ? (orderBook.bids?.slice(0, 10).reduce((sum, b) => sum + (parseFloat(b.size) || 0), 0) || 0) +
+        (orderBook.asks?.slice(0, 10).reduce((sum, a) => sum + (parseFloat(a.size) || 0), 0) || 0)
+      : 0;
     const liquidityScore = spreadPercentage > 0 ? Math.max(0, Math.round(100 - spreadPercentage * 2)) : 50; // Simple score
 
     // Generate LLM prompt
-    let systemPrompt = ENHANCED_SYSTEM_PROMPT
-      .replace('{{spread}}', spreadPercentage.toFixed(2))
-      .replace('{{depth}}', depth.toFixed(0))
-      .replace('{{liquidityScore}}', liquidityScore)
-      .replace('{{kelly}}', (kellyFraction * 100).toFixed(1))
-      .replace(/market_price/g, currentPrice.toFixed(3));
-    const userPrompt = buildEnhancedAnalysisPrompt(marketData, analysis, orderBook, news);
+    const systemPrompt = buildEnhancedSystemPrompt({
+      spread: Number.isFinite(spreadPercentage) ? spreadPercentage.toFixed(2) : 'N/A',
+      depth: Number.isFinite(depth) ? depth.toFixed(0) : 'N/A',
+      liquidityScore: Number.isFinite(liquidityScore) ? liquidityScore : 'N/A',
+      kelly: Number.isFinite(kellyFraction) ? (kellyFraction * 100).toFixed(1) : 'N/A'
+    });
+    const userPrompt = buildEnhancedAnalysisPrompt(marketData, analysis, orderBook || {}, news);
 
+    const client = getLLMClient();
     let response;
     const llmCall = async () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
       try {
-        if (PROVIDER === 'openai') {
-          const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
-          return await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
-            max_tokens: 800,
-            temperature: 0
-          });
-        } else {
-          // Default to XAI
-          const client = new OpenAI({
-            apiKey: XAI_API_KEY,
-            baseURL: XAI_BASE_URL,
-          });
-          return await client.chat.completions.create({
-            model: 'grok-beta',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
-            max_tokens: 800,
-            temperature: 0
-          });
-        }
+        return await client.chat.completions.create({
+          model: LLM_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          max_tokens: 800,
+          temperature: 0
+        });
       } finally {
         clearTimeout(timeoutId);
       }
@@ -528,32 +601,49 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     const headlinesHash = crypto.createHash('md5').update(headlinesStr).digest('hex');
     const cacheKey = `${marketData.id}_${new Date().toDateString()}_${headlinesHash}`;
 
-    let llmAnalysis;
-    const cachedLLM = reproducibleCache.get(cacheKey);
-    if (cachedLLM) {
-      console.log('Using cached LLM response for deterministic reproducibility');
-      llmAnalysis = cachedLLM;
-    } else {
-      llmAnalysis = response.choices[0].message.content;
-      reproducibleCache.set(cacheKey, llmAnalysis);
-      console.log('Cached new LLM response for reproducibility');
+    let llmAnalysis = response?.choices?.[0]?.message?.content || '{}';
+
+    // Compute news delta if news available
+
+    // Compute news delta if news available
+    let newsDelta = 0;
+    if (news.length > 0) {
+      const newsSummary = news.map(n => n.title + ' ' + n.snippet).join('\n').substring(0, 1000); // limit length
+      const deltaPrompt = `Based ONLY on the provided news summary, does it make the YES outcome more likely (+), less likely (-), or neutral (0) compared to current market odds? Respond with only: +X%, -X%, or 0% where X is 5-20.\n\nNews summary:\n${newsSummary}`;
+      try {
+        const deltaResponse = await client.chat.completions.create({
+          model: NEWS_DELTA_MODEL,
+          messages: [{ role: 'user', content: deltaPrompt }],
+          max_tokens: 20,
+          temperature: 0
+        });
+        const deltaText = deltaResponse.choices[0].message.content.trim();
+        if (deltaText === '0%') {
+          newsDelta = 0;
+        } else if (deltaText.startsWith('+')) {
+          const num = parseFloat(deltaText.replace('+', '').replace('%', ''));
+          newsDelta = isNaN(num) ? 0 : Math.min(num, 20) / 100;
+        } else if (deltaText.startsWith('-')) {
+          const num = parseFloat(deltaText.replace('-', '').replace('%', ''));
+          newsDelta = isNaN(num) ? 0 : -Math.min(num, 20) / 100;
+        }
+      } catch (e) {
+        console.error('News delta computation failed:', e);
+        newsDelta = 0;
+      }
     }
 
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const result = safeParseLLM(llmAnalysis);
 
-    // Override deltaNews with evidence-weighted value
-    if (headline_count === 0) {
-      result.deltaNews = 0;
-    } else {
-      const sign = result.deltaNews !== 0 ? Math.sign(result.deltaNews) : Math.sign(result.sentimentScore || 0.01);
-      result.deltaNews = sign * deltaNews_magnitude;
-    }
+    // Blend LLM delta with deterministic news delta
+    result.deltaNews = clamp((result.deltaNews ?? 0) + newsDelta, -0.5, 0.5);
 
-    // Canonical P_zigma = clamp(P_prior + deltas, 0.01, 0.99)
-    const pMarket = marketData.yesPrice;
-    const pPrior = getBaseRate(marketData.question);
+    const pMarket = clamp(typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5, 0.01, 0.99);
+    const pPrior = clamp(getBaseRate(marketData.question), 0.01, 0.99);
 
     function logit(p) {
+      if (p == null || isNaN(p)) return 0; // neutral logit
       if (p <= 0) return -Infinity;
       if (p >= 1) return Infinity;
       return Math.log(p / (1 - p));
@@ -563,35 +653,20 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
       return 1 / (1 + Math.exp(-x));
     }
 
-    const wMarket = 0.6;
-    const wPrior = 0.3;
-    const wDeltas = 0.1;
-    let logitZigma = wMarket * logit(pMarket) + wPrior * logit(pPrior) + wDeltas * (result.deltaNews + result.deltaStructure + result.deltaBehavior + result.deltaTime);
-    let winProb = sigmoid(logitZigma);
-    winProb = Math.max(0.01, Math.min(0.99, winProb));
+    const deltaSum =
+      (result.deltaNews || 0) +
+      (result.deltaStructure || 0) +
+      (result.deltaBehavior || 0) +
+      (result.deltaTime || 0);
 
-    console.log(`Probability chain: P_market: ${(pMarket*100).toFixed(1)}%, P_prior: ${(pPrior*100).toFixed(1)}%, Δ_news: ${(result.deltaNews*100).toFixed(1)}%, Δ_struct: ${(result.deltaStructure*100).toFixed(1)}%, Δ_behavior: ${(result.deltaBehavior*100).toFixed(1)}%, Δ_time: ${(result.deltaTime*100).toFixed(1)}% → P_zigma: ${(winProb*100).toFixed(1)}%, EDGE: ${(Math.abs(winProb - pMarket)*100).toFixed(1)}%`);
+    const zigmaLogit = ((logit(pPrior) + logit(pMarket)) / 2) + deltaSum;
+    const winProb = clamp(sigmoid(zigmaLogit), 0.01, 0.99);
 
-    let action = "NO_TRADE"; // default
+    let action = 'HOLD';
+    if (winProb > pMarket + 0.05) action = 'BUY YES';
+    else if (winProb < pMarket - 0.05) action = 'BUY NO';
+
     const rawEdge = Math.abs(winProb - pMarket);
-    const daysLeft = marketData.endDateIso ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24) : 365;
-    const entropy = getEntropy(marketData.question, daysLeft);
-    const confidenceScore = Math.min(0.9, 0.6 + (Math.abs(result.deltaNews) * 3) + (headline_count * 0.1));
-    const liquidityFactor = Math.min(marketData.liquidity / 50000, 1);
-    const effectiveEdge = rawEdge * confidenceScore * (1 - entropy) * liquidityFactor;
-    console.log(`Effective Edge: ${(effectiveEdge*100).toFixed(1)}% (raw ${(rawEdge*100).toFixed(1)}%, conf ${confidenceScore.toFixed(2)}, entropy ${entropy}, liqFactor ${liquidityFactor})`);
-
-    // Edge survivability test: check if edge holds for short-term (1 day) and long-term (9 months)
-    const shortTermEntropy = getEntropy(marketData.question, 1);
-    const longTermEntropy = getEntropy(marketData.question, 270);
-    const shortTermEdge = rawEdge * confidenceScore * (1 - shortTermEntropy) * liquidityFactor;
-    const longTermEdge = rawEdge * confidenceScore * (1 - longTermEntropy) * liquidityFactor;
-    console.log(`Survivability test: short-term ${(shortTermEdge*100).toFixed(1)}%, long-term ${(longTermEdge*100).toFixed(1)}%`);
-
-    if (effectiveEdge >= 0.10 && shortTermEdge >= 0.10 && longTermEdge >= 0.10) {
-      if (winProb > pMarket) action = "BUY YES";
-      else action = "BUY NO";
-    }
 
     let exposure = 0;
     let tier = 'None';
@@ -599,7 +674,18 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     else if (rawEdge >= 0.20) { exposure = 0.5; tier = 'B'; }
     else if (rawEdge >= 0.15) { exposure = 0.25; tier = 'C'; }
 
-    // Classify category for reasoning
+    const daysLeft = marketData.endDateIso
+      ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
+      : marketData.endDate
+        ? (new Date(marketData.endDate) - Date.now()) / (1000 * 60 * 60 * 24)
+        : 365;
+    const entropy = getEntropy(marketData.question, daysLeft || 365);
+    const liquidityFactor = marketData.liquidity ? Math.min(marketData.liquidity / 50000, 1) : 0.5;
+    const effectiveEdge = rawEdge * (1 - entropy) * liquidityFactor;
+
+    const confidenceScore = clamp((1 - (result.uncertainty ?? 0.5)) * 0.6 + effectiveEdge * 0.4, 0.05, 0.95);
+    const confidencePercent = Math.round(confidenceScore * 100);
+
     const q = marketData.question.toLowerCase();
     let category = 'OTHER';
     if (/recession|inflation|fed|gdp|economy/i.test(q)) category = 'MACRO';
@@ -610,34 +696,19 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     if (/war|ukraine|russia|ceasefire/i.test(q)) category = 'WAR_OUTCOMES';
     if (/sports|game|win/i.test(q)) category = 'SPORTS_FUTURES';
 
-    let reasoning = result.reasoning;
-    if (result.primaryReason !== "NONE") {
+    let reasoning = result.reasoning || 'No detailed reasoning from LLM.';
+    if (result.primaryReason && result.primaryReason !== "NONE") {
       reasoning += ` | Primary: ${result.primaryReason}`;
     }
-    reasoning += ` | Conviction Tier: ${tier} | Prior: ${pPrior.toFixed(3)} (${category} bucket) | Suggested Exposure: ${exposure.toFixed(1)}% of bankroll (Kelly-based).`;
+    reasoning += ` | Conviction Tier: ${tier} | Prior: ${pPrior.toFixed(3)} (${category} bucket) | Suggested Exposure: ${(exposure * 100).toFixed(0)}% bankroll.`;
 
-    if (!result) {
-      // Fallback
-      console.error('LLM parsing completely failed, using defaults');
-      structuredAnalysis = {
-        probability: 0.5,
-        action: "AVOID",
-        confidence: 50,
-        reasoning: "LLM response parsing failed"
-      };
-    } else {
-      structuredAnalysis = {
-        probability: winProb,
-        action: action,
-        confidence: 80, // TODO: base on edge?
-        reasoning: reasoning
-      };
-    }
-
-    // Clean probability (already clamped)
-    structuredAnalysis.probability = winProb;
-
-    structuredAnalysis.kellyFraction = exposure;
+    const structuredAnalysis = {
+      probability: winProb,
+      action,
+      confidence: confidencePercent,
+      reasoning,
+      kellyFraction: exposure
+    };
     structuredAnalysis.reasoning += ` Recommended Position: ${(exposure * 100).toFixed(1)}% of bankroll.`;
 
     return {

@@ -2,10 +2,11 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
+const LOG_LEVEL = (process.env.LOG_LEVEL || 'INFO').toUpperCase();
+const LOG_TO_CONSOLE = LOG_LEVEL === 'DEBUG' || process.env.NODE_ENV === 'development';
 const log = (msg) => { 
   fs.appendFileSync(CONSOLE_LOG_FILE, msg + '\n');
-  if (LOG_LEVEL === 'DEBUG') console.log(msg); 
+  if (LOG_TO_CONSOLE) console.log(msg); 
 };
 
 const cron = require('node-cron');
@@ -500,146 +501,104 @@ for (const groupName in groups) {
           const outlier = groupData.slice(2).map(d => d.market.question.slice(0,10)).join(', ');
           log(`${groupName.toUpperCase()} GROUP SUMMARY: Winner: ${winner.market.question.slice(0,20)} (${(winner.analysis.probability*100).toFixed(1)}%), Alt: ${alt ? alt.market.question.slice(0,20) : 'None'} (${alt ? (alt.analysis.probability*100).toFixed(1) : 0}%), Outlier: ${outlier}`);
         }
-    }
-}
+    } 
+  }
 
-// Process each market
 for (const data of rawSignalData) {
-const market = data.market;
-const analysis = data.analysis;
-const confidence = analysis.confidenceScore || 0;
-let action = analysis.action || 'HOLD';
-const probability = analysis.probability || 0;
-const yesPrice = market.yesPrice || 0;
+  const market = data.market;
+  const analysis = data.analysis;
+  const confidence = analysis.confidenceScore || 0;
+  let action = analysis.action || 'HOLD';
+  const probability = typeof analysis.probability === 'number' ? analysis.probability : (market.yesPrice ?? 0.5);
+  const yesPrice = typeof market.yesPrice === 'number' ? market.yesPrice : 0.5;
+  const deltaNewsSignal = analysis.deltas?.deltaNews ?? 0;
+  const hasBearishNewsSupport = deltaNewsSignal <= -0.15;
 
-let dynamicBuffer = yesPrice > 0.8 ? 0.005 : 0.015;
-let normalizedConfidence = confidence;
-if (normalizedConfidence > 1) normalizedConfidence /= 100;
-normalizedConfidence = Math.max(0, Math.min(1, normalizedConfidence));
-if (normalizedConfidence > 0.8) normalizedConfidence = Math.max(normalizedConfidence, 0.9);  // Boost for strong signals
+  let normalizedConfidence = confidence;
+  if (normalizedConfidence > 1) normalizedConfidence /= 100;
+  normalizedConfidence = Math.max(0, Math.min(1, normalizedConfidence));
 
-let winProb, betPrice;
+  let winProb;
+  let betPrice;
+  if (action === 'BUY YES') {
+    winProb = probability;
+    betPrice = yesPrice;
+  } else if (action === 'BUY NO') {
+    winProb = 1 - probability;
+    betPrice = 1 - yesPrice;
+  } else if (action.startsWith('BIAS')) {
+    log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
+    log(`   Reasoning: ${analysis.reasoning}`);
+    fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+    continue;
+  } else if (action === 'AVOID') {
+    log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
+    log(`   Reasoning: ${analysis.reasoning}`);
+    fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
+    continue;
+  } else {
+    winProb = probability;
+    betPrice = 0.5;
+  }
 
-    if (action === 'BUY YES') {
-        // Betting on YES
-        winProb = probability;
-        betPrice = yesPrice;
-    } else if (action === 'BUY NO') {
-        // Betting on NO
-        winProb = 1 - probability;
-        betPrice = 1 - yesPrice;
-    } else if (action.startsWith('BIAS')) {
-        // Directional insight with small edge
-        log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
-        log(`   Reasoning: ${analysis.reasoning}`);
-        fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
-        continue;
-    } else if (action === 'AVOID') {
-        log(` ORACLE INSIGHT: ${market.question.slice(0,30)} -> ${action} (${(probability * 100).toFixed(1)}%)`);
-        log(`   Reasoning: ${analysis.reasoning}`);
-        fs.appendFileSync(INSIGHTS_FILE, `${new Date().toISOString()}: ${market.question.slice(0,50)} -> ${action} (${(probability * 100).toFixed(1)}%)\nReasoning: ${analysis.reasoning}\n\n`);
-        continue;
-    } else {
-        winProb = probability;
-        betPrice = 0.5;
+  let rawEdge = Math.abs(winProb - yesPrice);
+  rawEdge = Math.min(rawEdge, 0.5);
+  const isBearishEdge = winProb < yesPrice;
+  if (isBearishEdge && hasBearishNewsSupport && rawEdge >= 0.30) {
+    normalizedConfidence = Math.max(normalizedConfidence, 0.33);
+  }
+
+  const entropy = analysis.entropy || 0.1;
+  let entropyPenalty = 1 / (entropy + 0.1);
+  if (market.liquidity > 100000) entropyPenalty *= 0.2;
+  const liquidityFactor = market.liquidity > 0 ? Math.min(market.liquidity / 50000, 1) : 1;
+  const effectiveEdge = rawEdge * normalizedConfidence * entropyPenalty * liquidityFactor;
+  let intentExposure = 0;
+  if (effectiveEdge >= 0.03) {
+    intentExposure = Math.min(5, effectiveEdge * 1.8);
+  }
+  if (isBearishEdge && hasBearishNewsSupport) {
+    if (rawEdge >= 0.45) {
+      const boosted = 2 + Math.min(1, Math.max(0, (rawEdge - 0.45) / 0.05)); // 2% → 3% range
+      intentExposure = Math.min(5, Math.max(intentExposure, boosted));
+    } else if (rawEdge >= 0.35) {
+      intentExposure = Math.max(intentExposure, 1.5);
     }
+  }
 
-    // Calculate raw edge and effective edge (survivable edge)
-    let rawEdge = Math.abs(winProb - yesPrice);
-    rawEdge = Math.min(rawEdge, 0.35); // Cap at 35% to avoid extreme artifacts
-    const entropy = analysis.entropy || 0.1;
-    let entropyPenalty = 1 / (entropy + 0.1);
-    if (market.liquidity > 100000) entropyPenalty *= 0.2;  // Lower penalty for high-liq markets
-    const effectiveEdge = rawEdge * normalizedConfidence * entropyPenalty * (market.liquidity > 0 ? Math.min(market.liquidity / 50000, 1) : 1); // Cap at 50k
+  let confidenceClass = 'LOW';
+  if (normalizedConfidence >= 0.7) confidenceClass = 'HIGH';
+  else if (normalizedConfidence >= 0.4) confidenceClass = 'MEDIUM';
 
-    // === INTENT EXPOSURE (DISPLAY-ONLY, HONEST) ===
-    let intentExposure = 0;
-    if (effectiveEdge >= 0.03) {
-      intentExposure = Math.min(3.0, Math.max(0.25, effectiveEdge * 40));
-    }
+  if (action === 'BUY YES' || action === 'BUY NO') signalsGenerated++;
 
-    // Edge Thresholding using effective edge
-    if (effectiveEdge < 0.03) {  // Lower to 3% for signals
-        action = "NO_TRADE";
-        intentExposure = 0;
-        analysis.reasoning = `No measurable survivable mispricing detected\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%`;
-    }
+  const signal = {
+    marketId: market.id,
+    action,
+    price: yesPrice,
+    confidence: (normalizedConfidence * 100).toFixed(0),
+    confidenceClass,
+    intentExposure
+  };
 
-    // Confidence override for high-edge markets: if edge > 3% and confidence >= 70%, force BUY/SELL
-    if (effectiveEdge > 0.03 && normalizedConfidence >= 0.70) {
-      action = winProb > yesPrice ? "BUY YES" : "BUY NO";
-      analysis.reasoning = `High edge detected with strong confidence\nMarket Odds: ${(yesPrice*100).toFixed(1)}%\nZIGMA Odds: ${(winProb*100).toFixed(1)}%\nEffective Edge: ${(effectiveEdge*100).toFixed(1)}%\nConfidence Override Applied`;
-    }
+  if (signal.intentExposure > 10) {
+    throw new Error(`Exposure overflow: ${signal.intentExposure}% for ${signal.marketId}`);
+  }
+  if (signal.action !== 'NO_TRADE' && signal.intentExposure < 0.01) {
+    action = 'NO_TRADE';
+    signal.action = 'NO_TRADE';
+    signal.intentExposure = 0;
+    console.warn("⚠️ Non-zero signal with zero intent exposure", signal.marketId);
+  }
 
-    // Update winProb and betPrice based on action
-    // Logic flip: If BUY YES but winProb < currentPrice, switch to BUY NO
-    if (action === 'BUY YES' && winProb < yesPrice) {
-        action = 'BUY NO';
-        winProb = 1 - probability;
-        betPrice = 1 - yesPrice;
-    }
+  const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
 
-    // Group-level forced action
-    if (data.forcedAction) {
-        action = data.forcedAction;
-        if (action === 'BUY YES') {
-            winProb = probability;
-            betPrice = yesPrice;
-        } else if (action === 'BUY NO') {
-            winProb = 1 - probability;
-            betPrice = 1 - yesPrice;
-        }
-    }
-    if (normalizedConfidence >= 0.7) confidenceClass = 'HIGH';
-    else if (normalizedConfidence >= 0.4) confidenceClass = 'MEDIUM';
+  log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${signal.intentExposure.toFixed(2)}%`);
+  log(`Effective Edge: ${(effectiveEdge * 100).toFixed(2)}% (raw ${(rawEdge*100).toFixed(1)}%, conf ${(normalizedConfidence*100).toFixed(1)}, entropy ${entropy.toFixed(3)}, liqFactor ${liquidityFactor.toFixed(3)})`);
+  fs.appendFileSync(PERSONAL_TRADES_FILE, `${new Date().toISOString()}: ${signal.action} on ${market.question.slice(0,50)} - Confidence: ${signal.confidence}%, Exposure: ${signal.intentExposure.toFixed(2)}%\n\n`);
 
-    if (action === 'BUY YES' || action === 'BUY NO') signalsGenerated++;
-
-    const signal = {
-        marketId: market.id,
-        action: action,
-        price: yesPrice,
-        confidence: (normalizedConfidence * 100).toFixed(0),
-        confidenceClass: confidenceClass,
-        intentExposure: intentExposure
-    };
-
-    // Runtime assert for non-zero intent exposure on signals and overflow
-    if (signal.intentExposure > 10) {
-      throw new Error(`Exposure overflow: ${signal.intentExposure}% for ${signal.marketId}`);
-    }
-    if (signal.action !== 'NO_TRADE' && signal.intentExposure === 0) {
-      console.warn("⚠️ Non-zero signal with zero intent exposure", signal.marketId);
-    }
-
-    // Audit trail logging for signals
-    if (signal.action === "BUY YES" || signal.action === "BUY NO") {
-        const auditEntry = {
-            marketId: signal.marketId,
-            timestamp: new Date().toISOString(),
-            P_market: yesPrice,
-            P_prior_bucket: analysis.pPrior,
-            P_zigma: analysis.probability,
-            deltas: analysis.deltas,
-            entropy: analysis.entropy,
-            confidence: analysis.confidenceScore,
-            final_edge: analysis.effectiveEdge,
-            final_decision: signal.action
-        };
-        fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
-
-        // P&L Simulation removed - signal only
-    }
-
-    const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
-
-    log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${signal.intentExposure.toFixed(2)}%`);
-    log(`Effective Edge: ${(effectiveEdge * 100).toFixed(2)}% (raw ${(rawEdge*100).toFixed(1)}%, conf ${(normalizedConfidence*100).toFixed(1)}, entropy ${entropy.toFixed(3)}, liqFactor ${(market.liquidity > 0 ? Math.min(market.liquidity / 50000, 1) : 1).toFixed(3)})`);
-    fs.appendFileSync(PERSONAL_TRADES_FILE, `${new Date().toISOString()}: ${signal.action} on ${market.question.slice(0,50)} - Confidence: ${signal.confidence}%, Exposure: ${signal.intentExposure.toFixed(2)}%\n\n`);
-
-    // Remove SAFE_MODE, signal-only
-    if (process.env.SAFE_MODE !== 'true' || (market.volumeVelocity || 0) > 300) {
-        const tweet = ` AGENT ZIGMA SIGNAL
+  if (process.env.SAFE_MODE !== 'true' || (market.volumeVelocity || 0) > 300) {
+    const tweet = ` AGENT ZIGMA SIGNAL
 Market: ${market.question.slice(0, 50)}
 Market Odds (YES): ${(yesPrice*100).toFixed(1)}%
 ZIGMA Odds (YES): ${(winProb*100).toFixed(1)}%
@@ -647,30 +606,48 @@ Edge: ${(rawEdge > 0 ? '+' : '')}${(rawEdge*100).toFixed(1)}%
 Primary Reason: ${analysis.primaryReason || 'NONE'}
 Action: ${action}
 Exposure: ${signal.intentExposure.toFixed(1)}%`;
-      await postToX(tweet);
+    await postToX(tweet);
+  }
+
+  if (signal.action === 'BUY YES' || signal.action === 'BUY NO') {
+    const auditEntry = {
+      marketId: signal.marketId,
+      timestamp: new Date().toISOString(),
+      P_market: yesPrice,
+      P_prior_bucket: analysis.pPrior,
+      P_zigma: analysis.probability,
+      deltas: analysis.deltas,
+      entropy: analysis.entropy,
+      confidence: analysis.confidenceScore,
+      final_edge: analysis.effectiveEdge,
+      final_decision: signal.action
+    };
+    fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
   }
 }
 
-    updateHealthMetrics({ lastRun: new Date().toISOString(), marketsMonitored: selectedMarkets.length, posts: signalsGenerated });
-    console.log("✅ Cycle complete, awaiting next action");
+  updateHealthMetrics({ lastRun: new Date().toISOString(), marketsMonitored: selectedMarkets.length, posts: signalsGenerated });
+  console.log("✅ Cycle complete, awaiting next action");
+
 } catch (error) {
   console.error('CRITICAL CYCLE ERROR:', error);
-  isRunning = false;
   log("Agent Zigma: Idle, next cycle per schedule...");
+} finally {
+  isRunning = false;
 }
 }
 
- // Start Server and Cron
+// --- Server / Scheduler ---
 async function main() {
   log('Agent Zigma Initialized');
   startServer();
   setInterval(() => console.log(" Zigma heartbeat", new Date().toISOString()), 30000);
-  
+
   if (process.env.NODE_ENV === 'development') {
     await runCycle();
-    // Run cycles every 5 minutes continuously for testing
     setInterval(runCycle, 5 * 60 * 1000);
   }
+
   cron.schedule(process.env.CRON_SCHEDULE || '*/7 * * * *', runCycle);
 }
 

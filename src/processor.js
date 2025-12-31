@@ -123,13 +123,49 @@ async function crossReferenceNews(market) {
     }
 
     // Search for news using Tavily
-    const query = `${question} news`;
+    const query = buildNewsQuery(market);
     const results = await searchTavily(query);
     return results;
   } catch (e) {
     // Graceful fallback
     return [];
   }
+}
+
+function buildNewsQuery(market = {}) {
+  const question = (market.question || '').trim();
+  const cleaned = question.replace(/\?/g, '').trim();
+  const seasonMatch = question.match(/20\d{2}/);
+  const season = seasonMatch ? seasonMatch[0] : new Date().getFullYear();
+
+  const subjectPatterns = [
+    /Will (?:the )?(.+?) win (?:the )?(?:\d{4}\s*)?(Super Bowl|NFC|AFC)/i,
+    /Will (?:the )?(.+?) (?:make|reach) (?:the )?(?:\d{4}\s*)?(Super Bowl|playoffs|NFC|AFC)/i,
+    /Will (?:the )?(.+?) (?:win|claim) (?:the )?(?:\d{4}\s*)?(division|conference|championship)/i,
+  ];
+
+  let subject = null;
+  for (const pattern of subjectPatterns) {
+    const match = question.match(pattern);
+    if (match && match[1]) {
+      subject = match[1].replace(/the\s+/i, '').trim();
+      break;
+    }
+  }
+
+  if (!subject && /^Will\s+/i.test(question)) {
+    subject = question.replace(/^Will\s+/i, '').split('?')[0].trim();
+  }
+
+  if (subject) {
+    return `${subject} ${season} Super Bowl odds NFL futures news`;
+  }
+
+  if (cleaned.length > 0) {
+    return `${cleaned} odds news analysis`;
+  }
+
+  return 'NFL futures odds news';
 }
 
 /* =========================

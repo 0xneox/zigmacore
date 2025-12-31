@@ -1698,3 +1698,155 @@
 
 2025-12-31T10:18:40.242Z: NO_TRADE on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 60%, Exposure: 0.00%
 
+2025-12-31T11:08:27.693Z: NO_TRADE on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T11:08:27.707Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T11:08:27.713Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T11:08:27.741Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T11:08:27.748Z: BUY NO on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 14%, Exposure: 0.09%
+
+2025-12-31T11:08:27.921Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 16%, Exposure: 0.50%
+
+2025-12-31T11:08:27.981Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 17%, Exposure: 0.55%
+
+2025-12-31T11:08:28.083Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T11:08:28.140Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 17%, Exposure: 0.53%
+
+2025-12-31T11:08:28.171Z: NO_TRADE on Will the Carolina Panthers win the NFC South? - Confidence: 5%, Exposure: 0.00%
+
+2025-12-31T11:08:28.189Z: NO_TRADE on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 5%, Exposure: 0.00%
+
+2025-12-31T11:13:54.777Z: NO_TRADE on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 13%, Exposure: 0.00%
+
+2025-12-31T11:13:54.793Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 20%, Exposure: 0.00%
+
+2025-12-31T11:13:54.799Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 13%, Exposure: 0.00%
+
+2025-12-31T11:13:54.811Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 14%, Exposure: 0.00%
+
+2025-12-31T11:13:54.825Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 13%, Exposure: 0.00%
+
+2025-12-31T11:13:54.835Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 16%, Exposure: 0.50%
+
+2025-12-31T11:13:54.862Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 15%, Exposure: 0.49%
+
+2025-12-31T11:13:54.876Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 13%, Exposure: 0.00%
+
+2025-12-31T11:13:54.908Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 20%, Exposure: 0.64%
+
+2025-12-31T11:13:54.959Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 15%, Exposure: 0.05%
+
+2025-12-31T11:13:54.985Z: NO_TRADE on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T11:17:11.181Z: NO_TRADE on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:17:11.184Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:17:11.187Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:17:11.194Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:17:11.204Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 25%, Exposure: 0.00%
+
+2025-12-31T11:17:11.211Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 35%, Exposure: 1.12%
+
+2025-12-31T11:17:11.237Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 28%, Exposure: 0.90%
+
+2025-12-31T11:17:11.246Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:17:11.268Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 28%, Exposure: 0.87%
+
+2025-12-31T11:17:11.313Z: NO_TRADE on Will the Carolina Panthers win the NFC South? - Confidence: 22%, Exposure: 0.00%
+
+2025-12-31T11:17:11.328Z: NO_TRADE on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:41:33.688Z: HOLD on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:41:33.697Z: HOLD on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:41:33.708Z: HOLD on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:41:33.723Z: HOLD on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:41:33.735Z: HOLD on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 37%, Exposure: 0.00%
+
+2025-12-31T11:41:33.746Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 34%, Exposure: 1.55%
+
+2025-12-31T11:41:33.763Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 28%, Exposure: 1.28%
+
+2025-12-31T11:41:33.787Z: HOLD on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:41:33.795Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 23%, Exposure: 1.02%
+
+2025-12-31T11:41:33.811Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 16%, Exposure: 0.00%
+
+2025-12-31T11:41:33.823Z: HOLD on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:52:37.082Z: NO_TRADE on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:52:37.111Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:52:37.127Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:52:37.135Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:52:37.140Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 31%, Exposure: 0.00%
+
+2025-12-31T11:52:37.148Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 28%, Exposure: 1.28%
+
+2025-12-31T11:52:37.182Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 22%, Exposure: 1.01%
+
+2025-12-31T11:52:37.200Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:52:37.212Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 23%, Exposure: 1.02%
+
+2025-12-31T11:52:37.218Z: NO_TRADE on Will the Carolina Panthers win the NFC South? - Confidence: 23%, Exposure: 0.00%
+
+2025-12-31T11:52:37.229Z: NO_TRADE on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:58:30.803Z: NO_TRADE on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:58:30.815Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:58:30.819Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:58:30.825Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T11:58:30.838Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 31%, Exposure: 0.00%
+
+2025-12-31T11:58:30.853Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 28%, Exposure: 1.28%
+
+2025-12-31T11:58:30.858Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 28%, Exposure: 1.28%
+
+2025-12-31T11:58:30.876Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T11:58:30.895Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 23%, Exposure: 1.02%
+
+2025-12-31T11:58:30.914Z: NO_TRADE on Will the Carolina Panthers win the NFC South? - Confidence: 16%, Exposure: 0.00%
+
+2025-12-31T11:58:30.935Z: NO_TRADE on Will Trump spend >25% of 2025 presidency golfing? - Confidence: 12%, Exposure: 0.00%
+
+2025-12-31T12:03:42.144Z: NO_TRADE on Will the Carolina Panthers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T12:03:42.153Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T12:03:42.158Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 24%, Exposure: 0.00%
+
+2025-12-31T12:03:42.162Z: NO_TRADE on Will the Pittsburgh Steelers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T12:03:42.168Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 31%, Exposure: 0.00%
+
+2025-12-31T12:03:42.173Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 28%, Exposure: 1.28%
+
+2025-12-31T12:03:42.180Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 28%, Exposure: 1.27%
+
+2025-12-31T12:03:42.190Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2025-12-31T12:03:42.209Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 34%, Exposure: 1.53%
+
+2025-12-31T12:03:42.216Z: NO_TRADE on Will the Carolina Panthers win the NFC South? - Confidence: 16%, Exposure: 0.00%
+
