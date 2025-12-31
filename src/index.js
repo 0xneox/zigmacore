@@ -321,8 +321,11 @@ function pickHighAlphaMarkets(data) {
   // Remove duplicates
   selected = selected.filter((m, index, self) => index === self.findIndex(s => s.id === m.id));
 
-  // Reduce noise: Filter out low-edge celebrity/politics
+  // Reduce noise: Filter out low-edge celebrity/politics and unreasonable time-to-resolution
   selected = selected.filter(m => {
+    const daysLeft = m.endDateIso ? (new Date(m.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24) : 365;
+    if (daysLeft < 7 || daysLeft > 365) return false;
+
     const pPrior = getBaseRate(m.question);
     const edge = Math.abs(pPrior - m.yesPrice);
     if (m.category === 'CELEBRITY' && edge < 0.20) return false;

@@ -146,6 +146,8 @@ Price Analysis: [current levels, spread analysis, momentum indicators]
 
 Market Outlook: [short-term momentum based on available data]
 
+News Delta: [±X%] - [brief explanation of probability adjustment based on news sentiment vs. market price, cap at ±20%]
+
 Include disclaimer: "This analysis is for educational purposes only and should not be considered financial advice."`;
 }
 
@@ -278,6 +280,11 @@ function getBaseRate(question) {
     SPORTS_FUTURES: [0.02, 0.15]
   };
 
+  const SPORTS_PRIORS = {
+    "Will the Buccaneers win the 2026 NFC Championship": 0.015, // ~1.5% odds based on current futures
+    // Add more as needed, e.g., "Will the Chiefs win the 2026 Super Bowl": 0.20
+  };
+
   // Simple classify
   const q = question.toLowerCase();
   let category = 'OTHER';
@@ -288,6 +295,11 @@ function getBaseRate(question) {
   if (/etf|approval/i.test(q)) category = 'ETF_APPROVAL';
   if (/war|ukraine|russia|ceasefire/i.test(q)) category = 'WAR_OUTCOMES';
   if (/sports|game|win/i.test(q)) category = 'SPORTS_FUTURES';
+
+  // Check for specific prior
+  if (SPORTS_PRIORS[question]) {
+    return SPORTS_PRIORS[question];
+  }
 
   const bucket = PRIOR_BUCKETS[category] || [0.05, 0.20]; // Default conservative
   return (bucket[0] + bucket[1]) / 2; // Midpoint for expected prior
@@ -533,7 +545,8 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     if (headline_count === 0) {
       result.deltaNews = 0;
     } else {
-      result.deltaNews = Math.sign(result.deltaNews) * deltaNews_magnitude;
+      const sign = result.deltaNews !== 0 ? Math.sign(result.deltaNews) : Math.sign(result.sentimentScore || 0.01);
+      result.deltaNews = sign * deltaNews_magnitude;
     }
 
     // Canonical P_zigma = clamp(P_prior + deltas, 0.01, 0.99)
@@ -563,10 +576,10 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     const rawEdge = Math.abs(winProb - pMarket);
     const daysLeft = marketData.endDateIso ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24) : 365;
     const entropy = getEntropy(marketData.question, daysLeft);
-    const confidenceScore = 0.7;
-    const liquidityFactor = Math.min(marketData.liquidity / 75000, 1);
+    const confidenceScore = Math.min(0.9, 0.6 + (Math.abs(result.deltaNews) * 3) + (headline_count * 0.1));
+    const liquidityFactor = Math.min(marketData.liquidity / 50000, 1);
     const effectiveEdge = rawEdge * confidenceScore * (1 - entropy) * liquidityFactor;
-    console.log(`Effective Edge: ${(effectiveEdge*100).toFixed(1)}% (raw ${(rawEdge*100).toFixed(1)}%, conf ${confidenceScore}, entropy ${entropy}, liqFactor ${liquidityFactor})`);
+    console.log(`Effective Edge: ${(effectiveEdge*100).toFixed(1)}% (raw ${(rawEdge*100).toFixed(1)}%, conf ${confidenceScore.toFixed(2)}, entropy ${entropy}, liqFactor ${liquidityFactor})`);
 
     // Edge survivability test: check if edge holds for short-term (1 day) and long-term (9 months)
     const shortTermEntropy = getEntropy(marketData.question, 1);
@@ -575,7 +588,7 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     const longTermEdge = rawEdge * confidenceScore * (1 - longTermEntropy) * liquidityFactor;
     console.log(`Survivability test: short-term ${(shortTermEdge*100).toFixed(1)}%, long-term ${(longTermEdge*100).toFixed(1)}%`);
 
-    if (effectiveEdge >= 0.18 && shortTermEdge >= 0.18 && longTermEdge >= 0.18) {
+    if (effectiveEdge >= 0.10 && shortTermEdge >= 0.10 && longTermEdge >= 0.10) {
       if (winProb > pMarket) action = "BUY YES";
       else action = "BUY NO";
     }
@@ -586,11 +599,22 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     else if (rawEdge >= 0.20) { exposure = 0.5; tier = 'B'; }
     else if (rawEdge >= 0.15) { exposure = 0.25; tier = 'C'; }
 
+    // Classify category for reasoning
+    const q = marketData.question.toLowerCase();
+    let category = 'OTHER';
+    if (/recession|inflation|fed|gdp|economy/i.test(q)) category = 'MACRO';
+    if (/election|president|trump|biden|political/i.test(q)) category = 'POLITICS';
+    if (/celebrity|britney|tour|concert|divorce/i.test(q)) category = 'CELEBRITY';
+    if (/bitcoin|btc|crypto|tech|adoption/i.test(q)) category = 'TECH_ADOPTION';
+    if (/etf|approval/i.test(q)) category = 'ETF_APPROVAL';
+    if (/war|ukraine|russia|ceasefire/i.test(q)) category = 'WAR_OUTCOMES';
+    if (/sports|game|win/i.test(q)) category = 'SPORTS_FUTURES';
+
     let reasoning = result.reasoning;
     if (result.primaryReason !== "NONE") {
       reasoning += ` | Primary: ${result.primaryReason}`;
     }
-    reasoning += ` | Conviction Tier: ${tier}`;
+    reasoning += ` | Conviction Tier: ${tier} | Prior: ${pPrior.toFixed(3)} (${category} bucket) | Suggested Exposure: ${exposure.toFixed(1)}% of bankroll (Kelly-based).`;
 
     if (!result) {
       // Fallback
