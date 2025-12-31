@@ -20,81 +20,32 @@
     "price": 0.012
   },
   "will-2025-be-the-hottest-year-on-record": {
-    "price": 0.012,
-    "volume": 10029.911753999999,
-    "priceHistory": [
-      {
-        "price": 0.012,
-        "timestamp": 1767001596244
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 2587.9713399999996,
+    "price": 0.0115
   },
   "maduro-out-in-2025-411": {
-    "price": 0.0105,
-    "volume": 762144.4079540002,
-    "priceHistory": [
-      {
-        "price": 0.0105,
-        "timestamp": 1767001596247
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 1962486.4858219968,
+    "price": 0.0305
   },
   "which-company-has-best-ai-model-end-of-2025": {
-    "price": 0.9855,
-    "volume": 108766.45907599988,
-    "priceHistory": [
-      {
-        "price": 0.9855,
-        "timestamp": 1767001596252
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 105936.54675199994,
+    "price": 0.9815
   },
   "will-xai-have-the-top-ai-model-on-december-31": {
-    "price": 0.0115,
-    "volume": 42331.732327,
-    "priceHistory": [
-      {
-        "price": 0.0115,
-        "timestamp": 1767001596256
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 43658.24545699998,
+    "price": 0.016
   },
   "cardano-etf-in-2025": {
-    "price": 0.0125,
-    "volume": 406.40577699999994,
-    "priceHistory": [
-      {
-        "price": 0.0125,
-        "timestamp": 1767001596260
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 111.83000399999999,
+    "price": 0.022
   },
   "will-trump-deport-250000-500000-people": {
-    "price": 0.948,
-    "volume": 7451.217976,
-    "priceHistory": [
-      {
-        "price": 0.948,
-        "timestamp": 1767001596271
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 709.765431,
+    "price": 0.915
   },
   "will-trump-deport-500000-750000-people": {
-    "price": 0.0195,
-    "volume": 3258.7203809999996,
-    "priceHistory": [
-      {
-        "price": 0.0195,
-        "timestamp": 1767001596275
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 1021.1500000000001,
+    "price": 0.043
   },
   "will-trump-deport-750000-or-more-people-in-2025": {
     "volume": 339.16,
@@ -105,15 +56,8 @@
     "price": 0.0195
   },
   "us-enacts-ai-safety-bill-in-2025": {
-    "price": 0.014,
-    "volume": 142.1401,
-    "priceHistory": [
-      {
-        "price": 0.014,
-        "timestamp": 1767001596283
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 234.75,
+    "price": 0.0105
   },
   "will-anthropic-have-a-1-ai-model-this-year": {
     "volume": 2951.306422,
@@ -124,15 +68,8 @@
     "price": 0.0125
   },
   "x-money-launch-in-2025": {
-    "price": 0.0315,
-    "volume": 317.329193,
-    "priceHistory": [
-      {
-        "price": 0.0315,
-        "timestamp": 1767001596288
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 722.38314,
+    "price": 0.06
   },
   "china-x-india-military-clash-by-december-31": {
     "volume": 337.9,
@@ -143,45 +80,31 @@
     "price": 0.0245
   },
   "will-trump-elon-reduce-the-deficit-in-2025": {
-    "price": 0.1565,
-    "volume": 512.5,
+    "price": 0.1375,
+    "volume": 64.71000000000001,
     "priceHistory": [
       {
-        "price": 0.1565,
-        "timestamp": 1767001596296
+        "price": 0.1375,
+        "timestamp": 1767160191768
       }
     ],
     "priceVolatility": 0
   },
   "us-treasury-transactions-on-blockchain-in-2025": {
-    "price": 0.015,
-    "volume": 81.909447,
-    "priceHistory": [
-      {
-        "price": 0.015,
-        "timestamp": 1767001596301
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 266420.152388,
+    "price": 0.015
   },
   "will-elon-and-doge-cut-less-than-50b-in-federal-spending-in-2025": {
-    "price": 0.9845,
-    "volume": 1591.04763,
-    "priceHistory": [
-      {
-        "price": 0.9845,
-        "timestamp": 1767001596306
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 350.118352,
+    "price": 0.989
   },
   "will-elon-cut-the-budget-by-at-least-10-in-2025": {
-    "price": 0.0205,
-    "volume": 1.06,
+    "price": 0.017,
+    "volume": 103789.869203,
     "priceHistory": [
       {
-        "price": 0.0205,
-        "timestamp": 1767001596310
+        "price": 0.017,
+        "timestamp": 1767160191772
       }
     ],
     "priceVolatility": 0
@@ -203,26 +126,12 @@
     "price": 0.0155
   },
   "leonardo-dicaprio-engaged-in-2025": {
-    "price": 0.0185,
-    "volume": 1007.085,
-    "priceHistory": [
-      {
-        "price": 0.0185,
-        "timestamp": 1767001596314
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 6867.887421,
+    "price": 0.021
   },
   "bill-belichick-engaged-in-2025": {
-    "price": 0.054,
-    "volume": 3633.459802,
-    "priceHistory": [
-      {
-        "price": 0.054,
-        "timestamp": 1767001596320
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 3613.609802,
+    "price": 0.0545
   },
   "will-ukraine-agree-to-give-up-russian-territory-in-kursk": {
     "volume": 3663.748333,
@@ -249,74 +158,39 @@
     "price": 0.0255
   },
   "vaccine-for-new-covid-disease-in-2025": {
-    "price": 0.052,
-    "volume": 165.480666,
-    "priceHistory": [
-      {
-        "price": 0.052,
-        "timestamp": 1767001596327
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 20,
+    "price": 0.035
   },
   "luigi-mangione-plea-deal-in-2025": {
-    "price": 0.027,
-    "volume": 134.180727,
-    "priceHistory": [
-      {
-        "price": 0.027,
-        "timestamp": 1767001596332
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 19021.182655,
+    "price": 0.027
   },
   "will-rfk-end-influenza-vaccine-recommendation-in-2025": {
     "volume": 27.53,
     "price": 0.016
   },
   "luigi-mangione-mistrial": {
-    "price": 0.021,
-    "volume": 20180.875721,
-    "priceHistory": [
-      {
-        "price": 0.021,
-        "timestamp": 1767001596340
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 172.22,
+    "price": 0.0245
   },
   "georgescu-guilty-in-2025": {
-    "price": 0.0125,
-    "volume": 70.585875,
-    "priceHistory": [
-      {
-        "price": 0.0125,
-        "timestamp": 1767001596343
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 10,
+    "price": 0.0125
   },
   "will-trump-sell-0-gold-cards-in-2025": {
-    "price": 0.982,
-    "volume": 46457.53793,
+    "price": 0.989,
+    "volume": 35469.39116100001,
     "priceHistory": [
       {
-        "price": 0.982,
-        "timestamp": 1767001596346
+        "price": 0.989,
+        "timestamp": 1767160191776
       }
     ],
     "priceVolatility": 0
   },
   "will-trump-sell-1-100-gold-cards-in-2025": {
-    "price": 0.0155,
-    "volume": 21818.683638000002,
-    "priceHistory": [
-      {
-        "price": 0.0155,
-        "timestamp": 1767001596350
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 13299.987479999998,
+    "price": 0.032
   },
   "white-girlfriend-who-shot-black-bf-guilty": {
     "volume": 50268.658072,
@@ -335,52 +209,31 @@
     "price": 0.987
   },
   "will-gta-6-cost-100": {
-    "price": 0.022,
-    "volume": 5.12,
+    "price": 0.0225,
+    "volume": 987.759708,
     "priceHistory": [
       {
-        "price": 0.022,
-        "timestamp": 1767001596357
+        "price": 0.0225,
+        "timestamp": 1767160191780
       }
     ],
     "priceVolatility": 0
   },
   "odell-beckham-jr-in-jail-in-2025": {
-    "price": 0.0525,
-    "volume": 330.23,
-    "priceHistory": [
-      {
-        "price": 0.0525,
-        "timestamp": 1767001596361
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 15,
+    "price": 0.0115
   },
   "will-the-next-james-bond-be-british": {
-    "price": 0.0295,
-    "volume": 213.763698,
-    "priceHistory": [
-      {
-        "price": 0.0295,
-        "timestamp": 1767001596364
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 499.85999999999996,
+    "price": 0.0135
   },
   "will-ukraine-agree-to-cede-territory-to-russia": {
     "volume": 13690.989759,
     "price": 0.0115
   },
   "trump-charges-member-of-january-6-committee": {
-    "price": 0.015,
-    "volume": 140.34,
-    "priceHistory": [
-      {
-        "price": 0.015,
-        "timestamp": 1767001596368
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 20.83,
+    "price": 0.0155
   },
   "underground-pyramid-structures-confirmed-by-peer-review": {
     "volume": 152.78,
@@ -411,75 +264,61 @@
     "price": 0.026
   },
   "deel-ceo-jailed-in-2025": {
-    "price": 0.011,
-    "volume": 1.5,
-    "priceHistory": [
-      {
-        "price": 0.011,
-        "timestamp": 1767001596373
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 2805.806503,
+    "price": 0.0115
   },
   "isar-aerospace-successful-orbital-launch-in-2025": {
     "volume": 690.6768,
     "price": 0.018
   },
   "will-stephen-a-smith-announce-presidential-run-in-2025": {
-    "price": 0.014,
-    "volume": 13.63,
-    "priceHistory": [
-      {
-        "price": 0.014,
-        "timestamp": 1767001596379
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 4052.708491,
+    "price": 0.0145
   },
   "will-meta-settle-with-the-ftc": {
     "volume": 6003.191995,
     "price": 0.022
   },
   "will-the-us-collect-less-than-100b-in-revenue-in-2025": {
-    "price": 0.3725,
-    "volume": 18037.781172,
+    "price": 0.3785,
+    "volume": 1147.035422,
     "priceHistory": [
       {
-        "price": 0.3725,
-        "timestamp": 1767001596407
+        "price": 0.3785,
+        "timestamp": 1767160191787
       }
     ],
     "priceVolatility": 0
   },
   "will-the-us-collect-between-100b-and-200b-in-revenue-in-2025": {
-    "price": 0.345,
-    "volume": 1179.36833,
+    "price": 0.34,
+    "volume": 2626.0417469999998,
     "priceHistory": [
       {
-        "price": 0.345,
-        "timestamp": 1767001596411
+        "price": 0.34,
+        "timestamp": 1767160191790
       }
     ],
     "priceVolatility": 0
   },
   "will-the-us-collect-between-200b-and-500b-in-revenue-in-2025": {
-    "price": 0.255,
-    "volume": 579.955516,
+    "price": 0.26,
+    "volume": 166.380225,
     "priceHistory": [
       {
-        "price": 0.255,
-        "timestamp": 1767001596416
+        "price": 0.26,
+        "timestamp": 1767160191794
       }
     ],
     "priceVolatility": 0
   },
   "will-tariffs-generate-250b-in-2025": {
-    "price": 0.0215,
-    "volume": 14.362895,
+    "price": 0.018,
+    "volume": 2445.14,
     "priceHistory": [
       {
-        "price": 0.0215,
-        "timestamp": 1767001596426
+        "price": 0.018,
+        "timestamp": 1767160191797
       }
     ],
     "priceVolatility": 0
@@ -489,15 +328,8 @@
     "price": 0.0125
   },
   "will-trump-pardon-steve-bannon-in-2025-167-339-146-536": {
-    "price": 0.0135,
-    "volume": 3201.295332,
-    "priceHistory": [
-      {
-        "price": 0.0135,
-        "timestamp": 1767001596436
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 26793.111692000002,
+    "price": 0.0125
   },
   "will-trump-pardon-roger-ver-in-2025-383-789-193-341": {
     "volume": 499.18,
@@ -512,188 +344,167 @@
     "price": 0.0145
   },
   "will-trump-refrain-from-announcing-a-next-fed-chair-in-2025": {
-    "price": 0.9895,
-    "volume": 10605.333826,
-    "priceHistory": [
-      {
-        "price": 0.9895,
-        "timestamp": 1767001596442
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 9093.194362,
+    "price": 0.9825
   },
   "will-chatgpt-reach-1b-monthly-active-users-in-2025": {
-    "price": 0.0185,
-    "volume": 1026.3573279999998,
-    "priceHistory": [
-      {
-        "price": 0.0185,
-        "timestamp": 1767001596447
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 737.25,
+    "price": 0.019
   },
   "timothe-chalame-and-kylie-jenner-engaged-in-2025": {
-    "price": 0.127,
-    "volume": 0.09,
-    "priceHistory": [
-      {
-        "price": 0.127,
-        "timestamp": 1767001596453
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 617.35,
+    "price": 0.101
   },
   "will-trump-spend-25-of-2025-presidency-golfing": {
-    "price": 0.16,
-    "volume": 3065.44625,
+    "price": 0.086,
+    "volume": 14362.216125,
     "priceHistory": [
       {
-        "price": 0.16,
-        "timestamp": 1767001596459
+        "price": 0.086,
+        "timestamp": 1767160191806
       }
     ],
     "priceVolatility": 0
   },
   "will-the-buffalo-bills-win-super-bowl-2026": {
     "price": 0.085,
-    "volume": 122132.33761000003,
+    "volume": 57873.473972,
     "priceHistory": [
       {
         "price": 0.085,
-        "timestamp": 1767001596470
+        "timestamp": 1767160191813
       }
     ],
     "priceVolatility": 0
   },
   "will-the-chicago-bears-win-super-bowl-2026": {
-    "price": 0.0415,
-    "volume": 120309.18366600004,
+    "price": 0.041,
+    "volume": 41587.018826,
     "priceHistory": [
       {
-        "price": 0.0415,
-        "timestamp": 1767001596473
+        "price": 0.041,
+        "timestamp": 1767160191823
       }
     ],
     "priceVolatility": 0
   },
   "will-the-denver-broncos-win-super-bowl-2026": {
-    "price": 0.0865,
-    "volume": 64798.246649,
+    "price": 0.104,
+    "volume": 110700.10120700003,
     "priceHistory": [
       {
-        "price": 0.0865,
-        "timestamp": 1767001596478
+        "price": 0.104,
+        "timestamp": 1767160191827
       }
     ],
     "priceVolatility": 0
   },
   "will-the-green-bay-packers-win-super-bowl-2026": {
     "price": 0.0315,
-    "volume": 45993.591928000016,
+    "volume": 39947.87538699999,
     "priceHistory": [
       {
         "price": 0.0315,
-        "timestamp": 1767001596482
+        "timestamp": 1767160191830
       }
     ],
     "priceVolatility": 0
   },
   "will-the-houston-texans-win-super-bowl-2026": {
-    "price": 0.0545,
-    "volume": 34445.341864,
+    "price": 0.055,
+    "volume": 106390.54845799999,
     "priceHistory": [
       {
-        "price": 0.0545,
-        "timestamp": 1767001596487
+        "price": 0.055,
+        "timestamp": 1767160191833
       }
     ],
     "priceVolatility": 0
   },
   "will-the-jacksonville-jaguars-win-super-bowl-2026": {
-    "price": 0.057,
-    "volume": 53782.172763999995,
+    "price": 0.055,
+    "volume": 47928.540787,
     "priceHistory": [
       {
-        "price": 0.057,
-        "timestamp": 1767001596491
+        "price": 0.055,
+        "timestamp": 1767160191838
       }
     ],
     "priceVolatility": 0
   },
   "will-the-los-angeles-chargers-win-super-bowl-2026": {
-    "price": 0.027,
-    "volume": 41785.128867,
+    "price": 0.0285,
+    "volume": 66200.26927199998,
     "priceHistory": [
       {
-        "price": 0.027,
-        "timestamp": 1767001596496
+        "price": 0.0285,
+        "timestamp": 1767160191842
       }
     ],
     "priceVolatility": 0
   },
   "will-the-los-angeles-rams-win-super-bowl-2026": {
-    "price": 0.1495,
-    "volume": 82137.12693699996,
+    "price": 0.124,
+    "volume": 83233.88667099997,
     "priceHistory": [
       {
-        "price": 0.1495,
-        "timestamp": 1767001596499
+        "price": 0.124,
+        "timestamp": 1767160191845
       }
     ],
     "priceVolatility": 0
   },
   "will-the-new-england-patriots-win-super-bowl-2026": {
-    "price": 0.0785,
-    "volume": 78537.253753,
+    "price": 0.083,
+    "volume": 50876.863420999995,
     "priceHistory": [
       {
-        "price": 0.0785,
-        "timestamp": 1767001596504
+        "price": 0.083,
+        "timestamp": 1767160191848
       }
     ],
     "priceVolatility": 0
   },
   "will-the-philadelphia-eagles-win-super-bowl-2026": {
-    "price": 0.105,
-    "volume": 120556.32027000001,
+    "price": 0.095,
+    "volume": 17895.1765,
     "priceHistory": [
       {
-        "price": 0.105,
-        "timestamp": 1767001596509
+        "price": 0.095,
+        "timestamp": 1767160191852
       }
     ],
     "priceVolatility": 0
   },
   "will-the-pittsburgh-steelers-win-super-bowl-2026": {
-    "price": 0.011,
-    "volume": 69985.48103400003,
+    "price": 0.0125,
+    "volume": 49570.57135400002,
     "priceHistory": [
       {
-        "price": 0.011,
-        "timestamp": 1767001596513
+        "price": 0.0125,
+        "timestamp": 1767160191857
       }
     ],
     "priceVolatility": 0
   },
   "will-the-san-francisco-49ers-win-super-bowl-2026": {
-    "price": 0.0935,
-    "volume": 126449.28761099999,
+    "price": 0.109,
+    "volume": 251034.52011699992,
     "priceHistory": [
       {
-        "price": 0.0935,
-        "timestamp": 1767001596516
+        "price": 0.109,
+        "timestamp": 1767160191860
       }
     ],
     "priceVolatility": 0
   },
   "will-the-seattle-seahawks-win-super-bowl-2026": {
-    "price": 0.1395,
-    "volume": 57158.91794599999,
+    "price": 0.135,
+    "volume": 50843.500569,
     "priceHistory": [
       {
-        "price": 0.1395,
-        "timestamp": 1767001596520
+        "price": 0.135,
+        "timestamp": 1767160191864
       }
     ],
     "priceVolatility": 0
@@ -703,221 +514,214 @@
     "price": 0.0125
   },
   "will-the-panthers-win-the-nfc-championship-1": {
-    "price": 0.0185,
-    "volume": 2504.854684,
+    "price": 0.022,
+    "volume": 1642.948808,
     "priceHistory": [
       {
-        "price": 0.0185,
-        "timestamp": 1767001596523
+        "price": 0.022,
+        "timestamp": 1767160191867
       }
     ],
     "priceVolatility": 0
   },
   "will-the-bears-win-the-nfc-championship-1": {
     "price": 0.0875,
-    "volume": 1171.046234,
+    "volume": 1656.3618220000003,
     "priceHistory": [
       {
         "price": 0.0875,
-        "timestamp": 1767001596527
+        "timestamp": 1767160191872
       }
     ],
     "priceVolatility": 0
   },
   "will-the-packers-win-the-nfc-championship-1": {
     "price": 0.055,
-    "volume": 8674.779382,
+    "volume": 689.34265,
     "priceHistory": [
       {
         "price": 0.055,
-        "timestamp": 1767001596531
+        "timestamp": 1767160191876
       }
     ],
     "priceVolatility": 0
   },
   "will-the-rams-win-the-nfc-championship-1": {
-    "price": 0.245,
-    "volume": 45486.398012000005,
+    "price": 0.195,
+    "volume": 32590.104194,
     "priceHistory": [
       {
-        "price": 0.245,
-        "timestamp": 1767001596534
+        "price": 0.195,
+        "timestamp": 1767160191879
       }
     ],
     "priceVolatility": 0
   },
   "will-the-eagles-win-the-2026-nfc-championship": {
-    "price": 0.155,
-    "volume": 2065.278384,
+    "price": 0.16,
+    "volume": 459.77940900000004,
     "priceHistory": [
       {
-        "price": 0.155,
-        "timestamp": 1767001596537
+        "price": 0.16,
+        "timestamp": 1767160191883
       }
     ],
     "priceVolatility": 0
   },
   "will-the-49ers-win-the-2026-nfc-championship": {
-    "price": 0.1925,
-    "volume": 230.433517,
+    "price": 0.213,
+    "volume": 883.4353649999999,
     "priceHistory": [
       {
-        "price": 0.1925,
-        "timestamp": 1767001596540
+        "price": 0.213,
+        "timestamp": 1767160191887
       }
     ],
     "priceVolatility": 0
   },
   "will-the-seahawks-win-the-2026-nfc-championship": {
-    "price": 0.2395,
-    "volume": 18685.043193,
+    "price": 0.2595,
+    "volume": 20621.856587,
     "priceHistory": [
       {
-        "price": 0.2395,
-        "timestamp": 1767001596544
+        "price": 0.2595,
+        "timestamp": 1767160191891
       }
     ],
     "priceVolatility": 0
   },
   "will-the-buccaneers-win-the-2026-nfc-championship": {
-    "price": 0.013,
-    "volume": 525.770669,
-    "priceHistory": [
-      {
-        "price": 0.013,
-        "timestamp": 1767001596547
-      }
-    ],
-    "priceVolatility": 0
+    "volume": 38646.835114,
+    "price": 0.0195
   },
   "will-the-bills-win-the-afc-championship-1": {
-    "price": 0.17,
-    "volume": 2849.622375,
+    "price": 0.165,
+    "volume": 194.463857,
     "priceHistory": [
       {
-        "price": 0.17,
-        "timestamp": 1767001596551
+        "price": 0.165,
+        "timestamp": 1767160191895
       }
     ],
     "priceVolatility": 0
   },
   "will-the-patriots-win-the-afc-championship-1": {
-    "price": 0.2335,
-    "volume": 1241.089296,
+    "price": 0.1725,
+    "volume": 13898.025798,
     "priceHistory": [
       {
-        "price": 0.2335,
-        "timestamp": 1767001596555
+        "price": 0.1725,
+        "timestamp": 1767160191899
       }
     ],
     "priceVolatility": 0
   },
   "will-the-ravens-win-the-afc-championship-1": {
-    "price": 0.0645,
-    "volume": 340.755543,
+    "price": 0.0655,
+    "volume": 319.410443,
     "priceHistory": [
       {
-        "price": 0.0645,
-        "timestamp": 1767001596560
+        "price": 0.0655,
+        "timestamp": 1767160191903
       }
     ],
     "priceVolatility": 0
   },
   "will-the-steelers-win-the-afc-championship-1": {
-    "price": 0.037,
-    "volume": 346.09792000000004,
+    "price": 0.015,
+    "volume": 117.26263,
     "priceHistory": [
       {
-        "price": 0.037,
-        "timestamp": 1767001596563
+        "price": 0.015,
+        "timestamp": 1767160191907
       }
     ],
     "priceVolatility": 0
   },
   "will-the-texans-win-the-afc-championship-1": {
-    "price": 0.1215,
-    "volume": 1094.9101229999999,
+    "price": 0.1295,
+    "volume": 560.060279,
     "priceHistory": [
       {
-        "price": 0.1215,
-        "timestamp": 1767001596566
+        "price": 0.1295,
+        "timestamp": 1767160191910
       }
     ],
     "priceVolatility": 0
   },
   "will-the-jaguars-win-the-afc-championship-1": {
-    "price": 0.1915,
-    "volume": 3458.7723170000004,
+    "price": 0.1615,
+    "volume": 254.166199,
     "priceHistory": [
       {
-        "price": 0.1915,
-        "timestamp": 1767001596570
+        "price": 0.1615,
+        "timestamp": 1767160191913
       }
     ],
     "priceVolatility": 0
   },
   "will-the-broncos-win-the-afc-championship-1": {
-    "price": 0.21,
-    "volume": 2235.099571,
+    "price": 0.235,
+    "volume": 1713.529994,
     "priceHistory": [
       {
-        "price": 0.21,
-        "timestamp": 1767001596574
+        "price": 0.235,
+        "timestamp": 1767160191917
       }
     ],
     "priceVolatility": 0
   },
   "will-the-chargers-win-the-afc-championship-1": {
-    "price": 0.038,
-    "volume": 168.11420700000002,
+    "price": 0.0625,
+    "volume": 213.415333,
     "priceHistory": [
       {
-        "price": 0.038,
-        "timestamp": 1767001596577
+        "price": 0.0625,
+        "timestamp": 1767160191920
       }
     ],
     "priceVolatility": 0
   },
   "will-the-pittsburgh-steelers-win-the-afc-north-1": {
-    "price": 0.355,
-    "volume": 11094.650741000001,
+    "price": 0.365,
+    "volume": 20.86,
     "priceHistory": [
       {
-        "price": 0.355,
-        "timestamp": 1767001596580
+        "price": 0.365,
+        "timestamp": 1767160191924
       }
     ],
     "priceVolatility": 0
   },
   "will-the-baltimore-ravens-win-the-afc-north-1": {
-    "price": 0.65,
-    "volume": 4920.46516,
+    "price": 0.625,
+    "volume": 31.5625,
     "priceHistory": [
       {
-        "price": 0.65,
-        "timestamp": 1767001596584
+        "price": 0.625,
+        "timestamp": 1767160191927
       }
     ],
     "priceVolatility": 0
   },
   "will-the-houston-texans-win-the-afc-south-1": {
-    "price": 0.094,
-    "volume": 1394.100141,
+    "price": 0.1275,
+    "volume": 375.000912,
     "priceHistory": [
       {
-        "price": 0.094,
-        "timestamp": 1767001596587
+        "price": 0.1275,
+        "timestamp": 1767160191931
       }
     ],
     "priceVolatility": 0
   },
   "will-the-jacksonville-jaguars-win-the-afc-south-1": {
-    "price": 0.865,
-    "volume": 813.490948,
+    "price": 0.86,
+    "volume": 76.374371,
     "priceHistory": [
       {
-        "price": 0.865,
-        "timestamp": 1767001596591
+        "price": 0.86,
+        "timestamp": 1767160191934
       }
     ],
     "priceVolatility": 0
@@ -939,12 +743,12 @@
     "price": 0.828
   },
   "will-the-san-francisco-49ers-win-the-nfc-west-1": {
-    "price": 0.4865,
-    "volume": 2615.593971999999,
+    "price": 0.473,
+    "volume": 551.69575,
     "priceHistory": [
       {
-        "price": 0.4865,
-        "timestamp": 1767001596594
+        "price": 0.473,
+        "timestamp": 1767160191937
       }
     ],
     "priceVolatility": 0
@@ -954,12 +758,12 @@
     "price": 0.185
   },
   "will-the-seattle-seahawks-win-the-nfc-west-1": {
-    "price": 0.51,
-    "volume": 8295.564481,
+    "price": 0.52,
+    "volume": 13147.216654,
     "priceHistory": [
       {
-        "price": 0.51,
-        "timestamp": 1767001596597
+        "price": 0.52,
+        "timestamp": 1767160191941
       }
     ],
     "priceVolatility": 0
@@ -973,199 +777,78 @@
     "price": 0.8485
   },
   "will-the-tampa-bay-buccaneers-win-the-nfc-south-11": {
-    "price": 0.575,
-    "volume": 3493.7781279999995,
+    "price": 0.215,
+    "volume": 11150.930816,
     "priceHistory": [
       {
-        "price": 0.575,
-        "timestamp": 1767001596600
+        "price": 0.215,
+        "timestamp": 1767160191945
       }
     ],
     "priceVolatility": 0
   },
   "will-the-carolina-panthers-win-the-nfc-south-11": {
-    "price": 0.4335,
-    "volume": 6514.766356,
+    "price": 0.7585,
+    "volume": 18462.807832000002,
     "priceHistory": [
       {
-        "price": 0.4335,
-        "timestamp": 1767001596603
+        "price": 0.7585,
+        "timestamp": 1767160191948
       }
     ],
     "priceVolatility": 0
   },
-  "hailey-bieber-pregnant-in-2025": {
-    "price": 0.011,
-    "volume": 5028.82972,
+  "will-trump-lower-tariffs-on-mexico-by-december-31": {
+    "price": 0.013,
+    "volume": 21560.184615,
     "priceHistory": [
       {
-        "price": 0.011,
-        "timestamp": 1767001596240
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "will-trump-deport-less-than-250000": {
-    "price": 0.0105,
-    "volume": 2699.420362,
-    "priceHistory": [
-      {
-        "price": 0.0105,
-        "timestamp": 1767001596264
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "will-trump-cut-corporate-taxes-in-2025": {
-    "price": 0.018,
-    "volume": 1080.59,
-    "priceHistory": [
-      {
-        "price": 0.018,
-        "timestamp": 1767001596279
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "china-x-taiwan-military-clash-by-december-31": {
-    "price": 0.016,
-    "volume": 37149.279248,
-    "priceHistory": [
-      {
-        "price": 0.016,
-        "timestamp": 1767001596293
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "us-recognizes-russian-sovereignty-over-ukraine": {
-    "price": 0.0115,
-    "volume": 1009.21,
-    "priceHistory": [
-      {
-        "price": 0.0115,
-        "timestamp": 1767001596323
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "trump-cabinet-member-out-in-2025": {
-    "price": 0.014,
-    "volume": 164.248022,
-    "priceHistory": [
-      {
-        "price": 0.014,
-        "timestamp": 1767001596337
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "casey-desantis-runs-for-florida-governor": {
-    "price": 0.0845,
-    "volume": 144.14,
-    "priceHistory": [
-      {
-        "price": 0.0845,
-        "timestamp": 1767001596354
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "negative-gdp-growth-in-2025": {
-    "price": 0.0155,
-    "volume": 1014.618,
-    "priceHistory": [
-      {
-        "price": 0.0155,
-        "timestamp": 1767001596376
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "will-drake-release-an-album-in-2025": {
-    "price": 0.014,
-    "volume": 318.43,
-    "priceHistory": [
-      {
-        "price": 0.014,
-        "timestamp": 1767001596382
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "us-stagflation-in-2025": {
-    "price": 0.0105,
-    "volume": 992.77,
-    "priceHistory": [
-      {
-        "price": 0.0105,
-        "timestamp": 1767001596385
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "will-meta-announce-whatsapp-sale-in-2025": {
-    "price": 0.015,
-    "volume": 15959.710063,
-    "priceHistory": [
-      {
-        "price": 0.015,
-        "timestamp": 1767001596391
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "will-trumps-approval-rating-hit-40-in-2025": {
-    "price": 0.0145,
-    "volume": 16270.169088999997,
-    "priceHistory": [
-      {
-        "price": 0.0145,
-        "timestamp": 1767001596400
-      }
-    ],
-    "priceVolatility": 0
-  },
-  "us-withdraws-from-syria-in-2025": {
-    "price": 0.012,
-    "volume": 100.2,
-    "priceHistory": [
-      {
-        "price": 0.012,
-        "timestamp": 1767001596431
+        "price": 0.013,
+        "timestamp": 1767160191802
       }
     ],
     "priceVolatility": 0
   },
   "will-the-baltimore-ravens-win-super-bowl-2026": {
-    "price": 0.0365,
-    "volume": 84680.480924,
+    "price": 0.0425,
+    "volume": 49631.820425999984,
     "priceHistory": [
       {
-        "price": 0.0365,
-        "timestamp": 1767001596464
+        "price": 0.0425,
+        "timestamp": 1767160191809
+      }
+    ],
+    "priceVolatility": 0
+  },
+  "will-the-carolina-panthers-win-super-bowl-2026": {
+    "price": 0.0105,
+    "volume": 212684.686555,
+    "priceHistory": [
+      {
+        "price": 0.0105,
+        "timestamp": 1767160191816
       }
     ],
     "priceVolatility": 0
   },
   "russia-ukraine-ceasefire-before-gta-vi-554": {
-    "price": 0.665,
-    "volume": 80.401763,
+    "price": 0.655,
+    "volume": 601.519974,
     "priceHistory": [
       {
-        "price": 0.665,
-        "timestamp": 1767001596606
+        "price": 0.655,
+        "timestamp": 1767160191951
       }
     ],
     "priceVolatility": 0
   },
   "new-rhianna-album-before-gta-vi-926": {
-    "price": 0.56,
-    "volume": 150,
+    "price": 0.555,
+    "volume": 225.119997,
     "priceHistory": [
       {
-        "price": 0.56,
-        "timestamp": 1767001596609
+        "price": 0.555,
+        "timestamp": 1767160191955
       }
     ],
     "priceVolatility": 0

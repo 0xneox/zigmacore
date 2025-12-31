@@ -663,7 +663,11 @@ async function main() {
   startServer();
   setInterval(() => console.log(" Zigma heartbeat", new Date().toISOString()), 30000);
   
-  if (process.env.NODE_ENV === 'development') await runCycle();
+  if (process.env.NODE_ENV === 'development') {
+    await runCycle();
+    // Run cycles every 5 minutes continuously for testing
+    setInterval(runCycle, 5 * 60 * 1000);
+  }
   cron.schedule(process.env.CRON_SCHEDULE || '*/7 * * * *', runCycle);
 }
 

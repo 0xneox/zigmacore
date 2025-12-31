@@ -20736,3 +20736,1093 @@ Effective Edge: 16.85% (raw 4.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
 Effective Edge: 10.32% (raw 2.9%, conf 70.0, entropy 0.100, liqFactor 1.000)
  SIGNAL: BUY NO (70%) | Exposure: 2.04%
 Effective Edge: 5.09% (raw 22.6%, conf 70.0, entropy 0.100, liqFactor 0.064)
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-29T16:20:36.110Z ---
+DEBUG: Markets input: 83
+DEBUG: Baseline edge scan
+DEBUG: Hailey Bieber pregnant in 2025... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Google have the top AI mo... P_market: 0.988, P_prior: 0.200, EDGE: 78.8%
+DEBUG: Cardano ETF in 2025?... P_market: 0.013, P_prior: 0.400, EDGE: 38.7%
+DEBUG: Will Trump deport less than 25... P_market: 0.011, P_prior: 0.125, EDGE: 11.5%
+DEBUG: Will Trump deport 250,000-500,... P_market: 0.961, P_prior: 0.125, EDGE: 83.5%
+DEBUG: Will Trump deport 500,000-750,... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: U.S. enacts AI safety bill in ... P_market: 0.014, P_prior: 0.125, EDGE: 11.1%
+DEBUG: X Money launch in 2025?... P_market: 0.015, P_prior: 0.125, EDGE: 10.9%
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.116, P_prior: 0.125, EDGE: 0.9%
+DEBUG: US Treasury transactions on bl... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Elon and DOGE cut less th... P_market: 0.987, P_prior: 0.200, EDGE: 78.7%
+DEBUG: Will Elon cut the budget by at... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Leonardo DiCaprio engaged in 2... P_market: 0.019, P_prior: 0.125, EDGE: 10.6%
+DEBUG: Bill Belichick engaged in 2025... P_market: 0.054, P_prior: 0.125, EDGE: 7.1%
+DEBUG: Will Trump meet with MrBeast i... P_market: 0.025, P_prior: 0.125, EDGE: 10.0%
+DEBUG: Vaccine for new COVID disease ... P_market: 0.041, P_prior: 0.125, EDGE: 8.4%
+DEBUG: Luigi Mangione plea deal in 20... P_market: 0.026, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Trump cabinet member out by De... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Luigi Mangione mistrial?... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Will an Erewhon open in NYC in... P_market: 0.053, P_prior: 0.125, EDGE: 7.2%
+DEBUG: Romanian politician Georgescu ... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.986, P_prior: 0.125, EDGE: 86.1%
+DEBUG: Will Trump sell 1-100 Gold Car... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Casey DeSantis run for Fl... P_market: 0.086, P_prior: 0.125, EDGE: 3.9%
+DEBUG: Brazil unemployment below 6.3%... P_market: 0.971, P_prior: 0.125, EDGE: 84.6%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Odell Beckham Jr. in jail in 2... P_market: 0.053, P_prior: 0.125, EDGE: 7.2%
+DEBUG: Will the next James Bond be Br... P_market: 0.026, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Trump charges Member of Januar... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Deel CEO jailed in 2025?... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Negative GDP growth in 2025?... P_market: 0.015, P_prior: 0.200, EDGE: 18.6%
+DEBUG: Will Drake release an album in... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Meta announce WhatsApp sa... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will the U.S. collect less tha... P_market: 0.373, P_prior: 0.125, EDGE: 24.9%
+DEBUG: Will the U.S. collect between ... P_market: 0.340, P_prior: 0.125, EDGE: 21.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.024, P_prior: 0.125, EDGE: 10.2%
+DEBUG: U.S. withdraws from Syria in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Gold close between $3900 ... P_market: 0.014, P_prior: 0.125, EDGE: 11.1%
+DEBUG: Will Gold close above $4000 at... P_market: 0.984, P_prior: 0.125, EDGE: 85.9%
+DEBUG: Will ChatGPT reach 1b monthly ... P_market: 0.025, P_prior: 0.125, EDGE: 10.0%
+DEBUG: Timothée Chalamet and Kylie Je... P_market: 0.118, P_prior: 0.125, EDGE: 0.7%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.150, P_prior: 0.125, EDGE: 2.5%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.043, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.043, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.092, P_prior: 0.085, EDGE: 0.8%
+DEBUG: Will the Green Bay Packers win... P_market: 0.033, P_prior: 0.085, EDGE: 5.2%
+DEBUG: Will the Houston Texans win Su... P_market: 0.057, P_prior: 0.085, EDGE: 2.8%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.057, P_prior: 0.085, EDGE: 2.8%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.026, P_prior: 0.085, EDGE: 5.8%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.148, P_prior: 0.085, EDGE: 6.3%
+DEBUG: Will the New England Patriots ... P_market: 0.080, P_prior: 0.085, EDGE: 0.5%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.105, P_prior: 0.085, EDGE: 2.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.089, P_prior: 0.085, EDGE: 0.5%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.134, P_prior: 0.085, EDGE: 4.9%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.019, P_prior: 0.085, EDGE: 6.6%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Packers win the NFC C... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.245, P_prior: 0.085, EDGE: 16.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.155, P_prior: 0.085, EDGE: 7.0%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.183, P_prior: 0.085, EDGE: 9.8%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.224, P_prior: 0.085, EDGE: 13.9%
+DEBUG: Will the Buccaneers win the 20... P_market: 0.011, P_prior: 0.085, EDGE: 7.4%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.145, P_prior: 0.085, EDGE: 6.0%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.176, P_prior: 0.085, EDGE: 9.1%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.059, P_prior: 0.085, EDGE: 2.6%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.025, P_prior: 0.085, EDGE: 5.9%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.124, P_prior: 0.085, EDGE: 4.0%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.169, P_prior: 0.085, EDGE: 8.4%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.235, P_prior: 0.085, EDGE: 15.0%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.070, P_prior: 0.085, EDGE: 1.5%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.365, P_prior: 0.085, EDGE: 28.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.640, P_prior: 0.085, EDGE: 55.5%
+DEBUG: Will the Houston Texans win th... P_market: 0.098, P_prior: 0.085, EDGE: 1.3%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.885, P_prior: 0.085, EDGE: 80.0%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.481, P_prior: 0.085, EDGE: 39.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.505, P_prior: 0.085, EDGE: 42.0%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.550, P_prior: 0.085, EDGE: 46.5%
+DEBUG: Will the Carolina Panthers win... P_market: 0.444, P_prior: 0.085, EDGE: 35.9%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.680, P_prior: 0.150, EDGE: 53.0%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.555, P_prior: 0.125, EDGE: 43.0%
+DEBUG: Baseline flagged: 11
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 11 markets for deep analysis
+[CACHE] Will Google have the top AI mo... Delta: 0.20%
+Skipping analysis: market price too close to bucket prior (1.2% < 5%)
+[CACHE] Will the Green Bay Packers win... Delta: 3.17%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 5
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 2025-26 Green Bay Packers Odds: Odds to win Super Bowl, NFL ... | 2026 Packers Schedule Coming Into Focus - Sports Illustrated | Guys, Super Bowl 61 is a guaranteed win for us. : r/GreenBayPackers | Super Bowl 2026 odds: Are the Bears worth backing? Can the Bills ... | BREAKING: Despite locking up a postseason berth, the Packers are ...
+[CACHE] Will the Los Angeles Chargers ... Delta: 1.85%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 5
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: Chargers making it to super bowl 2026 - Facebook | 2025-26 Los Angeles Chargers Odds: Odds to win Super Bowl, NFL ... | It's SUPER BOWL OR BUST for the Los Angeles Chargers in 2026 | 2026 Super Bowl odds: Jim Harbaugh has Chargers flying high ... | Who Will Win the Super Bowl 2026? Seahawks, Jaguars, Rams SB ...
+[CACHE] Will the Los Angeles Rams win ... Delta: 0.67%
+[LLM] Analyzing: will-the-los-angeles-rams-win-super-bowl-2026 - Will the Los Angeles Rams win Super Bowl 2026?
+Headlines found: 5
+NEWS for Will the Los Angeles Rams win Super Bowl 2026?: Read it and keep: Rams will win the Super Bowl title in 2026 | La Rams will make it to super bowl 2026 | 2025-26 Los Angeles Rams Odds: Odds to win Super Bowl ... | Can the Rams Win the Super Bowl? Breaking Down Their ... | Super Bowl 2026 odds: Rams remain favorites despite loss ...
+[CACHE] Will the Pittsburgh Steelers w... Delta: 13.64%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 5
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: Pittsburgh Steelers Odds to Win 2026 Super Bowl | FanDuel Research | Steelers will be 2026 Superbowl champions - Facebook | 2025-26 Pittsburgh Steelers Odds: Odds to win Super Bowl, NFL ... | Steelers have massive Mike Tomlin decision to make in 2026 | NFL futures: Rams still Super Bowl favorites; Jaguars make jump
+[CACHE] Will the Panthers win the NFC ... Delta: 2.70%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 5
+NEWS for Will the Panthers win the NFC Championship?: Carolina Panthers: The Queen City Thread - Pro Football | NFL 2025 week 16 - Pro Football - - Page 5 - City-Data Forum | NFL 2025 week 9 - Pro Football - - Page 6 - City-Data Forum | 2025 NFL week 4 (fan, win, games, record) - Pro Football - - City … | NFL 2025 week 11 - Pro Football - - Page 2 - City-Data Forum
+[CACHE] Will the Rams win the NFC Cham... Delta: 0.00%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 5
+NEWS for Will the Rams win the NFC Championship?: NFC playoff picture: Rams have No. 6 seed entering Week 17 | Rams eliminated from NFC West contention | Rams eliminated from NFC West after Sunday wins by ... | Rams eliminated from NFC West after Sunday wins by ... | Los Angeles Rams are who NFC playoff teams need to 'look ...
+[CACHE] Will the Eagles win the 2026 N... Delta: 0.00%
+[LLM] Analyzing: will-the-eagles-win-the-2026-nfc-championship - Will the Eagles win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Eagles win the 2026 NFC Championship?: 
+[CACHE] Will the Seahawks win the 2026... Delta: 6.68%
+[LLM] Analyzing: will-the-seahawks-win-the-2026-nfc-championship - Will the Seahawks win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Seahawks win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 11.90%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[CACHE] Will the Baltimore Ravens win ... Delta: 1.54%
+[LLM] Analyzing: will-the-baltimore-ravens-win-the-afc-north-1 - Will the Baltimore Ravens win the AFC North?
+Headlines found: 0
+NEWS for Will the Baltimore Ravens win the AFC North?: 
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.92% (raw 2.7%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.76% (raw 2.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.17% (raw 0.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.52% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 8.66% (raw 2.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 17.79% (raw 5.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 2.89% (raw 0.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 12.27% (raw 3.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 14.18% (raw 4.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 1.87%
+Effective Edge: 4.68% (raw 23.1%, conf 70.0, entropy 0.100, liqFactor 0.058)
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-29T16:29:11.118Z ---
+DEBUG: Markets input: 84
+DEBUG: Baseline edge scan
+DEBUG: Hailey Bieber pregnant in 2025... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Maduro out in 2025?... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Google have the top AI mo... P_market: 0.988, P_prior: 0.200, EDGE: 78.8%
+DEBUG: Will Trump deport less than 25... P_market: 0.011, P_prior: 0.125, EDGE: 11.5%
+DEBUG: Will Trump deport 250,000-500,... P_market: 0.962, P_prior: 0.125, EDGE: 83.7%
+DEBUG: Will Trump deport 500,000-750,... P_market: 0.015, P_prior: 0.125, EDGE: 10.9%
+DEBUG: U.S. enacts AI safety bill in ... P_market: 0.014, P_prior: 0.125, EDGE: 11.1%
+DEBUG: X Money launch in 2025?... P_market: 0.015, P_prior: 0.125, EDGE: 10.9%
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.117, P_prior: 0.125, EDGE: 0.8%
+DEBUG: US Treasury transactions on bl... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Elon and DOGE cut less th... P_market: 0.988, P_prior: 0.200, EDGE: 78.8%
+DEBUG: Will Elon cut the budget by at... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Leonardo DiCaprio engaged in 2... P_market: 0.018, P_prior: 0.125, EDGE: 10.7%
+DEBUG: Bill Belichick engaged in 2025... P_market: 0.054, P_prior: 0.125, EDGE: 7.1%
+DEBUG: Will Trump meet with MrBeast i... P_market: 0.025, P_prior: 0.125, EDGE: 10.0%
+DEBUG: Vaccine for new COVID disease ... P_market: 0.056, P_prior: 0.125, EDGE: 6.9%
+DEBUG: Luigi Mangione plea deal in 20... P_market: 0.026, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Trump cabinet member out by De... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Luigi Mangione mistrial?... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Will an Erewhon open in NYC in... P_market: 0.053, P_prior: 0.125, EDGE: 7.2%
+DEBUG: Romanian politician Georgescu ... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.986, P_prior: 0.125, EDGE: 86.1%
+DEBUG: Will Trump sell 1-100 Gold Car... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Casey DeSantis run for Fl... P_market: 0.087, P_prior: 0.125, EDGE: 3.8%
+DEBUG: Brazil unemployment below 6.3%... P_market: 0.971, P_prior: 0.125, EDGE: 84.6%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Odell Beckham Jr. in jail in 2... P_market: 0.053, P_prior: 0.125, EDGE: 7.2%
+DEBUG: Will the next James Bond be Br... P_market: 0.026, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Trump charges Member of Januar... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Will Lee Zeldin leave the Trum... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Deel CEO jailed in 2025?... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Negative GDP growth in 2025?... P_market: 0.015, P_prior: 0.200, EDGE: 18.6%
+DEBUG: Will Drake release an album in... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Meta announce WhatsApp sa... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will the U.S. collect less tha... P_market: 0.373, P_prior: 0.125, EDGE: 24.9%
+DEBUG: Will the U.S. collect between ... P_market: 0.340, P_prior: 0.125, EDGE: 21.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.024, P_prior: 0.125, EDGE: 10.2%
+DEBUG: U.S. withdraws from Syria in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Trump refrain from announ... P_market: 0.989, P_prior: 0.125, EDGE: 86.4%
+DEBUG: Will Gold close above $4000 at... P_market: 0.984, P_prior: 0.125, EDGE: 85.9%
+DEBUG: Will ChatGPT reach 1b monthly ... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Timothée Chalamet and Kylie Je... P_market: 0.118, P_prior: 0.125, EDGE: 0.7%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.155, P_prior: 0.125, EDGE: 3.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.043, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.043, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.092, P_prior: 0.085, EDGE: 0.8%
+DEBUG: Will the Green Bay Packers win... P_market: 0.033, P_prior: 0.085, EDGE: 5.2%
+DEBUG: Will the Houston Texans win Su... P_market: 0.057, P_prior: 0.085, EDGE: 2.8%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.057, P_prior: 0.085, EDGE: 2.8%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.026, P_prior: 0.085, EDGE: 5.8%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.147, P_prior: 0.085, EDGE: 6.2%
+DEBUG: Will the New England Patriots ... P_market: 0.080, P_prior: 0.085, EDGE: 0.5%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.105, P_prior: 0.085, EDGE: 2.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.089, P_prior: 0.085, EDGE: 0.5%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.133, P_prior: 0.085, EDGE: 4.8%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.018, P_prior: 0.085, EDGE: 6.6%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Packers win the NFC C... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.245, P_prior: 0.085, EDGE: 16.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.155, P_prior: 0.085, EDGE: 7.0%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.183, P_prior: 0.085, EDGE: 9.8%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.224, P_prior: 0.085, EDGE: 13.9%
+DEBUG: Will the Buccaneers win the 20... P_market: 0.011, P_prior: 0.085, EDGE: 7.4%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.145, P_prior: 0.085, EDGE: 6.0%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.176, P_prior: 0.085, EDGE: 9.1%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.061, P_prior: 0.085, EDGE: 2.4%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.026, P_prior: 0.085, EDGE: 5.9%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.124, P_prior: 0.085, EDGE: 4.0%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.169, P_prior: 0.085, EDGE: 8.4%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.230, P_prior: 0.085, EDGE: 14.5%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.064, P_prior: 0.085, EDGE: 2.1%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.365, P_prior: 0.085, EDGE: 28.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.640, P_prior: 0.085, EDGE: 55.5%
+DEBUG: Will the Houston Texans win th... P_market: 0.098, P_prior: 0.085, EDGE: 1.3%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.885, P_prior: 0.085, EDGE: 80.0%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.481, P_prior: 0.085, EDGE: 39.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.505, P_prior: 0.085, EDGE: 42.0%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.550, P_prior: 0.085, EDGE: 46.5%
+DEBUG: Will the Carolina Panthers win... P_market: 0.444, P_prior: 0.085, EDGE: 35.9%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.680, P_prior: 0.150, EDGE: 53.0%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.555, P_prior: 0.125, EDGE: 43.0%
+DEBUG: Baseline flagged: 12
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 12 markets for deep analysis
+[CACHE] Maduro out in 2025?... Delta: 4.76%
+[LLM] Analyzing: maduro-out-in-2025-411 - Maduro out in 2025?
+Headlines found: 0
+NEWS for Maduro out in 2025?: 
+[CACHE] Will Google have the top AI mo... Delta: 0.20%
+Skipping analysis: market price too close to bucket prior (1.2% < 5%)
+[CACHE] Will the Green Bay Packers win... Delta: 0.00%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Chargers ... Delta: 0.00%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Rams win ... Delta: 1.01%
+[LLM] Analyzing: will-the-los-angeles-rams-win-super-bowl-2026 - Will the Los Angeles Rams win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Rams win Super Bowl 2026?: 
+[CACHE] Will the Pittsburgh Steelers w... Delta: 0.00%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: 
+[CACHE] Will the Panthers win the NFC ... Delta: 2.63%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Panthers win the NFC Championship?: 
+[CACHE] Will the Rams win the NFC Cham... Delta: 0.00%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Rams win the NFC Championship?: 
+[CACHE] Will the Eagles win the 2026 N... Delta: 0.00%
+[LLM] Analyzing: will-the-eagles-win-the-2026-nfc-championship - Will the Eagles win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Eagles win the 2026 NFC Championship?: 
+[CACHE] Will the Seahawks win the 2026... Delta: 0.00%
+[LLM] Analyzing: will-the-seahawks-win-the-2026-nfc-championship - Will the Seahawks win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Seahawks win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 2.13%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[CACHE] Will the Baltimore Ravens win ... Delta: 0.00%
+[LLM] Analyzing: will-the-baltimore-ravens-win-the-afc-north-1 - Will the Baltimore Ravens win the AFC North?
+Headlines found: 0
+NEWS for Will the Baltimore Ravens win the AFC North?: 
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.76% (raw 2.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.94% (raw 2.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.78% (raw 2.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.08% (raw 0.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.53% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 8.68% (raw 2.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 15.85% (raw 4.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 2.89% (raw 0.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 12.27% (raw 3.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 13.34% (raw 3.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 1.86%
+Effective Edge: 4.64% (raw 23.1%, conf 70.0, entropy 0.100, liqFactor 0.057)
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-29T16:46:16.473Z ---
+DEBUG: Markets input: 83
+DEBUG: Baseline edge scan
+DEBUG: Hailey Bieber pregnant in 2025... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Google have the top AI mo... P_market: 0.988, P_prior: 0.200, EDGE: 78.8%
+DEBUG: Cardano ETF in 2025?... P_market: 0.019, P_prior: 0.400, EDGE: 38.1%
+DEBUG: Will Trump deport less than 25... P_market: 0.011, P_prior: 0.125, EDGE: 11.5%
+DEBUG: Will Trump deport 250,000-500,... P_market: 0.959, P_prior: 0.125, EDGE: 83.4%
+DEBUG: Will Trump deport 500,000-750,... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: U.S. enacts AI safety bill in ... P_market: 0.014, P_prior: 0.125, EDGE: 11.1%
+DEBUG: X Money launch in 2025?... P_market: 0.015, P_prior: 0.125, EDGE: 10.9%
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.117, P_prior: 0.125, EDGE: 0.8%
+DEBUG: US Treasury transactions on bl... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Elon and DOGE cut less th... P_market: 0.988, P_prior: 0.200, EDGE: 78.8%
+DEBUG: Will Elon cut the budget by at... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Leonardo DiCaprio engaged in 2... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Bill Belichick engaged in 2025... P_market: 0.054, P_prior: 0.125, EDGE: 7.1%
+DEBUG: Will Trump meet with MrBeast i... P_market: 0.025, P_prior: 0.125, EDGE: 10.0%
+DEBUG: Vaccine for new COVID disease ... P_market: 0.051, P_prior: 0.125, EDGE: 7.4%
+DEBUG: Luigi Mangione plea deal in 20... P_market: 0.026, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Trump cabinet member out by De... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Luigi Mangione mistrial?... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Will an Erewhon open in NYC in... P_market: 0.053, P_prior: 0.125, EDGE: 7.2%
+DEBUG: Romanian politician Georgescu ... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.986, P_prior: 0.125, EDGE: 86.1%
+DEBUG: Will Trump sell 1-100 Gold Car... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Casey DeSantis run for Fl... P_market: 0.086, P_prior: 0.125, EDGE: 3.9%
+DEBUG: Brazil unemployment below 6.3%... P_market: 0.982, P_prior: 0.125, EDGE: 85.7%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Odell Beckham Jr. in jail in 2... P_market: 0.053, P_prior: 0.125, EDGE: 7.2%
+DEBUG: Will the next James Bond be Br... P_market: 0.025, P_prior: 0.125, EDGE: 10.0%
+DEBUG: Trump charges Member of Januar... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Will Lee Zeldin leave the Trum... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Deel CEO jailed in 2025?... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Negative GDP growth in 2025?... P_market: 0.015, P_prior: 0.200, EDGE: 18.6%
+DEBUG: Will Drake release an album in... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Meta announce WhatsApp sa... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will the U.S. collect less tha... P_market: 0.373, P_prior: 0.125, EDGE: 24.9%
+DEBUG: Will the U.S. collect between ... P_market: 0.340, P_prior: 0.125, EDGE: 21.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.024, P_prior: 0.125, EDGE: 10.2%
+DEBUG: U.S. withdraws from Syria in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Gold close above $4000 at... P_market: 0.984, P_prior: 0.125, EDGE: 85.9%
+DEBUG: Will ChatGPT reach 1b monthly ... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Timothée Chalamet and Kylie Je... P_market: 0.116, P_prior: 0.125, EDGE: 0.9%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.155, P_prior: 0.125, EDGE: 3.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.041, P_prior: 0.085, EDGE: 4.4%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.041, P_prior: 0.085, EDGE: 4.4%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.097, P_prior: 0.085, EDGE: 1.2%
+DEBUG: Will the Green Bay Packers win... P_market: 0.033, P_prior: 0.085, EDGE: 5.2%
+DEBUG: Will the Houston Texans win Su... P_market: 0.057, P_prior: 0.085, EDGE: 2.8%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.056, P_prior: 0.085, EDGE: 2.9%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.026, P_prior: 0.085, EDGE: 5.8%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.147, P_prior: 0.085, EDGE: 6.3%
+DEBUG: Will the New England Patriots ... P_market: 0.079, P_prior: 0.085, EDGE: 0.6%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.105, P_prior: 0.085, EDGE: 2.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.090, P_prior: 0.085, EDGE: 0.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.133, P_prior: 0.085, EDGE: 4.8%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.021, P_prior: 0.085, EDGE: 6.3%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.084, P_prior: 0.085, EDGE: 0.1%
+DEBUG: Will the Packers win the NFC C... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.245, P_prior: 0.085, EDGE: 16.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.155, P_prior: 0.085, EDGE: 7.0%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.183, P_prior: 0.085, EDGE: 9.8%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.224, P_prior: 0.085, EDGE: 13.9%
+DEBUG: Will the Buccaneers win the 20... P_market: 0.011, P_prior: 0.085, EDGE: 7.4%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.145, P_prior: 0.085, EDGE: 6.0%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.176, P_prior: 0.085, EDGE: 9.2%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.061, P_prior: 0.085, EDGE: 2.4%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.026, P_prior: 0.085, EDGE: 5.9%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.124, P_prior: 0.085, EDGE: 4.0%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.169, P_prior: 0.085, EDGE: 8.4%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.230, P_prior: 0.085, EDGE: 14.5%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.068, P_prior: 0.085, EDGE: 1.7%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.365, P_prior: 0.085, EDGE: 28.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.640, P_prior: 0.085, EDGE: 55.5%
+DEBUG: Will the Houston Texans win th... P_market: 0.100, P_prior: 0.085, EDGE: 1.5%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.890, P_prior: 0.085, EDGE: 80.5%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.481, P_prior: 0.085, EDGE: 39.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.515, P_prior: 0.085, EDGE: 43.0%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.550, P_prior: 0.085, EDGE: 46.5%
+DEBUG: Will the Carolina Panthers win... P_market: 0.444, P_prior: 0.085, EDGE: 35.9%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.680, P_prior: 0.150, EDGE: 53.0%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.555, P_prior: 0.125, EDGE: 43.0%
+DEBUG: Baseline flagged: 11
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 12 markets for deep analysis
+[CACHE] Will Google have the top AI mo... Delta: 0.20%
+Skipping analysis: market price too close to bucket prior (1.2% < 5%)
+[CACHE] Will the Green Bay Packers win... Delta: 0.00%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Chargers ... Delta: 0.00%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Rams win ... Delta: 0.34%
+[LLM] Analyzing: will-the-los-angeles-rams-win-super-bowl-2026 - Will the Los Angeles Rams win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Rams win Super Bowl 2026?: 
+[CACHE] Will the Pittsburgh Steelers w... Delta: 0.00%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: 
+[CACHE] Will the Panthers win the NFC ... Delta: 16.22%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Panthers win the NFC Championship?: 
+[CACHE] Will the Rams win the NFC Cham... Delta: 0.00%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Rams win the NFC Championship?: 
+[CACHE] Will the Eagles win the 2026 N... Delta: 0.00%
+[LLM] Analyzing: will-the-eagles-win-the-2026-nfc-championship - Will the Eagles win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Eagles win the 2026 NFC Championship?: 
+[CACHE] Will the Seahawks win the 2026... Delta: 0.00%
+[LLM] Analyzing: will-the-seahawks-win-the-2026-nfc-championship - Will the Seahawks win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Seahawks win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 0.00%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[CACHE] Will the Baltimore Ravens win ... Delta: 0.00%
+[LLM] Analyzing: will-the-baltimore-ravens-win-the-afc-north-1 - Will the Baltimore Ravens win the AFC North?
+Headlines found: 0
+NEWS for Will the Baltimore Ravens win the AFC North?: 
+[LLM] Analyzing: odell-beckham-jr-in-jail-in-2025 - Odell Beckham Jr. in jail in 2025?
+Headlines found: 0
+NEWS for Odell Beckham Jr. in jail in 2025?: 
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.94% (raw 2.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.88% (raw 2.7%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.10% (raw 0.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.53% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 9.02% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 15.85% (raw 4.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 2.89% (raw 0.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 13.86% (raw 4.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 13.34% (raw 3.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 1.23%
+Effective Edge: 3.07% (raw 23.1%, conf 70.0, entropy 0.100, liqFactor 0.038)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.32% (raw 3.7%, conf 70.0, entropy 0.100, liqFactor 0.024)
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-29T18:55:54.871Z ---
+DEBUG: Markets input: 82
+DEBUG: Baseline edge scan
+DEBUG: Hailey Bieber pregnant in 2025... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Google have the top AI mo... P_market: 0.988, P_prior: 0.200, EDGE: 78.8%
+DEBUG: Cardano ETF in 2025?... P_market: 0.020, P_prior: 0.400, EDGE: 38.0%
+DEBUG: Will Trump deport 250,000-500,... P_market: 0.959, P_prior: 0.125, EDGE: 83.4%
+DEBUG: Will Trump deport 500,000-750,... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: U.S. enacts AI safety bill in ... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: X Money launch in 2025?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.163, P_prior: 0.125, EDGE: 3.8%
+DEBUG: US Treasury transactions on bl... P_market: 0.012, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Elon and DOGE cut less th... P_market: 0.986, P_prior: 0.200, EDGE: 78.6%
+DEBUG: Will Elon cut the budget by at... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Leonardo DiCaprio engaged in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: Bill Belichick engaged in 2025... P_market: 0.054, P_prior: 0.125, EDGE: 7.1%
+DEBUG: Will Trump meet with MrBeast i... P_market: 0.027, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Vaccine for new COVID disease ... P_market: 0.036, P_prior: 0.125, EDGE: 8.8%
+DEBUG: Luigi Mangione plea deal in 20... P_market: 0.025, P_prior: 0.125, EDGE: 10.1%
+DEBUG: Trump cabinet member out by De... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Luigi Mangione mistrial?... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Will an Erewhon open in NYC in... P_market: 0.055, P_prior: 0.125, EDGE: 7.0%
+DEBUG: Romanian politician Georgescu ... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.986, P_prior: 0.125, EDGE: 86.1%
+DEBUG: Will Trump sell 1-100 Gold Car... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Will Casey DeSantis run for Fl... P_market: 0.087, P_prior: 0.125, EDGE: 3.8%
+DEBUG: Brazil unemployment below 6.3%... P_market: 0.983, P_prior: 0.125, EDGE: 85.8%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Odell Beckham Jr. in jail in 2... P_market: 0.057, P_prior: 0.125, EDGE: 6.9%
+DEBUG: Will the next James Bond be Br... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Trump charges Member of Januar... P_market: 0.015, P_prior: 0.125, EDGE: 11.0%
+DEBUG: Underground Pyramid structures... P_market: 0.011, P_prior: 0.125, EDGE: 11.5%
+DEBUG: Will Lee Zeldin leave the Trum... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Trump announce run for 3rd ter... P_market: 0.019, P_prior: 0.125, EDGE: 10.6%
+DEBUG: Deel CEO jailed in 2025?... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Negative GDP growth in 2025?... P_market: 0.015, P_prior: 0.200, EDGE: 18.6%
+DEBUG: Will Drake release an album in... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will the U.S. collect less tha... P_market: 0.375, P_prior: 0.125, EDGE: 25.0%
+DEBUG: Will the U.S. collect between ... P_market: 0.340, P_prior: 0.125, EDGE: 21.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.024, P_prior: 0.125, EDGE: 10.2%
+DEBUG: U.S. withdraws from Syria in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: Will Trump refrain from announ... P_market: 0.989, P_prior: 0.125, EDGE: 86.4%
+DEBUG: Will ChatGPT reach 1b monthly ... P_market: 0.026, P_prior: 0.125, EDGE: 9.9%
+DEBUG: Timothée Chalamet and Kylie Je... P_market: 0.108, P_prior: 0.125, EDGE: 1.7%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.155, P_prior: 0.125, EDGE: 3.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.041, P_prior: 0.085, EDGE: 4.4%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.042, P_prior: 0.085, EDGE: 4.3%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.096, P_prior: 0.085, EDGE: 1.1%
+DEBUG: Will the Green Bay Packers win... P_market: 0.033, P_prior: 0.085, EDGE: 5.2%
+DEBUG: Will the Houston Texans win Su... P_market: 0.053, P_prior: 0.085, EDGE: 3.1%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.059, P_prior: 0.085, EDGE: 2.6%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.028, P_prior: 0.085, EDGE: 5.7%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.145, P_prior: 0.085, EDGE: 6.0%
+DEBUG: Will the New England Patriots ... P_market: 0.083, P_prior: 0.085, EDGE: 0.2%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.105, P_prior: 0.085, EDGE: 2.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.091, P_prior: 0.085, EDGE: 0.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.133, P_prior: 0.085, EDGE: 4.8%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.021, P_prior: 0.085, EDGE: 6.3%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.084, P_prior: 0.085, EDGE: 0.1%
+DEBUG: Will the Packers win the NFC C... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.245, P_prior: 0.085, EDGE: 16.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.155, P_prior: 0.085, EDGE: 7.0%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.183, P_prior: 0.085, EDGE: 9.8%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.224, P_prior: 0.085, EDGE: 13.9%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.150, P_prior: 0.085, EDGE: 6.5%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.178, P_prior: 0.085, EDGE: 9.3%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.083, P_prior: 0.085, EDGE: 0.2%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.026, P_prior: 0.085, EDGE: 5.9%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.125, P_prior: 0.085, EDGE: 4.0%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.165, P_prior: 0.085, EDGE: 8.0%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.235, P_prior: 0.085, EDGE: 15.0%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.068, P_prior: 0.085, EDGE: 1.7%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.375, P_prior: 0.085, EDGE: 29.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.625, P_prior: 0.085, EDGE: 54.0%
+DEBUG: Will the Houston Texans win th... P_market: 0.102, P_prior: 0.085, EDGE: 1.7%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.885, P_prior: 0.085, EDGE: 80.0%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.482, P_prior: 0.085, EDGE: 39.7%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.500, P_prior: 0.085, EDGE: 41.5%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.555, P_prior: 0.085, EDGE: 47.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.443, P_prior: 0.085, EDGE: 35.8%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.675, P_prior: 0.150, EDGE: 52.5%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.560, P_prior: 0.125, EDGE: 43.5%
+DEBUG: Baseline flagged: 11
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 13 markets for deep analysis
+[CACHE] Will Google have the top AI mo... Delta: 0.20%
+Skipping analysis: market price too close to bucket prior (1.2% < 5%)
+[CACHE] Will the Green Bay Packers win... Delta: 0.00%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Chargers ... Delta: 5.66%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Rams win ... Delta: 1.69%
+[LLM] Analyzing: will-the-los-angeles-rams-win-super-bowl-2026 - Will the Los Angeles Rams win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Rams win Super Bowl 2026?: 
+[CACHE] Will the Pittsburgh Steelers w... Delta: 0.00%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: 
+[CACHE] Will the Panthers win the NFC ... Delta: 0.00%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Panthers win the NFC Championship?: 
+[CACHE] Will the Rams win the NFC Cham... Delta: 0.00%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Rams win the NFC Championship?: 
+[CACHE] Will the Eagles win the 2026 N... Delta: 0.00%
+[LLM] Analyzing: will-the-eagles-win-the-2026-nfc-championship - Will the Eagles win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Eagles win the 2026 NFC Championship?: 
+[CACHE] Will the Seahawks win the 2026... Delta: 0.00%
+[LLM] Analyzing: will-the-seahawks-win-the-2026-nfc-championship - Will the Seahawks win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Seahawks win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 2.17%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[CACHE] Will the Baltimore Ravens win ... Delta: 2.34%
+[LLM] Analyzing: will-the-baltimore-ravens-win-the-afc-north-1 - Will the Baltimore Ravens win the AFC North?
+Headlines found: 0
+NEWS for Will the Baltimore Ravens win the AFC North?: 
+[CACHE] Odell Beckham Jr. in jail in 2... Delta: 6.60%
+[LLM] Analyzing: odell-beckham-jr-in-jail-in-2025 - Odell Beckham Jr. in jail in 2025?
+Headlines found: 0
+NEWS for Odell Beckham Jr. in jail in 2025?: 
+[CACHE] Will Trump deport 500,000-750,... Delta: 74.42%
+[LLM] Analyzing: will-trump-deport-500000-750000-people - Will Trump deport 500,000-750,000- people?
+Headlines found: 0
+NEWS for Will Trump deport 500,000-750,000- people?: 
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.94% (raw 2.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.79% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.03% (raw 0.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.53% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 9.02% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 15.85% (raw 4.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 2.89% (raw 0.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 12.27% (raw 3.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 15.81% (raw 4.5%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 10.78% (raw 22.5%, conf 70.0, entropy 0.100, liqFactor 0.137)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.31% (raw 3.7%, conf 70.0, entropy 0.100, liqFactor 0.024)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.55% (raw 2.4%, conf 70.0, entropy 0.100, liqFactor 0.183)
+Agent Zigma Initialized
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-30T05:28:55.613Z ---
+DEBUG: Markets input: 76
+DEBUG: Baseline edge scan
+DEBUG: Cardano ETF in 2025?... P_market: 0.015, P_prior: 0.400, EDGE: 38.6%
+DEBUG: Will Trump deport 250,000-500,... P_market: 0.952, P_prior: 0.125, EDGE: 82.7%
+DEBUG: Will Trump deport 500,000-750,... P_market: 0.028, P_prior: 0.125, EDGE: 9.8%
+DEBUG: Will NBA competitor raise >$3b... P_market: 0.063, P_prior: 0.125, EDGE: 6.2%
+DEBUG: X Money launch in 2025?... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.157, P_prior: 0.125, EDGE: 3.1%
+DEBUG: US Treasury transactions on bl... P_market: 0.012, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Elon and DOGE cut less th... P_market: 0.986, P_prior: 0.200, EDGE: 78.6%
+DEBUG: Will Elon cut the budget by at... P_market: 0.011, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Leonardo DiCaprio engaged in 2... P_market: 0.015, P_prior: 0.125, EDGE: 11.1%
+DEBUG: Bill Belichick engaged in 2025... P_market: 0.054, P_prior: 0.125, EDGE: 7.1%
+DEBUG: Vaccine for new COVID disease ... P_market: 0.035, P_prior: 0.125, EDGE: 8.9%
+DEBUG: Luigi Mangione plea deal in 20... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Trump cabinet member out by De... P_market: 0.016, P_prior: 0.125, EDGE: 10.9%
+DEBUG: Luigi Mangione mistrial?... P_market: 0.021, P_prior: 0.125, EDGE: 10.4%
+DEBUG: Will an Erewhon open in NYC in... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Romanian politician Georgescu ... P_market: 0.013, P_prior: 0.125, EDGE: 11.3%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.980, P_prior: 0.125, EDGE: 85.5%
+DEBUG: Will Trump sell 1-100 Gold Car... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Will Casey DeSantis run for Fl... P_market: 0.083, P_prior: 0.125, EDGE: 4.3%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Odell Beckham Jr. in jail in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: Trump charges Member of Januar... P_market: 0.014, P_prior: 0.125, EDGE: 11.1%
+DEBUG: Underground Pyramid structures... P_market: 0.011, P_prior: 0.125, EDGE: 11.5%
+DEBUG: Nord Stream pipeline turned on... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Deel CEO jailed in 2025?... P_market: 0.011, P_prior: 0.125, EDGE: 11.4%
+DEBUG: Negative GDP growth in 2025?... P_market: 0.015, P_prior: 0.200, EDGE: 18.6%
+DEBUG: Will Trump's approval rating h... P_market: 0.012, P_prior: 0.400, EDGE: 38.8%
+DEBUG: Will the U.S. collect less tha... P_market: 0.374, P_prior: 0.125, EDGE: 24.9%
+DEBUG: Will the U.S. collect between ... P_market: 0.350, P_prior: 0.125, EDGE: 22.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: U.S. withdraws from Syria in 2... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: Will ChatGPT reach 1b monthly ... P_market: 0.020, P_prior: 0.125, EDGE: 10.5%
+DEBUG: Timothée Chalamet and Kylie Je... P_market: 0.108, P_prior: 0.125, EDGE: 1.7%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.125, P_prior: 0.125, EDGE: 0.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.041, P_prior: 0.085, EDGE: 4.4%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.095, P_prior: 0.085, EDGE: 1.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.039, P_prior: 0.085, EDGE: 4.6%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.087, P_prior: 0.085, EDGE: 0.2%
+DEBUG: Will the Green Bay Packers win... P_market: 0.031, P_prior: 0.085, EDGE: 5.4%
+DEBUG: Will the Houston Texans win Su... P_market: 0.054, P_prior: 0.085, EDGE: 3.1%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.062, P_prior: 0.085, EDGE: 2.3%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.028, P_prior: 0.085, EDGE: 5.7%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.123, P_prior: 0.085, EDGE: 3.9%
+DEBUG: Will the New England Patriots ... P_market: 0.086, P_prior: 0.085, EDGE: 0.1%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.095, P_prior: 0.085, EDGE: 1.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.111, P_prior: 0.085, EDGE: 2.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.127, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.029, P_prior: 0.085, EDGE: 5.6%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.092, P_prior: 0.085, EDGE: 0.7%
+DEBUG: Will the Packers win the NFC C... P_market: 0.080, P_prior: 0.085, EDGE: 0.5%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.195, P_prior: 0.085, EDGE: 11.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.160, P_prior: 0.085, EDGE: 7.5%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.180, P_prior: 0.085, EDGE: 9.5%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.238, P_prior: 0.085, EDGE: 15.3%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.165, P_prior: 0.085, EDGE: 8.0%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.185, P_prior: 0.085, EDGE: 10.0%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.076, P_prior: 0.085, EDGE: 0.8%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.018, P_prior: 0.085, EDGE: 6.6%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.120, P_prior: 0.085, EDGE: 3.6%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.165, P_prior: 0.085, EDGE: 8.0%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.230, P_prior: 0.085, EDGE: 14.5%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.077, P_prior: 0.085, EDGE: 0.7%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.360, P_prior: 0.085, EDGE: 27.5%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.630, P_prior: 0.085, EDGE: 54.5%
+DEBUG: Will the Houston Texans win th... P_market: 0.115, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.875, P_prior: 0.085, EDGE: 79.0%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.471, P_prior: 0.085, EDGE: 38.6%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.525, P_prior: 0.085, EDGE: 44.0%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.265, P_prior: 0.085, EDGE: 18.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.723, P_prior: 0.085, EDGE: 63.8%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.675, P_prior: 0.150, EDGE: 52.5%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.560, P_prior: 0.125, EDGE: 43.5%
+DEBUG: Baseline flagged: 8
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 12 markets for deep analysis
+[LLM] Analyzing: will-the-carolina-panthers-win-super-bowl-2026 - Will the Carolina Panthers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Carolina Panthers win Super Bowl 2026?: 
+[CACHE] Will the Green Bay Packers win... Delta: 4.62%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Chargers ... Delta: 0.00%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: 
+[CACHE] Will the Pittsburgh Steelers w... Delta: 0.00%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: 
+[CACHE] Will the Panthers win the NFC ... Delta: 34.88%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Panthers win the NFC Championship?: 
+[CACHE] Will the Rams win the NFC Cham... Delta: 20.41%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Rams win the NFC Championship?: 
+[CACHE] Will the Eagles win the 2026 N... Delta: 3.23%
+[LLM] Analyzing: will-the-eagles-win-the-2026-nfc-championship - Will the Eagles win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Eagles win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 2.13%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[CACHE] Will the Baltimore Ravens win ... Delta: 0.80%
+[LLM] Analyzing: will-the-baltimore-ravens-win-the-afc-north-1 - Will the Baltimore Ravens win the AFC North?
+Headlines found: 0
+NEWS for Will the Baltimore Ravens win the AFC North?: 
+Skipping analysis: market price too close to bucket prior (0.8% < 5%)
+[LLM] Analyzing: will-the-carolina-panthers-win-the-nfc-south-11 - Will the Carolina Panthers win the NFC South?
+Headlines found: 0
+NEWS for Will the Carolina Panthers win the NFC South?: 
+Skipping analysis: market price too close to bucket prior (2.6% < 5%)
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.46% (raw 2.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.81% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.79% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.53% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 9.55% (raw 2.7%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 7.65% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 1.46%
+Effective Edge: 3.64% (raw 1.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 13.34% (raw 3.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 1.96%
+Effective Edge: 4.90% (raw 22.7%, conf 70.0, entropy 0.100, liqFactor 0.062)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 51.81% (raw 26.5%, conf 70.0, entropy 0.100, liqFactor 0.559)
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-31T05:47:24.720Z ---
+DEBUG: Markets input: 50
+DEBUG: Baseline edge scan
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.138, P_prior: 0.125, EDGE: 1.3%
+DEBUG: Will Elon cut the budget by at... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.989, P_prior: 0.125, EDGE: 86.4%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Will the U.S. collect less tha... P_market: 0.379, P_prior: 0.125, EDGE: 25.4%
+DEBUG: Will the U.S. collect between ... P_market: 0.340, P_prior: 0.125, EDGE: 21.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.018, P_prior: 0.125, EDGE: 10.7%
+DEBUG: Will Trump lower tariffs on Me... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.086, P_prior: 0.125, EDGE: 3.9%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.043, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.011, P_prior: 0.085, EDGE: 7.4%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.041, P_prior: 0.085, EDGE: 4.4%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.104, P_prior: 0.085, EDGE: 1.9%
+DEBUG: Will the Green Bay Packers win... P_market: 0.032, P_prior: 0.085, EDGE: 5.3%
+DEBUG: Will the Houston Texans win Su... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.029, P_prior: 0.085, EDGE: 5.6%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.124, P_prior: 0.085, EDGE: 3.9%
+DEBUG: Will the New England Patriots ... P_market: 0.083, P_prior: 0.085, EDGE: 0.2%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.095, P_prior: 0.085, EDGE: 1.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.109, P_prior: 0.085, EDGE: 2.4%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.135, P_prior: 0.085, EDGE: 5.0%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.022, P_prior: 0.085, EDGE: 6.3%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.087, P_prior: 0.085, EDGE: 0.3%
+DEBUG: Will the Packers win the NFC C... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.195, P_prior: 0.085, EDGE: 11.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.160, P_prior: 0.085, EDGE: 7.5%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.213, P_prior: 0.085, EDGE: 12.8%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.260, P_prior: 0.085, EDGE: 17.5%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.165, P_prior: 0.085, EDGE: 8.0%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.172, P_prior: 0.085, EDGE: 8.8%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.066, P_prior: 0.085, EDGE: 1.9%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.015, P_prior: 0.085, EDGE: 7.0%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.130, P_prior: 0.085, EDGE: 4.5%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.162, P_prior: 0.085, EDGE: 7.7%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.235, P_prior: 0.085, EDGE: 15.0%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.063, P_prior: 0.085, EDGE: 2.2%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.365, P_prior: 0.085, EDGE: 28.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.625, P_prior: 0.085, EDGE: 54.0%
+DEBUG: Will the Houston Texans win th... P_market: 0.128, P_prior: 0.085, EDGE: 4.3%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.860, P_prior: 0.085, EDGE: 77.5%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.473, P_prior: 0.085, EDGE: 38.8%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.520, P_prior: 0.085, EDGE: 43.5%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.215, P_prior: 0.085, EDGE: 13.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.758, P_prior: 0.085, EDGE: 67.3%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.655, P_prior: 0.150, EDGE: 50.5%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.555, P_prior: 0.125, EDGE: 43.0%
+DEBUG: Baseline flagged: 12
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 11 markets for deep analysis
+[CACHE] Will the Carolina Panthers win... Delta: 16.00%
+[LLM] Analyzing: will-the-carolina-panthers-win-super-bowl-2026 - Will the Carolina Panthers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Carolina Panthers win Super Bowl 2026?: 
+[CACHE] Will the Green Bay Packers win... Delta: 1.61%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Chargers ... Delta: 1.79%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: 
+[CACHE] Will the Pittsburgh Steelers w... Delta: 0.00%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: 
+[CACHE] Will the Seattle Seahawks win ... Delta: 3.23%
+[LLM] Analyzing: will-the-seattle-seahawks-win-super-bowl-2026 - Will the Seattle Seahawks win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Seattle Seahawks win Super Bowl 2026?: 
+[CACHE] Will the Panthers win the NFC ... Delta: 24.14%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Panthers win the NFC Championship?: 
+[CACHE] Will the Rams win the NFC Cham... Delta: 0.00%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Rams win the NFC Championship?: 
+[CACHE] Will the Seahawks win the 2026... Delta: 16.11%
+[LLM] Analyzing: will-the-seahawks-win-the-2026-nfc-championship - Will the Seahawks win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Seahawks win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 2.17%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[LLM] Analyzing: will-the-seattle-seahawks-win-the-nfc-west-1 - Will the Seattle Seahawks win the NFC West?
+Headlines found: 0
+NEWS for Will the Seattle Seahawks win the NFC West?: 
+[CACHE] Will the Carolina Panthers win... Delta: 4.98%
+[LLM] Analyzing: will-the-carolina-panthers-win-the-nfc-south-11 - Will the Carolina Panthers win the NFC South?
+Headlines found: 0
+NEWS for Will the Carolina Panthers win the NFC South?: 
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.44% (raw 2.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.93% (raw 2.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.90% (raw 2.7%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.53% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.00% (raw 0.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 9.06% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 9.14% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 20.02% (raw 5.7%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 14.18% (raw 4.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 63.12% (raw 18.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 23.54% (raw 26.5%, conf 70.0, entropy 0.100, liqFactor 0.254)
+Agent Zigma Initialized
+
+--- Agent Zigma Cycle: 2025-12-31T05:49:50.958Z ---
+DEBUG: Markets input: 50
+DEBUG: Baseline edge scan
+DEBUG: Will Trump & Elon reduce the d... P_market: 0.138, P_prior: 0.125, EDGE: 1.3%
+DEBUG: Will Elon cut the budget by at... P_market: 0.017, P_prior: 0.125, EDGE: 10.8%
+DEBUG: Will Trump sell 0 Gold Cards i... P_market: 0.989, P_prior: 0.125, EDGE: 86.4%
+DEBUG: Will GTA 6 cost $100+?... P_market: 0.022, P_prior: 0.125, EDGE: 10.3%
+DEBUG: Will the U.S. collect less tha... P_market: 0.379, P_prior: 0.125, EDGE: 25.4%
+DEBUG: Will the U.S. collect between ... P_market: 0.340, P_prior: 0.125, EDGE: 21.5%
+DEBUG: Will the U.S. collect between ... P_market: 0.260, P_prior: 0.125, EDGE: 13.5%
+DEBUG: Will tariffs generate >$250b i... P_market: 0.018, P_prior: 0.125, EDGE: 10.7%
+DEBUG: Will Trump lower tariffs on Me... P_market: 0.013, P_prior: 0.125, EDGE: 11.2%
+DEBUG: Will Trump spend >25% of 2025 ... P_market: 0.086, P_prior: 0.125, EDGE: 3.9%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.043, P_prior: 0.085, EDGE: 4.2%
+DEBUG: Will the Buffalo Bills win Sup... P_market: 0.085, P_prior: 0.085, EDGE: 0.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.011, P_prior: 0.085, EDGE: 7.4%
+DEBUG: Will the Chicago Bears win Sup... P_market: 0.041, P_prior: 0.085, EDGE: 4.4%
+DEBUG: Will the Denver Broncos win Su... P_market: 0.104, P_prior: 0.085, EDGE: 1.9%
+DEBUG: Will the Green Bay Packers win... P_market: 0.032, P_prior: 0.085, EDGE: 5.3%
+DEBUG: Will the Houston Texans win Su... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Los Angeles Chargers ... P_market: 0.029, P_prior: 0.085, EDGE: 5.6%
+DEBUG: Will the Los Angeles Rams win ... P_market: 0.124, P_prior: 0.085, EDGE: 3.9%
+DEBUG: Will the New England Patriots ... P_market: 0.083, P_prior: 0.085, EDGE: 0.2%
+DEBUG: Will the Philadelphia Eagles w... P_market: 0.095, P_prior: 0.085, EDGE: 1.0%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.013, P_prior: 0.085, EDGE: 7.2%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.109, P_prior: 0.085, EDGE: 2.4%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.135, P_prior: 0.085, EDGE: 5.0%
+DEBUG: Will the Panthers win the NFC ... P_market: 0.022, P_prior: 0.085, EDGE: 6.3%
+DEBUG: Will the Bears win the NFC Cha... P_market: 0.087, P_prior: 0.085, EDGE: 0.3%
+DEBUG: Will the Packers win the NFC C... P_market: 0.055, P_prior: 0.085, EDGE: 3.0%
+DEBUG: Will the Rams win the NFC Cham... P_market: 0.195, P_prior: 0.085, EDGE: 11.0%
+DEBUG: Will the Eagles win the 2026 N... P_market: 0.160, P_prior: 0.085, EDGE: 7.5%
+DEBUG: Will the 49ers win the 2026 NF... P_market: 0.213, P_prior: 0.085, EDGE: 12.8%
+DEBUG: Will the Seahawks win the 2026... P_market: 0.260, P_prior: 0.085, EDGE: 17.5%
+DEBUG: Will the Bills win the AFC Cha... P_market: 0.165, P_prior: 0.085, EDGE: 8.0%
+DEBUG: Will the Patriots win the AFC ... P_market: 0.172, P_prior: 0.085, EDGE: 8.8%
+DEBUG: Will the Ravens win the AFC Ch... P_market: 0.066, P_prior: 0.085, EDGE: 1.9%
+DEBUG: Will the Steelers win the AFC ... P_market: 0.015, P_prior: 0.085, EDGE: 7.0%
+DEBUG: Will the Texans win the AFC Ch... P_market: 0.130, P_prior: 0.085, EDGE: 4.5%
+DEBUG: Will the Jaguars win the AFC C... P_market: 0.162, P_prior: 0.085, EDGE: 7.7%
+DEBUG: Will the Broncos win the AFC C... P_market: 0.235, P_prior: 0.085, EDGE: 15.0%
+DEBUG: Will the Chargers win the AFC ... P_market: 0.063, P_prior: 0.085, EDGE: 2.2%
+DEBUG: Will the Pittsburgh Steelers w... P_market: 0.365, P_prior: 0.085, EDGE: 28.0%
+DEBUG: Will the Baltimore Ravens win ... P_market: 0.625, P_prior: 0.085, EDGE: 54.0%
+DEBUG: Will the Houston Texans win th... P_market: 0.128, P_prior: 0.085, EDGE: 4.3%
+DEBUG: Will the Jacksonville Jaguars ... P_market: 0.860, P_prior: 0.085, EDGE: 77.5%
+DEBUG: Will the San Francisco 49ers w... P_market: 0.473, P_prior: 0.085, EDGE: 38.8%
+DEBUG: Will the Seattle Seahawks win ... P_market: 0.520, P_prior: 0.085, EDGE: 43.5%
+DEBUG: Will the Tampa Bay Buccaneers ... P_market: 0.215, P_prior: 0.085, EDGE: 13.0%
+DEBUG: Will the Carolina Panthers win... P_market: 0.758, P_prior: 0.085, EDGE: 67.3%
+DEBUG: Russia-Ukraine Ceasefire befor... P_market: 0.655, P_prior: 0.150, EDGE: 50.5%
+DEBUG: New Rihanna Album before GTA V... P_market: 0.555, P_prior: 0.125, EDGE: 43.0%
+DEBUG: Baseline flagged: 12
+DEBUG: Cumulative Drift found: 15
+DEBUG: Volume Velocity found: 0
+DEBUG: Orderbook Imbalance found: 0
+DEBUG: New Blood markets found: 0
+DEBUG: Discovery markets found: 0
+DEBUG: Trend markets found: 0
+ Selected 11 markets for deep analysis
+[CACHE] Will the Carolina Panthers win... Delta: 0.00%
+[LLM] Analyzing: will-the-carolina-panthers-win-super-bowl-2026 - Will the Carolina Panthers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Carolina Panthers win Super Bowl 2026?: 
+[CACHE] Will the Green Bay Packers win... Delta: 0.00%
+[LLM] Analyzing: will-the-green-bay-packers-win-super-bowl-2026 - Will the Green Bay Packers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Green Bay Packers win Super Bowl 2026?: 
+[CACHE] Will the Los Angeles Chargers ... Delta: 0.00%
+[LLM] Analyzing: will-the-los-angeles-chargers-win-super-bowl-2026 - Will the Los Angeles Chargers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Los Angeles Chargers win Super Bowl 2026?: 
+[CACHE] Will the Pittsburgh Steelers w... Delta: 0.00%
+[LLM] Analyzing: will-the-pittsburgh-steelers-win-super-bowl-2026 - Will the Pittsburgh Steelers win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Pittsburgh Steelers win Super Bowl 2026?: 
+[CACHE] Will the Seattle Seahawks win ... Delta: 0.00%
+[LLM] Analyzing: will-the-seattle-seahawks-win-super-bowl-2026 - Will the Seattle Seahawks win Super Bowl 2026?
+Headlines found: 0
+NEWS for Will the Seattle Seahawks win Super Bowl 2026?: 
+[CACHE] Will the Panthers win the NFC ... Delta: 0.00%
+[LLM] Analyzing: will-the-panthers-win-the-nfc-championship-1 - Will the Panthers win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Panthers win the NFC Championship?: 
+[CACHE] Will the Rams win the NFC Cham... Delta: 0.00%
+[LLM] Analyzing: will-the-rams-win-the-nfc-championship-1 - Will the Rams win the NFC Championship?
+Headlines found: 0
+NEWS for Will the Rams win the NFC Championship?: 
+[CACHE] Will the Seahawks win the 2026... Delta: 0.00%
+[LLM] Analyzing: will-the-seahawks-win-the-2026-nfc-championship - Will the Seahawks win the 2026 NFC Championship?
+Headlines found: 0
+NEWS for Will the Seahawks win the 2026 NFC Championship?: 
+[CACHE] Will the Broncos win the AFC C... Delta: 0.00%
+[LLM] Analyzing: will-the-broncos-win-the-afc-championship-1 - Will the Broncos win the AFC Championship?
+Headlines found: 0
+NEWS for Will the Broncos win the AFC Championship?: 
+[CACHE] Will the Seattle Seahawks win ... Delta: 0.00%
+[LLM] Analyzing: will-the-seattle-seahawks-win-the-nfc-west-1 - Will the Seattle Seahawks win the NFC West?
+Headlines found: 0
+NEWS for Will the Seattle Seahawks win the NFC West?: 
+[CACHE] Will the Carolina Panthers win... Delta: 0.00%
+[LLM] Analyzing: will-the-carolina-panthers-win-the-nfc-south-11 - Will the Carolina Panthers win the NFC South?
+Headlines found: 0
+NEWS for Will the Carolina Panthers win the NFC South?: 
+Group top_ai_2025 sum before normalization: 0.000
+Skipping normalization for empty group top_ai_2025
+Group spacex_launches_2025 sum before normalization: 0.000
+Skipping normalization for empty group spacex_launches_2025
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.44% (raw 2.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.93% (raw 2.8%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.90% (raw 2.7%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 1.53% (raw 2.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: NO_TRADE (70%) | Exposure: 0.00%
+Effective Edge: 0.00% (raw 0.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY YES (70%) | Exposure: 3.00%
+Effective Edge: 9.06% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 9.14% (raw 2.6%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 18.31% (raw 5.2%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 14.18% (raw 4.1%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 63.12% (raw 18.0%, conf 70.0, entropy 0.100, liqFactor 1.000)
+ SIGNAL: BUY NO (70%) | Exposure: 3.00%
+Effective Edge: 23.54% (raw 26.5%, conf 70.0, entropy 0.100, liqFactor 0.254)
