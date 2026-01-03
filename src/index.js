@@ -64,6 +64,9 @@ let isVolatilityLock = false;
 let isLiquidityShock = false;
 let activeGroupSizes = {};
 
+const buildPolymarketUrl = (question = '') =>
+  `https://polymarket.com/search?q=${encodeURIComponent(question)}`;
+
 // --- Helper Functions ---
 
 function classifyMarket(question) {
@@ -234,11 +237,16 @@ function pickHighAlphaMarkets(data) {
   // 0. Baseline Edge Scan (static mispricing detection)
   log(`DEBUG: Baseline edge scan`);
   const baselineFlagged = marketList.filter(m => {
+    const yesPrice = typeof m.yesPrice === 'number' && Number.isFinite(m.yesPrice) ? m.yesPrice : 0.5;
     const pPrior = getBaseRate(m.question);
-    const edge = Math.abs(pPrior - m.yesPrice);
-    log(`DEBUG: ${m.question.slice(0, 30)}... P_market: ${m.yesPrice.toFixed(3)}, P_prior: ${pPrior.toFixed(3)}, EDGE: ${(edge*100).toFixed(1)}%`);
-    return edge > 0.05 && m.liquidity > 50000; // Harden filter
-  }).slice(0, 15);
+    const edge = Math.abs(pPrior - yesPrice);
+    log(`DEBUG: ${m.question.slice(0, 30)}... P_market: ${yesPrice.toFixed(3)}, P_prior: ${pPrior.toFixed(3)}, EDGE: ${(edge*100).toFixed(1)}%`);
+    const category = (m.category || '').toUpperCase();
+    const edgeFloor = category === 'SPORTS_FUTURES' ? 0.03 : 0.02;
+    const liquidityFloor = category === 'SPORTS_FUTURES' ? 30000 : 10000;
+    return edge > edgeFloor && (m.liquidity || 0) > liquidityFloor;
+  }).slice(0, 30);
+
   log(`DEBUG: Baseline flagged: ${baselineFlagged.length}`);
 
   // 1. Cumulative Drift (>5% price change)
@@ -334,10 +342,19 @@ function pickHighAlphaMarkets(data) {
     return true;
   });
 
-  // Take top 15
-  const selectedFiltered = selected.slice(0, 15);
+  // Take top 30
+  let selectedFiltered = selected.slice(0, 30);
+  if (selectedFiltered.length < 25) {
+    const needed = 25 - selectedFiltered.length;
+    const selectedIds = new Set(selectedFiltered.map(m => m.id));
+    const fallback = marketList
+      .filter(m => !selectedIds.has(m.id))
+      .sort((a, b) => Math.abs(getBaseRate(b.question) - b.yesPrice) - Math.abs(getBaseRate(a.question) - a.yesPrice))
+      .slice(0, needed);
+    selectedFiltered = [...selectedFiltered, ...fallback];
+  }
 
-  return selectedFiltered.slice(0, 15);
+  return selectedFiltered.slice(0, 30);
 }
 
 // --- Main Execution ---
@@ -503,6 +520,9 @@ for (const groupName in groups) {
         }
     } 
   }
+const executableTrades = [];
+const outlookSignals = [];
+const rejectedSignals = [];
 
 for (const data of rawSignalData) {
   const market = data.market;
@@ -510,6 +530,7 @@ for (const data of rawSignalData) {
   const confidence = analysis.confidenceScore || 0;
   let action = analysis.action || 'HOLD';
   const probability = typeof analysis.probability === 'number' ? analysis.probability : (market.yesPrice ?? 0.5);
+
   const yesPrice = typeof market.yesPrice === 'number' ? market.yesPrice : 0.5;
   const deltaNewsSignal = analysis.deltas?.deltaNews ?? 0;
   const hasBearishNewsSupport = deltaNewsSignal <= -0.15;
@@ -572,11 +593,12 @@ for (const data of rawSignalData) {
 
   if (action === 'BUY YES' || action === 'BUY NO') signalsGenerated++;
 
+  const numericConfidence = normalizedConfidence * 100;
   const signal = {
     marketId: market.id,
     action,
     price: yesPrice,
-    confidence: (normalizedConfidence * 100).toFixed(0),
+    confidence: Number(numericConfidence.toFixed(1)),
     confidenceClass,
     intentExposure
   };
@@ -591,6 +613,7 @@ for (const data of rawSignalData) {
     console.warn("⚠️ Non-zero signal with zero intent exposure", signal.marketId);
   }
 
+  const signalTimestamp = new Date().toISOString();
   const track = `Trade: ${market.question} | Market: ${yesPrice*100}% | Agent: ${winProb*100}% | Action: ${action} | Reason: ${analysis.reasoning} | Outcome: PENDING\n`;
 
   log(` SIGNAL: ${signal.action} (${signal.confidence}%) | Exposure: ${signal.intentExposure.toFixed(2)}%`);
@@ -624,9 +647,54 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
     };
     fs.appendFileSync(AUDIT_LOG_FILE, JSON.stringify(auditEntry) + '\n');
   }
+
+  const zigmaProbYes = typeof analysis.probability === 'number' ? analysis.probability : probability;
+  const marketProbYes = action === 'BUY NO' ? yesPrice : yesPrice;
+  const signalWithMarket = {
+    ...signal,
+    market: market.question,
+    timestamp: signalTimestamp,
+    probZigma: Math.min(1, Math.max(0, zigmaProbYes)) * 100,
+    probMarket: Math.min(1, Math.max(0, marketProbYes)) * 100,
+    effectiveEdge: Math.max(0, effectiveEdge) * 100,
+    rawEdge: Math.max(0, rawEdge) * 100,
+    evaluations: analysis?.evaluations ?? 1,
+    link: buildPolymarketUrl(market.question)
+  };
+
+  if ((signal.action === 'BUY YES' || signal.action === 'BUY NO') && signal.intentExposure > 0) {
+    executableTrades.push(signalWithMarket);
+  } else if (signal.action === 'HOLD' || signal.action === 'LEAN' || signal.action === 'WATCH') {
+    outlookSignals.push(signalWithMarket);
+  } else if (signal.action === 'NO_TRADE') {
+    rejectedSignals.push(signalWithMarket);
+  }
 }
 
-  updateHealthMetrics({ lastRun: new Date().toISOString(), marketsMonitored: selectedMarkets.length, posts: signalsGenerated });
+  const lastRunTimestamp = new Date().toISOString();
+  global.latestData = {
+    cycleSummary: {
+      marketsFetched: markets.length,
+      marketsEligible: selectedMarkets.length,
+      signalsGenerated,
+      watchlist: executableTrades.length,
+      outlook: outlookSignals.length,
+      rejected: rejectedSignals.length
+    },
+    liveSignals: executableTrades,
+    marketOutlook: outlookSignals,
+    rejectedSignals,
+    volumeSpikes: [],
+    lastRun: lastRunTimestamp,
+    marketsMonitored: selectedMarkets.length,
+    posts: signalsGenerated
+  };
+
+  updateHealthMetrics({
+    lastRun: lastRunTimestamp,
+    marketsMonitored: selectedMarkets.length,
+    posts: signalsGenerated
+  });
   console.log("✅ Cycle complete, awaiting next action");
 
 } catch (error) {

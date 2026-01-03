@@ -7,6 +7,15 @@ const fs = require('fs');
 // Middleware
 app.use(express.json());
 
+// Auth middleware (skipped for testing)
+app.use((req, res, next) => {
+  // const apiKey = req.headers['x-api-key'];
+  // if (process.env.API_KEY && (!apiKey || apiKey !== process.env.API_KEY)) {
+  //   return res.status(401).json({ error: 'Unauthorized' });
+  // }
+  next();
+});
+
 // CORS headers
 const allowedOrigins = ['https://zigma.pro', 'https://www.zigma.pro', 'http://localhost:8080', 'http://localhost:5173'];
 app.use((req, res, next) => {
@@ -15,7 +24,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', origin);
   }
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key');
   if (req.method === 'OPTIONS') res.sendStatus(200);
   else next();
 });
@@ -43,6 +52,18 @@ let systemHealth = {
   marketsMonitored: 0,
   alertsActive: 0,
   startTime: Date.now()
+};
+
+// Latest cycle data for UI
+global.latestData = {
+  cycleSummary: null,
+  liveSignals: [],
+  marketOutlook: [],
+  rejectedSignals: [],
+  volumeSpikes: [],
+  lastRun: null,
+  marketsMonitored: 0,
+  posts: 0
 };
 
 // Update health metrics
@@ -79,10 +100,22 @@ app.get('/metrics', (req, res) => {
   });
 });
 
+// Data endpoint for UI (structured cycle data)
+app.get('/data', (req, res) => {
+  res.json(global.latestData);
+});
+
 // Logs endpoint for UI (sanitized for public display)
 app.get('/logs', (req, res) => {
   try {
-    const logPath = path.join(__dirname, 'console_output.log');
+    const logPath = 'console_output.log';
+    const stats = fs.statSync(logPath);
+    if (stats.size > 10 * 1024 * 1024) { // 10MB
+      const oldPath = path.join(__dirname, 'console_output.log.old');
+      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      fs.renameSync(logPath, oldPath);
+      fs.writeFileSync(logPath, ''); // Create new empty log
+    }
     const rawLogs = fs.readFileSync(logPath, 'utf8');
 
     // Sanitize logs for public display
@@ -98,30 +131,38 @@ app.get('/logs', (req, res) => {
         if (line.toLowerCase().includes('auth')) return false;
         if (line.toLowerCase().includes('error') && line.toLowerCase().includes('internal')) return false;
 
+        // Allow CYCLE_SUMMARY lines even if they contain filtered words
+        if (line.includes('CYCLE_SUMMARY::')) return true;
+
         // Remove debug details and calculation logs
         // if (line.includes('DEBUG:')) return false; // Temporarily allow for UI parsing
         if (line.includes('Using cached LLM response')) return false;
         if (line.includes('Probability chain:')) return false;
-        // if (line.includes('Effective Edge:')) return false; // Allow for UI parsing
         if (line.includes('Survivability test:')) return false;
-        if (line.includes('SAFE_MODE:')) return false;
         if (line.includes('Fetched new Tavily results')) return false;
         if (line.includes('Using cached Tavily results')) return false;
-        if (line.includes('Headlines found:')) return false;
-        if (line.includes('NEWS for')) return false;
         if (line.includes('Cached new LLM response')) return false;
         if (line.includes('🌐 FETCH:')) return false;
-        if (line.includes('✅ Fetched')) return false;
+        // if (line.includes('✅ Fetched')) return false;
         if (line.includes('📊 After sanity filter:')) return false;
         if (line.includes('💰')) return false;
         if (line.includes('[CACHE]')) return false;
         // if (line.includes('[LLM] Analyzing:')) return false; // Allow for UI parsing
 
+        // Allow certain lines
+        if (line.includes('DEBUG:')) return true;
+        if (line.includes('Effective Edge:')) return true;
+        if (line.includes('Headlines found:')) return true;
+        if (line.includes('NEWS for')) return true;
+        if (line.includes(' VOLUME SPIKE DETECTED:')) return true;
+        if (line.includes('🚀 VOLUME SPIKE DETECTED:')) return true;
+        if (line.includes('[LLM] Analyzing:')) return true; // Allow for UI parsing
+
         return true;
       })
       .join('\n');
 
-    res.json({ logs: sanitizedLogs });
+    res.json({ logs: sanitizedLogs.split('\n').slice(-5000).join('\n') });
   } catch (error) {
     console.error('Error reading logs:', error);
     res.status(500).json({ error: 'Failed to read logs', message: error.message });

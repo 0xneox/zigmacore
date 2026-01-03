@@ -13,3 +13,99 @@ Reasoning: Fallback analysis due to LLM failure
 2025-12-19T12:40:52.325Z: Will NVIDIA be the largest company in the world by -> AVOID (50.0%)
 Reasoning: Fallback analysis due to LLM failure
 
+2026-01-02T19:15:10.272Z: Will GTA 6 cost $100+? -> AVOID (37.3%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.319Z: Will the U.S. collect between $500b and $1t in rev -> AVOID (37.6%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.359Z: Will the U.S. collect between $1t and $2t in reven -> AVOID (37.6%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.382Z: Will the U.S. collect more than $2t in revenue in  -> AVOID (37.6%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.427Z: Will the Baltimore Ravens win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.431Z: Will the Buffalo Bills win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.465Z: Will the Carolina Panthers win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.471Z: Will the Memphis Grizzlies win the 2026 NBA Finals -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.476Z: Will the Chicago Bulls win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.528Z: Will the Washington Wizards win the 2026 NBA Final -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.590Z: Will the Charlotte Hornets win the 2026 NBA Finals -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.599Z: Will the Brooklyn Nets win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.608Z: Will the Utah Jazz win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.620Z: Will the New Orleans Pelicans win the 2026 NBA Fin -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.667Z: Will the Sacramento Kings win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:15:10.671Z: Will the New England Patriots win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.053Z: Will GTA 6 cost $100+? -> AVOID (37.3%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.055Z: Will the U.S. collect between $500b and $1t in rev -> AVOID (37.6%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.056Z: Will the U.S. collect between $1t and $2t in reven -> AVOID (37.6%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.057Z: Will the U.S. collect more than $2t in revenue in  -> AVOID (37.6%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.059Z: Will the Baltimore Ravens win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.060Z: Will the Buffalo Bills win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.061Z: Will the Carolina Panthers win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.063Z: Will the Memphis Grizzlies win the 2026 NBA Finals -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.065Z: Will the Chicago Bulls win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.066Z: Will the Washington Wizards win the 2026 NBA Final -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.067Z: Will the Charlotte Hornets win the 2026 NBA Finals -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.070Z: Will the Brooklyn Nets win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.072Z: Will the Utah Jazz win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.074Z: Will the New Orleans Pelicans win the 2026 NBA Fin -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.076Z: Will the Sacramento Kings win the 2026 NBA Finals? -> AVOID (42.2%)
+Reasoning: Invalid market data
+
+2026-01-02T19:17:32.079Z: Will the New England Patriots win Super Bowl 2026? -> AVOID (36.9%)
+Reasoning: Invalid market data
+
