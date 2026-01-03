@@ -254,5 +254,6 @@ module.exports = {
 
 // Start server if run directly
 if (require.main === module) {
+  require('./src/index.js');
   module.exports.startServer();
 }
