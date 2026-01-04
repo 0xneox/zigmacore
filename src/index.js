@@ -363,49 +363,48 @@ async function runCycle() {
   let markets = [];
   if (isRunning) return;
   isRunning = true;
-  log(`\n--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
+  try {
+    log(`\n--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
+    const limit = parseInt(process.env.GAMMA_LIMIT) || 500;
+    const rawMarkets = await fetchMarkets(limit);
+    markets = rawMarkets; // Assign here
+    let lastSnapshot = {};
+    if (fs.existsSync(SNAPSHOT_FILE)) {
+      lastSnapshot = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8'));
+    }
 
-try {
-  const limit = parseInt(process.env.GAMMA_LIMIT) || 500;
-  const rawMarkets = await fetchMarkets(limit);
-  markets = rawMarkets; // Assign here
-  let lastSnapshot = {};
-  if (fs.existsSync(SNAPSHOT_FILE)) {
-    lastSnapshot = JSON.parse(fs.readFileSync(SNAPSHOT_FILE, 'utf8'));
-  }
+    // Process metrics and extract the array correctly
+    const result = await computeMetrics(rawMarkets, lastSnapshot);
+    const enriched = result;
 
-  // Process metrics and extract the array correctly
-  const result = await computeMetrics(rawMarkets, lastSnapshot);
-  const enriched = result;
-  
-  // Update local price mapping
-  enriched.forEach(m => {
-    const prices = getYesNoPrices(m);
-    if (prices) {
-      m.yesPrice = prices.yes;
-      m.noPrice = prices.no;
-      m.settlementRisk = settlementRisk(m.question);
-      m.category = classifyMarket(m.question);
+    // Update local price mapping
+    enriched.forEach(m => {
+      const prices = getYesNoPrices(m);
+      if (prices) {
+        m.yesPrice = prices.yes;
+        m.noPrice = prices.no;
+        m.settlementRisk = settlementRisk(m.question);
+        m.category = classifyMarket(m.question);
 
-      // Structural Arbitrage Detection
-      if (m.yesPrice + m.noPrice !== 1) {
-        log(`ARBITRAGE ALERT: ${m.question} YES+NO ≠1 (vig: ${(1 - (m.yesPrice + m.noPrice)).toFixed(2)})`);
-        // flag for LLM: reasoning += ` | Structural vig arbitrage`;
-      }
-      if (m.endDateIso) {
-        const timeLeft = new Date(m.endDateIso) - Date.now();
-        if (timeLeft < 86400000 * 14 && m.yesPrice > 0.50) {
-          m.yesPrice = Math.min(m.yesPrice, 0.50);  // time decay error cap
+        // Structural Arbitrage Detection
+        if (m.yesPrice + m.noPrice !== 1) {
+          log(`ARBITRAGE ALERT: ${m.question} YES+NO ≠1 (vig: ${(1 - (m.yesPrice + m.noPrice)).toFixed(2)})`);
+          // flag for LLM: reasoning += ` | Structural vig arbitrage`;
+        }
+        if (m.endDateIso) {
+          const timeLeft = new Date(m.endDateIso) - Date.now();
+          if (timeLeft < 86400000 * 14 && m.yesPrice > 0.50) {
+            m.yesPrice = Math.min(m.yesPrice, 0.50);  // time decay error cap
+          }
         }
       }
-    }
-  });
+    });
 
-  // Calculate failure-safe modes
-  const avgVolatility = enriched.reduce((sum, m) => sum + (m.priceVolatility || 0), 0) / enriched.length;
-  const avgLiquidity = enriched.reduce((sum, m) => sum + (m.liquidity || 0), 0) / enriched.length;
-  isVolatilityLock = avgVolatility > 0.1; // >10% average volatility
-  isLiquidityShock = avgLiquidity < 50000; // <50k average liquidity
+    // Calculate failure-safe modes
+    const avgVolatility = enriched.reduce((sum, m) => sum + (m.priceVolatility || 0), 0) / enriched.length;
+    const avgLiquidity = enriched.reduce((sum, m) => sum + (m.liquidity || 0), 0) / enriched.length;
+    isVolatilityLock = avgVolatility > 0.1; // >10% average volatility
+    isLiquidityShock = avgLiquidity < 50000; // <50k average liquidity
 
   const selectedMarkets = pickHighAlphaMarkets(enriched).filter(m => (m.volume || 0) > 1000);
   log(` Selected ${selectedMarkets.length} markets for deep analysis`);
@@ -711,8 +710,10 @@ async function main() {
   startServer();
   setInterval(() => console.log(" Zigma heartbeat", new Date().toISOString()), 30000);
 
+  // Run cycle once on startup to populate data immediately
+  await runCycle();
+
   if (process.env.NODE_ENV === 'development') {
-    await runCycle();
     setInterval(runCycle, 5 * 60 * 1000);
   }
 

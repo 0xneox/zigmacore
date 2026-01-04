@@ -6262,3 +6262,279 @@
 
 2026-01-03T19:35:48.136Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 13.4%, Exposure: 0.17%
 
+2026-01-04T14:28:21.588Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T14:28:21.593Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22.1%, Exposure: 0.43%
+
+2026-01-04T14:28:21.597Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14%, Exposure: 0.17%
+
+2026-01-04T14:28:21.606Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 12.1%, Exposure: 0.00%
+
+2026-01-04T14:28:21.611Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T14:28:21.615Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:28:21.618Z: NO_TRADE on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 25.6%, Exposure: 0.00%
+
+2026-01-04T14:28:21.623Z: BUY NO on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 20.7%, Exposure: 0.19%
+
+2026-01-04T14:28:21.627Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 16.4%, Exposure: 0.74%
+
+2026-01-04T14:28:21.632Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 26.7%, Exposure: 1.20%
+
+2026-01-04T14:28:21.647Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 25.2%, Exposure: 0.99%
+
+2026-01-04T14:28:21.657Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.4%, Exposure: 0.68%
+
+2026-01-04T14:28:21.665Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 21.3%, Exposure: 0.80%
+
+2026-01-04T14:28:21.670Z: NO_TRADE on Will the Steelers win the AFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:28:21.680Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T14:28:21.683Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 28%, Exposure: 1.26%
+
+2026-01-04T14:28:21.691Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 21.9%, Exposure: 0.41%
+
+2026-01-04T14:28:21.697Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 22%, Exposure: 0.10%
+
+2026-01-04T14:28:21.700Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.7%, Exposure: 0.00%
+
+2026-01-04T14:28:21.703Z: BUY NO on Will Jesus Christ return before GTA VI? - Confidence: 33.9%, Exposure: 0.19%
+
+2026-01-04T14:31:30.704Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T14:31:30.705Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22%, Exposure: 0.43%
+
+2026-01-04T14:31:30.708Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14%, Exposure: 0.16%
+
+2026-01-04T14:31:30.712Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 12.1%, Exposure: 0.00%
+
+2026-01-04T14:31:30.717Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T14:31:30.721Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:31:30.723Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 32.1%, Exposure: 0.29%
+
+2026-01-04T14:31:30.740Z: BUY NO on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 26.7%, Exposure: 0.24%
+
+2026-01-04T14:31:30.760Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 35.1%, Exposure: 1.58%
+
+2026-01-04T14:31:30.791Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 20.7%, Exposure: 0.93%
+
+2026-01-04T14:31:30.821Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 25.9%, Exposure: 1.06%
+
+2026-01-04T14:31:30.839Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.5%, Exposure: 0.68%
+
+2026-01-04T14:31:30.862Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 21.4%, Exposure: 0.82%
+
+2026-01-04T14:31:30.884Z: NO_TRADE on Will the Steelers win the AFC Championship? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T14:31:30.899Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T14:31:30.926Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 22%, Exposure: 0.99%
+
+2026-01-04T14:31:30.955Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 21.9%, Exposure: 0.41%
+
+2026-01-04T14:31:30.987Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 22%, Exposure: 0.10%
+
+2026-01-04T14:31:31.013Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.6%, Exposure: 0.00%
+
+2026-01-04T14:31:31.029Z: BUY NO on Will Jesus Christ return before GTA VI? - Confidence: 27.9%, Exposure: 0.15%
+
+2026-01-04T14:34:43.445Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T14:34:43.446Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22%, Exposure: 0.43%
+
+2026-01-04T14:34:43.448Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14%, Exposure: 0.16%
+
+2026-01-04T14:34:43.450Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 12.1%, Exposure: 0.00%
+
+2026-01-04T14:34:43.452Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T14:34:43.453Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:34:43.454Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 26%, Exposure: 0.23%
+
+2026-01-04T14:34:43.456Z: BUY NO on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 20.7%, Exposure: 0.19%
+
+2026-01-04T14:34:43.458Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 35.1%, Exposure: 1.58%
+
+2026-01-04T14:34:43.460Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 20.7%, Exposure: 0.93%
+
+2026-01-04T14:34:43.462Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 25.9%, Exposure: 1.06%
+
+2026-01-04T14:34:43.464Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.5%, Exposure: 0.68%
+
+2026-01-04T14:34:43.466Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 20.9%, Exposure: 0.80%
+
+2026-01-04T14:34:43.468Z: NO_TRADE on Will the Steelers win the AFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:34:43.469Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T14:34:43.471Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 22%, Exposure: 0.99%
+
+2026-01-04T14:34:43.473Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 22%, Exposure: 0.41%
+
+2026-01-04T14:34:43.475Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 15.8%, Exposure: 0.07%
+
+2026-01-04T14:34:43.477Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.4%, Exposure: 0.00%
+
+2026-01-04T14:34:43.478Z: BUY NO on Will Jesus Christ return before GTA VI? - Confidence: 27.9%, Exposure: 0.15%
+
+2026-01-04T14:38:11.056Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T14:38:11.057Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22.2%, Exposure: 0.45%
+
+2026-01-04T14:38:11.059Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14%, Exposure: 0.16%
+
+2026-01-04T14:38:11.061Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 12.1%, Exposure: 0.00%
+
+2026-01-04T14:38:11.063Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T14:38:11.064Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:38:11.066Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 26.1%, Exposure: 0.23%
+
+2026-01-04T14:38:11.068Z: BUY NO on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 27%, Exposure: 0.24%
+
+2026-01-04T14:38:11.070Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 35.1%, Exposure: 1.58%
+
+2026-01-04T14:38:11.072Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 20.7%, Exposure: 0.93%
+
+2026-01-04T14:38:11.074Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 25.8%, Exposure: 1.05%
+
+2026-01-04T14:38:11.076Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.5%, Exposure: 0.68%
+
+2026-01-04T14:38:11.078Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 21%, Exposure: 0.80%
+
+2026-01-04T14:38:11.080Z: NO_TRADE on Will the Steelers win the AFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:38:11.082Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T14:38:11.084Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 22%, Exposure: 0.99%
+
+2026-01-04T14:38:11.086Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 22%, Exposure: 0.42%
+
+2026-01-04T14:38:11.088Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 22.1%, Exposure: 0.11%
+
+2026-01-04T14:38:11.090Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.7%, Exposure: 0.00%
+
+2026-01-04T14:38:11.092Z: BUY NO on Will Jesus Christ return before GTA VI? - Confidence: 27.9%, Exposure: 0.15%
+
+2026-01-04T14:44:36.632Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T14:44:36.638Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22.2%, Exposure: 0.45%
+
+2026-01-04T14:44:36.650Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14.1%, Exposure: 0.17%
+
+2026-01-04T14:44:36.656Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 12.1%, Exposure: 0.00%
+
+2026-01-04T14:44:36.660Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18.2%, Exposure: 0.00%
+
+2026-01-04T14:44:36.665Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:44:36.671Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 32.1%, Exposure: 0.29%
+
+2026-01-04T14:44:36.678Z: BUY NO on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 27%, Exposure: 0.24%
+
+2026-01-04T14:44:36.680Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 35.1%, Exposure: 1.58%
+
+2026-01-04T14:44:36.690Z: BUY NO on Will the Eagles win the 2026 NFC Championship? - Confidence: 20.7%, Exposure: 0.93%
+
+2026-01-04T14:44:36.699Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 25.7%, Exposure: 1.05%
+
+2026-01-04T14:44:36.710Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.5%, Exposure: 0.68%
+
+2026-01-04T14:44:36.718Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 21%, Exposure: 0.80%
+
+2026-01-04T14:44:36.728Z: NO_TRADE on Will the Steelers win the AFC Championship? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T14:44:36.740Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T14:44:36.757Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 22%, Exposure: 0.99%
+
+2026-01-04T14:44:36.770Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 22%, Exposure: 0.41%
+
+2026-01-04T14:44:36.787Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 22%, Exposure: 0.10%
+
+2026-01-04T14:44:36.799Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.6%, Exposure: 0.00%
+
+2026-01-04T14:44:36.818Z: BUY NO on Will Jesus Christ return before GTA VI? - Confidence: 27.9%, Exposure: 0.15%
+
+2026-01-04T17:22:51.144Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T17:22:51.154Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22.7%, Exposure: 0.45%
+
+2026-01-04T17:22:51.165Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14%, Exposure: 0.17%
+
+2026-01-04T17:22:51.204Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T17:22:51.221Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T17:22:51.301Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T17:22:51.310Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 20.8%, Exposure: 0.19%
+
+2026-01-04T17:22:51.337Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 30.6%, Exposure: 0.00%
+
+2026-01-04T17:22:51.360Z: NO_TRADE on Will the Panthers win the NFC Championship? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T17:22:51.380Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 29.9%, Exposure: 1.34%
+
+2026-01-04T17:22:51.385Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 24.9%, Exposure: 0.99%
+
+2026-01-04T17:22:51.397Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T17:22:51.417Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.5%, Exposure: 0.68%
+
+2026-01-04T17:22:51.432Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 21%, Exposure: 0.78%
+
+2026-01-04T17:22:51.456Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T17:22:51.511Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 23%, Exposure: 1.04%
+
+2026-01-04T17:22:51.543Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 21%, Exposure: 0.29%
+
+2026-01-04T17:22:51.637Z: NO_TRADE on Will the Carolina Panthers win the NFC South? - Confidence: 15.4%, Exposure: 0.00%
+
+2026-01-04T17:22:51.649Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.7%, Exposure: 0.00%
+
+2026-01-04T17:25:22.957Z: NO_TRADE on Will GTA 6 cost $100+? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T17:25:22.959Z: BUY NO on Will the U.S. collect less than $100b in revenue i - Confidence: 22.4%, Exposure: 0.42%
+
+2026-01-04T17:25:22.962Z: BUY NO on Will the U.S. collect between $100b and $200b in r - Confidence: 14%, Exposure: 0.16%
+
+2026-01-04T17:25:22.965Z: NO_TRADE on Will tariffs generate >$250b in 2025? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T17:25:22.970Z: NO_TRADE on Will the Green Bay Packers win Super Bowl 2026? - Confidence: 18.1%, Exposure: 0.00%
+
+2026-01-04T17:25:22.973Z: NO_TRADE on Will the Los Angeles Chargers win Super Bowl 2026? - Confidence: 18%, Exposure: 0.00%
+
+2026-01-04T17:25:22.977Z: BUY NO on Will the Los Angeles Rams win Super Bowl 2026? - Confidence: 20.8%, Exposure: 0.19%
+
+2026-01-04T17:25:22.980Z: NO_TRADE on Will the Seattle Seahawks win Super Bowl 2026? - Confidence: 30.6%, Exposure: 0.00%
+
+2026-01-04T17:25:22.986Z: NO_TRADE on Will the Panthers win the NFC Championship? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T17:25:22.991Z: BUY NO on Will the Rams win the NFC Championship? - Confidence: 29.7%, Exposure: 1.34%
+
+2026-01-04T17:25:22.995Z: BUY NO on Will the Seahawks win the 2026 NFC Championship? - Confidence: 24.9%, Exposure: 0.99%
+
+2026-01-04T17:25:23.003Z: NO_TRADE on Will the Buccaneers win the 2026 NFC Championship? - Confidence: 18.3%, Exposure: 0.00%
+
+2026-01-04T17:25:23.007Z: BUY NO on Will the Bills win the AFC Championship? - Confidence: 20.5%, Exposure: 0.68%
+
+2026-01-04T17:25:23.012Z: BUY NO on Will the Patriots win the AFC Championship? - Confidence: 21.4%, Exposure: 0.85%
+
+2026-01-04T17:25:23.016Z: BUY NO on Will the Jaguars win the AFC Championship? - Confidence: 14.4%, Exposure: 0.49%
+
+2026-01-04T17:25:23.021Z: BUY NO on Will the Broncos win the AFC Championship? - Confidence: 23%, Exposure: 1.04%
+
+2026-01-04T17:25:23.027Z: BUY NO on Will the Tampa Bay Buccaneers win the NFC South? - Confidence: 14.8%, Exposure: 0.22%
+
+2026-01-04T17:25:23.034Z: BUY NO on Will the Carolina Panthers win the NFC South? - Confidence: 21.5%, Exposure: 0.08%
+
+2026-01-04T17:25:23.041Z: NO_TRADE on Russia-Ukraine Ceasefire before GTA VI? - Confidence: 21.6%, Exposure: 0.00%
+
