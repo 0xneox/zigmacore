@@ -37,9 +37,13 @@ const { generateDecrees, generateEnhancedAnalysis } = require('./llm');
 const { postToX } = require('./poster');
 const { calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./clob_price_cache');
-const { startServer, updateHealthMetrics } = require('../server');
-const { crossReferenceNews } = require('./processor');
-const { createClient } = require('@supabase/supabase-js');
+let createClient;
+try {
+  createClient = require('@supabase/supabase-js').createClient;
+} catch (e) {
+  console.log('Supabase not installed, skipping...');
+  createClient = null;
+}
 const { classifyMarket } = require('./utils/classifier');
 const {
   calculateSharpeRatio,
@@ -70,7 +74,7 @@ const {
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const supabase = (supabaseUrl && supabaseKey && createClient) ? createClient(supabaseUrl, supabaseKey) : null;
 
 const ensureCacheDir = () => {
   try {
