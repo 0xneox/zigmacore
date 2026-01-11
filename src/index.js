@@ -37,6 +37,8 @@ const { generateDecrees, generateEnhancedAnalysis } = require('./llm');
 const { postToX } = require('./poster');
 const { calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./clob_price_cache');
+const { startServer, updateHealthMetrics } = require('../server');
+const { crossReferenceNews } = require('./processor');
 let createClient;
 try {
   createClient = require('@supabase/supabase-js').createClient;

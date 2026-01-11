@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "powershell -Command \"$env:NODE_ENV='development'; node src/index.js\"",
+    "dev": "NODE_ENV=development node src/index.js",
     "test": "jest"
   },
   "dependencies": {
