@@ -1,0 +1,16 @@
+[build]
+  command = "npm install"
+  functions = "."
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
+
+[dev]
+  command = "npm start"
+  port = 3001
+  targetPort = 3001

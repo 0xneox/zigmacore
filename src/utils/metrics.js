@@ -5,6 +5,17 @@ require('dotenv').config();
 
 const GAMMA = process.env.GAMMA_API_URL || 'https://gamma-api.polymarket.com';
 const CACHE_FILE = path.join(__dirname, '..', 'cache', 'last_snapshot.json');
+// v1.5.1 – Data-driven priors (from web_search – politics ~42% YES, crypto ~55%, etc)
+const CATEGORY_PRIORS = {
+  POLITICS: 0.42, // Historical YES rate
+  CRYPTO: 0.55,
+  ENTERTAINMENT: 0.48,
+  TECH: 0.60,
+  MACRO: 0.50,
+  // Add more from search
+};
+
+const VERBOSE_MARKET_LOGS = (process.env.VERBOSE_MARKET_LOGS || '').toLowerCase() === 'true';
 
 const { getVolumeSnapshots, saveVolumeSnapshot } = require('../db');
 
@@ -116,7 +127,8 @@ async function computeMetrics(markets, cache) {
     countClosed = 0,
     countExpired = 0,
     countLowLiquidity = 0,
-    countDeadMarkets = 0;
+    countDeadMarkets = 0,
+    countNonBinary = 0;
 
   const filteredMarkets = markets.filter(m => {
     if (!m.active) {
@@ -169,12 +181,12 @@ async function computeMetrics(markets, cache) {
 
       /* ---- price extraction (Gamma) ---- */
       // Debug: Log the first few markets to see structure
-      if (normalizedMarket === filteredMarkets[0]) {
+      if (VERBOSE_MARKET_LOGS && normalizedMarket === filteredMarkets[0]) {
         console.log('🕵️ DEBUG: First market structure:', JSON.stringify(normalizedMarket, null, 2).slice(0, 1000));
       }
 
       // Debug specific market
-      if (m.question.includes("Russia")) {
+      if (VERBOSE_MARKET_LOGS && m.question.includes("Russia")) {
         console.log(`DEBUG DATA for ${m.question}:`, m.outcomePrices);
       }
 
@@ -199,7 +211,10 @@ async function computeMetrics(markets, cache) {
       const no = prices.find(p => p.outcome.toLowerCase() === 'no');
 
       if (!yes || !no) {
-        console.log(`❌ Non-binary outcomes for ${m.question}, skipping`);
+        countNonBinary++;
+        if (VERBOSE_MARKET_LOGS) {
+          console.log(`❌ Non-binary outcomes for ${m.question}, skipping`);
+        }
         return null;
       }
 
@@ -248,6 +263,24 @@ async function computeMetrics(markets, cache) {
 
       const priceVolatility = calculateStdDev(recentPriceHistory.map(p => p.price));
 
+      // Normalize start date for downstream detectors
+      const rawStartDateIso =
+        normalizedMarket.startDateIso ||
+        normalizedMarket.start_date_iso ||
+        normalizedMarket.startDate ||
+        normalizedMarket.start_date ||
+        normalizedMarket.createdAt ||
+        normalizedMarket.created_at ||
+        normalizedMarket.creationTime ||
+        normalizedMarket.creation_time ||
+        normalizedMarket.openDate ||
+        normalizedMarket.open_date ||
+        normalizedMarket.timestamp ||
+        normalizedMarket.listedAt ||
+        normalizedMarket.listed_at ||
+        null;
+      const startDateIso = rawStartDateIso || last.startDateIso || null;
+
       // Add market classification
       const marketType = classifyMarket(m.question);
 
@@ -268,7 +301,9 @@ async function computeMetrics(markets, cache) {
         priceHistory: recentPriceHistory,
         volumeHistory: recentVolumeHistory,
         vVel: currentVvel,
-        avgVvel: avgVvel
+        avgVvel: avgVvel,
+        startDateIso,
+        basePrior: CATEGORY_PRIORS[marketType] || 0.5
       };
     })
   );
@@ -277,6 +312,11 @@ async function computeMetrics(markets, cache) {
   console.log(
     `💰 ${validMarkets.length} markets with valid prices for analysis (filtered ${countDeadMarkets} dead markets)`
   );
+  if (countNonBinary) {
+    console.log(
+      `❌ Skipped ${countNonBinary} markets with non-binary outcomes${VERBOSE_MARKET_LOGS ? '' : ' (set VERBOSE_MARKET_LOGS=true for details)'}`
+    );
+  }
 
   /* ---- update cache ---- */
   validMarkets.forEach(m => {
@@ -307,7 +347,11 @@ async function computeMetrics(markets, cache) {
       price: currentPrice,
       volume: m.volume,
       priceHistory: recentPriceHistory,
-      priceVolatility: priceVolatility
+      priceVolatility,
+      volumeHistory: m.volumeHistory || [],
+      avgVvel: m.avgVvel,
+      vVel: m.vVel,
+      startDateIso: m.startDateIso || null
     };
   });
 

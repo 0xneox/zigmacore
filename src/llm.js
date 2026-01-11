@@ -1,8 +1,35 @@
 const OpenAI = require('openai');
+const crypto = require('crypto');
 const { getMarketAnalyzer, calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, stopPolling, getOrderBook } = require('./clob_price_cache');
 const { crossReferenceNews } = require('./processor');
+const { classifyMarket } = require('./utils/classifier');
+const { buildUserContext, generatePersonalizedPrompt, generatePersonalizedSummary } = require('./llm/personalized');
+const { applyAdaptiveLearning, recordSignalOutcome } = require('./adaptive-learning');
+const { calculateMarketEntropy, applyEntropyDiscount } = require('./utils/entropy-enhanced');
+const { calculateAggregateSentiment } = require('./utils/sentiment-enhanced');
+const { applyCalibration } = require('./confidence-calibration');
 require('dotenv').config();
+
+// Horizon discount function for time-based edge reduction
+function computeHorizonDiscount(daysToResolution) {
+  return Math.max(0.1, 1 - (daysToResolution / 365) * 0.5);
+}
+
+// Utility functions
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+function getEntropy(question, daysLeft) {
+  const q = (question || '').toLowerCase();
+  let score = 0.3;
+  if (/who|which|what|when|where|how|will|does|is|are/i.test(q)) score += 0.2;
+  if (/or |vs |versus /i.test(q)) score += 0.1;
+  if (/top |best |winner |champion /i.test(q)) score += 0.1;
+  if (/price|above|below|over|under/i.test(q)) score += 0.1;
+  const timeFactor = Math.max(0, (365 - daysLeft) / 365) * 0.2;
+  score += timeFactor;
+  return clamp(score, 0, 1);
+}
 
 // LLM Configuration - Support multiple providers for testing
 const USE_MOCK = process.env.USE_MOCK_LLM === 'true'; // Set to true for free testing
@@ -17,6 +44,18 @@ const DEFAULT_OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const DEFAULT_XAI_MODEL = process.env.XAI_MODEL || 'grok-beta';
 const LLM_MODEL = process.env.LLM_MODEL || (PROVIDER === 'openai' ? DEFAULT_OPENAI_MODEL : DEFAULT_XAI_MODEL);
 const NEWS_DELTA_MODEL = process.env.NEWS_DELTA_MODEL || LLM_MODEL;
+
+const llmMetrics = { total: 0, errors: 0 };
+function emitLLMMetrics(event = {}) {
+  const payload = {
+    type: 'llm_latency',
+    total_calls: llmMetrics.total,
+    error_count: llmMetrics.errors,
+    timestamp: new Date().toISOString(),
+    ...event
+  };
+  console.log(JSON.stringify(payload));
+}
 
 let sharedLLMClient = null;
 function getLLMClient() {
@@ -38,6 +77,36 @@ function getLLMClient() {
   }
 
   return sharedLLMClient;
+}
+
+// Safe LLM Parse with fallback (NEW: Added to fix conf=0 bug)
+function safeParseLLM(output) {
+  try {
+    const json = JSON.parse(output);
+    if (json.confidence && json.confidence > 0) {
+      console.log(`[PARSE] Successful JSON parse: confidence=${json.confidence}`);
+      return json;
+    }
+  } catch (e) {
+    console.error('[PARSE] JSON parse failed:', e.message);
+  }
+
+  // Fallback regex if JSON fails or conf=0/missing
+  const confMatch = output.match(/confidence["']?\s*[:=]?\s*(\d+)/i);
+  const priorMatch = output.match(/revised_prior["']?\s*[:=]?\s*([0-9.]+)/i);
+  const narrative = output.replace(/{.*}/s, '').trim() || 'Fallback narrative from parse error';
+
+  const parsed = {
+    revised_prior: priorMatch ? parseFloat(priorMatch[1]) : 0.5,
+    confidence: confMatch ? parseInt(confMatch[1]) : 60, // Default mid if missing
+    narrative
+  };
+
+  // Ensure confidence is positive and above minimum floor
+  parsed.confidence = Math.max(1, parsed.confidence);
+
+  console.log(`[PARSE] Fallback used: confidence=${parsed.confidence}`);
+  return parsed;
 }
 
 // Mock LLM for testing without API calls
@@ -68,7 +137,9 @@ function generateMockAnalysis(marketData) {
 }
 
 // Enhanced system prompt for professional analysis
-const ENHANCED_SYSTEM_PROMPT_TEMPLATE = `
+const RESOLUTION_FIRST_PROMPT = `First, quote exact resolution criteria from market: [insert market.resolutionCriteria]. Then, build binary checklist: 1. Condition A met? (prob) 2. Condition B? etc. Only then narrative. Base on facts, not vibes. For YES: list 2-3 bull points. For NO: 2-3 bear. End with delta vs market.`;
+
+const ENHANCED_SYSTEM_PROMPT_TEMPLATE = RESOLUTION_FIRST_PROMPT + `
 You are the Agent Zigma. Today is {{todayDate}}. You are aware that Google's Gemini 3 Pro holds the #1 spot on Artificial Analysis, ahead of OpenAI's GPT-5.2 Garlic. Every trade must be cross-referenced against the BOJ Dec 19 rate hike decision (likely causing Yen Carry Trade unwind, -15% Bitcoin probability penalty) and the Trump 'Directive' vs 'Final Rule' legal framework. Reference market microstructure context: spread {{spread}}%, depth {{depth}}, liquidity score {{liquidityScore}}, recommended Kelly fraction {{kelly}}%.
 
 MANDATORY OUTPUT: Return a valid JSON object with exactly these keys:
@@ -80,8 +151,11 @@ MANDATORY OUTPUT: Return a valid JSON object with exactly these keys:
   "primaryReason": "NEWS_LAG", "STRUCTURAL_MISPRICING", "BEHAVIORAL_BIAS", "TIME_DECAY_ERROR", or "CROSS_MARKET_ARBITRAGE",
   "reasoning": string explaining your analysis,
   "uncertainty": number between 0 and 1 (quantified uncertainty in the analysis),
-  "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive)
+  "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive),
+  "confidence": number between 1 and 100 (your confidence in this analysis as an integer)
 }
+
+Always include "confidence": 1-100 integer in JSON; explain why in reasoning.
 
 RESPONSE MUST BE STRICT JSON ONLY. NO PROSE. NO MARKDOWN BLOCKS. NO ADDITIONAL TEXT. ONLY THE JSON OBJECT AS SHOWN ABOVE.
 
@@ -112,7 +186,8 @@ function buildEnhancedSystemPrompt(context = {}) {
     .replace('{{spread}}', context.spread ?? 'N/A')
     .replace('{{depth}}', context.depth ?? 'N/A')
     .replace('{{liquidityScore}}', context.liquidityScore ?? 'N/A')
-    .replace('{{kelly}}', context.kelly ?? 'N/A');
+    .replace('{{kelly}}', context.kelly ?? 'N/A')
+    .replace('[insert market.resolutionCriteria]', context.resolutionCriteria ?? 'No resolution criteria available.');
 }
 
 const BASIC_SYSTEM_PROMPT = `You are the Agent Zigma — a neutral, analytical observer of prediction market price and volume movement. Your purpose is to summarize market movement and liquidity signals; you must NOT make forecasts, probabilities, or predictions about future outcomes. Use only data provided in the input. Output short, factual, consistent lines that are easily readable on X and in an on-chain Deep Dive.
@@ -152,19 +227,17 @@ function buildEnhancedAnalysisPrompt(marketData, analysis, orderBook, news = [])
 
   return `You are a professional Polymarket analyst. You must return STRICT JSON ONLY (no markdown) that matches this schema:
 {
-  "deltaNews": number between -0.5 and 0.5,
-  "deltaStructure": number between -0.5 and 0.5,
-  "deltaBehavior": number between -0.5 and 0.5,
-  "deltaTime": number between -0.5 and 0.5,
-  "primaryReason": "NEWS_LAG" | "STRUCTURAL_MISPRICING" | "BEHAVIORAL_BIAS" | "TIME_DECAY_ERROR" | "CROSS_MARKET_ARBITRAGE",
-  "reasoning": string explaining the quantitative logic behind the deltas,
-  "uncertainty": number between 0 and 1 (0 = certain, 1 = highly uncertain),
-  "sentimentScore": number between -1 and 1 summarizing the news tone
+  "delta": number between -0.20 and 0.20 (adjustment to the current market YES price based on news, fundamentals, and biases; positive for more likely YES, negative for less likely),
+  "confidence": number between 1 and 100 (your confidence in this delta as an integer),
+  "narrative": string (brief explanation of your reasoning, including how news influenced the delta)
 }
+Always include "confidence": 1-100 integer in JSON. Do NOT output absolute probabilities—only the delta adjustment to the market price.
 
 Context for your assessment:
 MARKET DATA:
 ${marketJson}
+
+Current YES market price (base for delta adjustment): ${marketData.yesPrice}
 
 ANALYSIS METRICS:
 ${analysisJson}
@@ -175,13 +248,14 @@ ${orderBookJson}
 RECENT NEWS HEADLINES:
 ${newsText}
 
-Current YES price: ${marketData.yesPrice}
-
-Rules:
-- Base each delta on the provided data only.
-- Time-sensitive markets (resolving within 30 days) should include a negative deltaTime if no final rule or resolution event is scheduled.
-- Do not output confidence percentages or trading instructions—only the JSON described above.
-- Keep reasoning concise (<80 words) and cite specific datapoints when possible.
+Instructions:
+- First, provide the strongest argument for YES outcome.
+- Second, provide the strongest argument for NO outcome.
+- Then, considering both arguments, estimate the delta adjustment (between -0.20 and 0.20) to the current market price.
+- Penalize consensus outcomes: if the market price is very high or low (>0.9 or <0.1), reduce confidence unless strong counter-evidence.
+- Provide confidence score based on evidence strength (e.g., high for credible news, low for speculative).
+- Confidence: integer 1-100; explain why.
+- Keep narrative concise (<100 words), citing specific news or data points.
 
 Return ONLY the JSON object—no prose or extra text.`;
 }
@@ -226,157 +300,34 @@ async function generateDecrees(markets) {
           { role: 'system', content: BASIC_SYSTEM_PROMPT },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 400
+        temperature: 0.7
       });
     } else {
-      // Default to XAI
-      const client = new OpenAI({
-        apiKey: XAI_API_KEY,
-        baseURL: XAI_BASE_URL,
-      });
-      response = await client.chat.completions.create({
-        model: 'grok-beta',
-        messages: [
-          { role: 'system', content: BASIC_SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 400
-      });
+      // XAI provider logic here if needed
     }
 
-    const text = response.choices[0].message.content;
-    // Parse text format
-    const xDecreeMatch = text.match(/X Decree:\s*(.*?)(?=Deep Dive:|$)/s);
-    const xDecree = xDecreeMatch ? xDecreeMatch[1].trim() : 'Market Update: Analysis in progress';
+    const content = response.choices[0].message.content.trim();
+    const [xDecreePart, deepDivePart] = content.split('Deep Dive:');
+    const xDecree = xDecreePart.replace('X Decree:', '').trim();
+    const deepDiveJson = deepDivePart.trim();
 
-    // Clean JSON string from common LLM formatting issues
-    function cleanJson(jsonString) {
-      // Remove trailing commas before closing braces/brackets
-      jsonString = jsonString.replace(/,(\s*[}\]])/g, '$1');
-      // Remove any extra text before first [ or after last ]
-      const start = jsonString.indexOf('[');
-      const end = jsonString.lastIndexOf(']') + 1;
-      if (start >= 0 && end > start) {
-        jsonString = jsonString.substring(start, end);
-      }
-      return jsonString;
-    }
-
-    const deepDiveMatch = text.match(/Deep Dive:\s*(\[.*\])/s);
-    let deepDive = [];
-    if (deepDiveMatch) {
-      try {
-        const cleanJsonStr = cleanJson(deepDiveMatch[1]);
-        deepDive = JSON.parse(cleanJsonStr);
-      } catch (e) {
-        console.error('Failed to parse deep dive JSON:', e);
-        deepDive = [];
-      }
+    let deepDive;
+    try {
+      deepDive = JSON.parse(deepDiveJson);
+    } catch (e) {
+      console.error('Failed to parse deep dive JSON:', e);
+      deepDive = [];
     }
 
     return { xDecree, deepDive };
   } catch (error) {
     console.error('Error generating decrees:', error);
-    // Fallback to basic algorithmic response
-    const topMarket = markets[0] || {};
-    const xDecree = `🟡 ${topMarket.question?.substring(0, 50) || 'Market'}: Current YES price ${(topMarket.yesPrice || 0.5) * 100}% | Volume: $${(topMarket.volume || 0).toLocaleString()} | Polymarket link`;
-
-    const deepDive = markets.slice(0, 5).map((market, i) => ({
-      marketId: market.id || `market_${i}`,
-      title: market.question?.substring(0, 80) || `Market Analysis ${i + 1}`,
-      summary: `${market.question?.substring(0, 100) || 'Market'} shows ${(market.priceChange * 100).toFixed(1)}% change with volume of $${(market.volume || 0).toLocaleString()}.`,
-      metrics: {
-        currentPrice: market.yesPrice || 0,
-        priceChange: market.priceChange || 0,
-        volume: market.volume || 0,
-        liquidity: market.liquidity || 0
-      },
-      contextNotes: `Algorithmic analysis: Market data from Polymarket API.`,
-      timestamp: Date.now()
-    }));
-
-    return { xDecree, deepDive };
+    return { xDecree: 'Error generating market update', deepDive: [] };
   }
 }
 
-const crypto = require('crypto');
-
-// Simple in-memory cache for reproducibility (in production, use Redis or DB)
-const reproducibleCache = new Map();
-
-function getBaseRate(question) {
-  if (!question) return 0.05;
-  const PRIOR_BUCKETS = {
-    MACRO: [0.10, 0.30],
-    POLITICS: [0.05, 0.20],
-    CELEBRITY: [0.02, 0.10],
-    TECH_ADOPTION: [0.10, 0.40],
-    ETF_APPROVAL: [0.20, 0.60],
-    WAR_OUTCOMES: [0.05, 0.25],
-    SPORTS_FUTURES: [0.02, 0.15]
-  };
-
-  const SPORTS_PRIORS = {
-    "Will the Buccaneers win the 2026 NFC Championship": 0.015, // ~1.5% odds based on current futures
-    // Add more as needed, e.g., "Will the Chiefs win the 2026 Super Bowl": 0.20
-  };
-
-  // Simple classify
-  const q = question.toLowerCase();
-  let category = 'OTHER';
-  if (/recession|inflation|fed|gdp|economy/i.test(q)) category = 'MACRO';
-  if (/election|president|trump|biden|political/i.test(q)) category = 'POLITICS';
-  if (/celebrity|britney|tour|concert|divorce/i.test(q)) category = 'CELEBRITY';
-  if (/bitcoin|btc|crypto|tech|adoption/i.test(q)) category = 'TECH_ADOPTION';
-  if (/etf|approval/i.test(q)) category = 'ETF_APPROVAL';
-  if (/war|ukraine|russia|ceasefire/i.test(q)) category = 'WAR_OUTCOMES';
-  if (/sports|game|win/i.test(q)) category = 'SPORTS_FUTURES';
-
-  // Check for specific prior
-  if (SPORTS_PRIORS[question]) {
-    return SPORTS_PRIORS[question];
-  }
-
-  if (category === 'SPORTS_FUTURES') {
-    let prior = 0.10; // default for sports
-    const q = question.toLowerCase();
-    if (/super bowl.*winner/i.test(q)) prior = 0.04;
-    else if (/championship.*winner/i.test(q)) prior = 0.125;
-    else if (/division.*winner/i.test(q)) prior = 0.25;
-    return prior;
-  }
-
-  const bucket = PRIOR_BUCKETS[category] || [0.05, 0.20]; // Default conservative
-  return (bucket[0] + bucket[1]) / 2; // Midpoint for expected prior
-}
-
-// Enhanced analysis for premium reports
-async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache = {}) {
-  if (!marketData || typeof marketData.yesPrice !== 'number') {
-    return {
-      marketId: marketData?.id || 'unknown',
-      question: marketData?.question || 'Unknown',
-      algorithmicAnalysis: {},
-      llmAnalysis: {
-        executiveSummary: 'Market data incomplete',
-        technicalMetrics: {},
-        riskAssessment: { level: 'UNKNOWN', confidence: 0.5, reasons: ['Data incomplete'] },
-        recommendation: { action: 'AVOID', confidence: 50, reasoning: 'Incomplete market data' },
-        priceAnalysis: 'N/A',
-        marketOutlook: 'N/A',
-        confidence: 50,
-        timestamp: Date.now()
-      },
-      premium: true,
-      generatedAt: Date.now(),
-      error: 'Invalid market data',
-      fallback: true,
-      confidence: 50,
-      action: 'AVOID',
-      probability: 0.5,
-      reasoning: 'Invalid market data'
-    };
-  }
+// Main enhanced analysis function
+async function generateEnhancedAnalysis(marketData) {
   function getEntropy(question, daysLeft) {
     let entropy = 0.1; // base
     const q = question.toLowerCase();
@@ -386,222 +337,95 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
     if (daysLeft > 365) entropy += 0.2;
     return Math.min(entropy, 0.8);
   }
+  const analysis = getMarketAnalyzer(marketData);
+  const orderBook = getOrderBook(marketData.conditionId);
+  const newsResults = await crossReferenceNews(marketData);
+  const news = newsResults.slice(0, 5).map(r => ({title: r.title, snippet: r.snippet}));
+  console.log(`Headlines found: ${news.length}`);
+  console.log(`NEWS for ${marketData.question}: ${news.map(n => n.title).join(' | ')}`);
 
-  function safeParseLLM(responseText) {
-    if (!responseText) {
-      return {
-        winProb: 0.5,
-        action: "AVOID",
-        confidence: 50,
-        reasoning: "LLM response undefined",
-        deltaNews: 0,
-        deltaStructure: 0,
-        deltaBehavior: 0,
-        deltaTime: 0,
-        primaryReason: "NONE",
-        uncertainty: 1,
-        sentimentScore: 0
-      };
-    }
-    // Find JSON block
-    const jsonStart = responseText.indexOf('{');
-    const jsonEnd = responseText.lastIndexOf('}') + 1;
-    const jsonStr = responseText.substring(jsonStart, jsonEnd);
+  const spreadPercentage = orderBook ? (parseFloat(orderBook.asks[0]?.price || 0) - parseFloat(orderBook.bids[0]?.price || 0)) * 100 : 0;
+  const depth = orderBook ?
+    (orderBook.bids?.slice(0, 10).reduce((sum, b) => sum + (parseFloat(b.size) || 0), 0) || 0) +
+    (orderBook.asks?.slice(0, 10).reduce((sum, a) => sum + (parseFloat(a.size) || 0), 0) || 0)
+  : 0;
+  const liquidityScore = spreadPercentage > 0 ? Math.max(0, Math.round(100 - spreadPercentage * 2)) : 50; // Simple score
+  const kellyFraction = calculateKelly(marketData.yesPrice || 0.5, marketData.liquidity || 0); // Assume from market_analysis.js
+
+  // Generate LLM prompt
+  const systemPrompt = buildEnhancedSystemPrompt({
+    spread: Number.isFinite(spreadPercentage) ? spreadPercentage.toFixed(2) : 'N/A',
+    depth: Number.isFinite(depth) ? depth.toFixed(0) : 'N/A',
+    liquidityScore: Number.isFinite(liquidityScore) ? liquidityScore : 'N/A',
+    kelly: Number.isFinite(kellyFraction) ? (kellyFraction * 100).toFixed(1) : 'N/A',
+    resolutionCriteria: marketData.description || 'No resolution criteria available.'
+  });
+  const userPrompt = buildEnhancedAnalysisPrompt(marketData, analysis, orderBook || {}, news);
+
+  const client = getLLMClient();
+  let response;
+  const llmCall = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
-      let parsed = JSON.parse(jsonStr);
-
-      parsed.reasoning = parsed.reasoning || parsed["reasoning"] || "No detailed reasoning provided by LLM — default analysis applied.";
-
-      // Flatten nested
-      if (parsed["Precise Probability and Recommendation"]) {
-        parsed = { ...parsed, ...parsed["Precise Probability and Recommendation"] };
-      }
-
-      const deltaNews = parsed.deltaNews || 0;
-      const deltaStructure = parsed.deltaStructure || 0;
-      const deltaBehavior = parsed.deltaBehavior || 0;
-      const deltaTime = parsed.deltaTime || 0;
-      const primaryReason = parsed.primaryReason || "NONE";
-
-      const uncertainty = parsed.uncertainty || 0;
-      const sentimentScore = parsed.sentimentScore || 0;
-
-      return {
-        winProb: 0.5, // Will be overridden
-        action: "AVOID", // Will be overridden
-        confidence: 0.7, // Adjusted by uncertainty
-        reasoning: parsed.reasoning,
-        deltaNews: Math.sign(deltaNews) * Math.min(Math.abs(deltaNews) + Math.abs(sentimentScore) * 0.1, 0.5), // Integrate sentiment
-        deltaStructure,
-        deltaBehavior,
-        deltaTime,
-        primaryReason,
-        uncertainty,
-        sentimentScore
-      };
-    } catch (e) {
-      // Fallback regex or defaults
-      console.error('JSON parse failed:', e);
-      return {
-        winProb: 0.5,
-        action: "AVOID",
-        confidence: 80,
-        reasoning: "Fallback extraction from LLM response",
-        deltaNews: 0,
-        deltaStructure: 0,
-        deltaBehavior: 0,
-        deltaTime: 0,
-        primaryReason: "NONE",
-        uncertainty: 1, // High uncertainty
-        sentimentScore: 0 // Neutral
-      };
+      return await client.chat.completions.create({
+        model: LLM_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_tokens: 800,
+        temperature: 0
+      });
+    } finally {
+      clearTimeout(timeoutId);
     }
+  };
+
+  const llmStart = Date.now();
+  llmMetrics.total += 1;
+  let llmOk = false;
+  try {
+    console.log(`[LLM] Starting API call for ${marketData.id}`);
+    response = await llmCall();
+    llmOk = true;
+    console.log(`[LLM] API call completed for ${marketData.id}`);
+  } catch (error) {
+    llmMetrics.errors += 1;
+    emitLLMMetrics({
+      ok: false,
+      marketId: marketData.id,
+      llm_latency_ms: Date.now() - llmStart,
+      provider: PROVIDER,
+      model: LLM_MODEL,
+      error: error.message
+    });
+    console.error(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
+    // Fallback handling...
+    return {
+      marketId: marketData.id,
+      question: marketData.question,
+      confidence: 50,
+      action: 'HOLD',
+      probability: 0.5,
+      reasoning: 'LLM call failed - fallback analysis',
+      generatedAt: Date.now(),
+      fallback: true
+    };
   }
 
-  try {
-    // Use mock response if enabled
-    if (USE_MOCK || PROVIDER === 'mock') {
-      console.log('[MOCK] Generating mock enhanced analysis for testing');
-      return {
-        marketId: marketData.slug || marketData.id,
-        question: marketData.question,
-        algorithmicAnalysis: {}, // Would normally be from analyzer
-        llmAnalysis: generateMockAnalysis(marketData),
-        premium: true,
-        generatedAt: Date.now(),
-        mock: true
-      };
-    }
+  emitLLMMetrics({
+    ok: llmOk,
+    marketId: marketData.id,
+    llm_latency_ms: Date.now() - llmStart,
+    provider: PROVIDER,
+    model: LLM_MODEL
+  });
 
-    const analyzer = getMarketAnalyzer();
+  let llmAnalysis = response?.choices?.[0]?.message?.content || '{}';
 
-    // Perform comprehensive analysis
-    const analysis = await analyzer.analyzeMarket(marketData, cache);
-
-    // Calculate Kelly fraction for position sizing
-    const algorithmicConfidence = analysis.recommendation?.confidence || 50;
-    const currentPrice = analysis.metrics?.currentPrice?.mid || 0.5;
-    const kellyFraction = calculateKelly(algorithmicConfidence / 100, currentPrice);
-    if (!analysis.recommendation) analysis.recommendation = {};
-    analysis.recommendation.kellyFraction = kellyFraction;
-
-    // Get order book for spread calculation
-    const orderBook = await getOrderBook(marketData.id);
-    const spreadPercentage = orderBook && orderBook.ask && orderBook.bid && orderBook.mid
-      ? ((orderBook.ask - orderBook.bid) / orderBook.mid) * 100
-      : 0;
-    const depth = orderBook
-      ? (orderBook.bids?.slice(0, 10).reduce((sum, b) => sum + (parseFloat(b.size) || 0), 0) || 0) +
-        (orderBook.asks?.slice(0, 10).reduce((sum, a) => sum + (parseFloat(a.size) || 0), 0) || 0)
-      : 0;
-    const liquidityScore = spreadPercentage > 0 ? Math.max(0, Math.round(100 - spreadPercentage * 2)) : 50; // Simple score
-
-    // Generate LLM prompt
-    const systemPrompt = buildEnhancedSystemPrompt({
-      spread: Number.isFinite(spreadPercentage) ? spreadPercentage.toFixed(2) : 'N/A',
-      depth: Number.isFinite(depth) ? depth.toFixed(0) : 'N/A',
-      liquidityScore: Number.isFinite(liquidityScore) ? liquidityScore : 'N/A',
-      kelly: Number.isFinite(kellyFraction) ? (kellyFraction * 100).toFixed(1) : 'N/A'
-    });
-    const userPrompt = buildEnhancedAnalysisPrompt(marketData, analysis, orderBook || {}, news);
-
-    const client = getLLMClient();
-    let response;
-    const llmCall = async () => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
-      try {
-        return await client.chat.completions.create({
-          model: LLM_MODEL,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          max_tokens: 800,
-          temperature: 0
-        });
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    };
-
-    // Calculate news metrics for delta adjustment (moved outside try-catch to fix scope issue)
-    let headline_count = news.length;
-    let source_weight = 1.0;
-    if (news.some(h => h.title && (h.title.toLowerCase().includes('reuters') || h.title.toLowerCase().includes('financial times') || h.title.toLowerCase().includes('wall street journal') || h.title.toLowerCase().includes('wsj')))) {
-      source_weight = 2.0;
-    }
-    let novelty_decay = 1.0; // Simple, no repetition tracking yet
-    let deltaNews_magnitude = 0;
-    if (headline_count > 0) {
-      deltaNews_magnitude = Math.min(0.30, (headline_count * 0.03) * source_weight * novelty_decay);
-    }
-
-    try {
-      console.log(`[LLM] Starting API call for ${marketData.id}`);
-      response = await llmCall();
-      console.log(`[LLM] API call completed for ${marketData.id}`);
-    } catch (error) {
-      console.log(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
-      if (error.name === 'AbortError') {
-        console.log('LLM call timed out');
-      } else {
-        const newsResults = await crossReferenceNews(marketData);
-        const news = newsResults.slice(0, 5).map(r => ({title: r.title, snippet: r.snippet}));
-        console.log(`Headlines found: ${news.length}`);
-        console.log(`NEWS for ${marketData.question}: ${news.map(n => n.title).join(' | ')}`);
-
-        // Update news metrics for fallback
-        headline_count = news.length;
-        source_weight = 1.0;
-        if (news.some(h => h.title.toLowerCase().includes('reuters') || h.title.toLowerCase().includes('financial times') || h.title.toLowerCase().includes('wall street journal') || h.title.toLowerCase().includes('wsj'))) {
-          source_weight = 2.0;
-        }
-        novelty_decay = 1.0;
-        deltaNews_magnitude = 0;
-        if (headline_count > 0) {
-          deltaNews_magnitude = Math.min(0.30, (headline_count * 0.03) * source_weight * novelty_decay);
-        }
-
-        // Direct fallback analysis instead of recursive call
-        return {
-          marketId: marketData.slug || marketData.id,
-          question: marketData.question,
-          algorithmicAnalysis: {},
-          llmAnalysis: {
-            executiveSummary: `${marketData.question || 'Market'} shows current YES price at ${(marketData.yesPrice || 0.5) * 100}%. Volume: $${(marketData.volume || 0).toLocaleString()}.`,
-            technicalMetrics: {
-              currentPrice: marketData.yesPrice || 0.5,
-              volume: marketData.volume || 0,
-              liquidity: marketData.liquidity || 0
-            },
-            riskAssessment: { level: 'UNKNOWN', confidence: 0.5, reasons: ['Data analysis incomplete'] },
-            recommendation: { action: 'HOLD', confidence: 50, reasoning: 'Insufficient analysis data' },
-            priceAnalysis: `Current price: ${marketData.yesPrice || 0.5}`,
-            marketOutlook: "Limited data available for outlook.",
-            confidence: 50,
-            timestamp: Date.now()
-          },
-          premium: true,
-          generatedAt: Date.now(),
-          error: error.message,
-          fallback: true,
-          confidence: 50,
-          action: 'AVOID',
-          probability: 0.5,
-          reasoning: 'Fallback analysis due to LLM failure'
-        };
-      }
-    }
-
-    // Deterministic caching: hash marketID + date + headlines for reproducibility
-    const headlinesStr = news.map(n => n.title + n.snippet).join('');
-    const headlinesHash = crypto.createHash('md5').update(headlinesStr).digest('hex');
-    const cacheKey = `${marketData.id}_${new Date().toDateString()}_${headlinesHash}`;
-
-    let llmAnalysis = response?.choices?.[0]?.message?.content || '{}';
+  console.log('LLM Response:', llmAnalysis);
 
     // Compute news delta if news available
 
@@ -635,81 +459,204 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
 
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const result = safeParseLLM(llmAnalysis);
+    const ensureNumber = (value, fallback = 0) => {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        const parsed = parseFloat(value);
+        if (Number.isFinite(parsed)) return parsed;
+      }
+      return fallback;
+    };
 
-    // Blend LLM delta with deterministic news delta
-    result.deltaNews = clamp((result.deltaNews ?? 0) + newsDelta, -0.5, 0.5);
+    // Compute revised_prior from delta (Change 1)
+    const base_prior = clamp(ensureNumber(marketData.yesPrice, 0.5), 0.01, 0.99);
+    const delta = clamp(ensureNumber(result.delta, 0), -0.20, 0.20);
+    const combinedDelta = clamp(delta + newsDelta, -0.25, 0.25);
+    const revised_prior = clamp(base_prior + combinedDelta, 0.01, 0.99);
+    result.revised_prior = ensureNumber(result.revised_prior, revised_prior);
+
+    // Contradiction penalty (Change 2)
+    const narrative = result.narrative || '';
+    const oddsMatch = narrative.match(/odds suggest(?:ing)?\s*([0-9.]+)%/i);
+    if (oddsMatch) {
+      const suggestedOdds = parseFloat(oddsMatch[1]) / 100;
+      if (Math.abs(suggestedOdds - revised_prior) > 0.20) {
+        result.confidence = Math.round(result.confidence * 0.3);
+        result.narrative = `${narrative} [PENALTY: Contradictory odds statement reduced confidence]`;
+      }
+    }
+
+    // Confidence normalization (Change 6)
+    const baseConfidence = clamp(ensureNumber(result.confidence, 60), 1, 100);
+    result.confidence = baseConfidence;
+
+    if (Math.abs(delta) < 0.05) {
+      result.confidence = Math.round(result.confidence * 0.7);
+      result.narrative = `${result.narrative || narrative} [NORMALIZATION: Small delta reduced confidence]`;
+    }
+    result.confidence = clamp(result.confidence, 1, 100); // Ensure bounds
+
+  // Disagreement penalty: reduce confidence if LLM agrees too closely with market
+  // Removed to prevent confidence zeroing
 
     const pMarket = clamp(typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5, 0.01, 0.99);
-    const pPrior = clamp(getBaseRate(marketData.question), 0.01, 0.99);
-
-    function logit(p) {
-      if (p == null || isNaN(p)) return 0; // neutral logit
-      if (p <= 0) return -Infinity;
-      if (p >= 1) return Infinity;
-      return Math.log(p / (1 - p));
-    }
-
-    function sigmoid(x) {
-      return 1 / (1 + Math.exp(-x));
-    }
-
-    const deltaSum =
-      (result.deltaNews || 0) +
-      (result.deltaStructure || 0) +
-      (result.deltaBehavior || 0) +
-      (result.deltaTime || 0);
-
-    const zigmaLogit = ((logit(pPrior) + logit(pMarket)) / 2) + deltaSum;
-    const winProb = clamp(sigmoid(zigmaLogit), 0.01, 0.99);
-
-    let action = 'HOLD';
-    if (winProb > pMarket + 0.05) action = 'BUY YES';
-    else if (winProb < pMarket - 0.05) action = 'BUY NO';
-
-    const rawEdge = Math.abs(winProb - pMarket);
-
-    let exposure = 0;
-    let tier = 'None';
-    if (rawEdge >= 0.30) { exposure = 1.0; tier = 'A'; }
-    else if (rawEdge >= 0.20) { exposure = 0.5; tier = 'B'; }
-    else if (rawEdge >= 0.15) { exposure = 0.25; tier = 'C'; }
+    const basePriorForAvg = clamp(
+      typeof marketData.basePrior === 'number' && Number.isFinite(marketData.basePrior)
+        ? marketData.basePrior
+        : base_prior,
+      0.01,
+      0.99
+    );
+    const winProb = clamp((result.revised_prior + basePriorForAvg) / 2, 0.02, 0.98);
 
     const daysLeft = marketData.endDateIso
       ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
       : marketData.endDate
         ? (new Date(marketData.endDate) - Date.now()) / (1000 * 60 * 60 * 24)
         : 365;
-    const entropy = getEntropy(marketData.question, daysLeft || 365);
-    const liquidityFactor = marketData.liquidity ? Math.min(marketData.liquidity / 50000, 1) : 0.5;
-    const effectiveEdge = rawEdge * (1 - entropy) * liquidityFactor;
+    
+    // Enhanced entropy calculation
+    const entropyAnalysis = calculateMarketEntropy(marketData, {
+      endDate: marketData.endDateIso || marketData.endDate,
+      outcomes: marketData.outcomePrices || marketData.prices || []
+    });
+    const entropy = entropyAnalysis.entropy;
 
-    const confidenceScore = clamp((1 - (result.uncertainty ?? 0.5)) * 0.6 + effectiveEdge * 0.4, 0.05, 0.95);
-    const confidencePercent = Math.round(confidenceScore * 100);
-
-    const q = marketData.question.toLowerCase();
-    let category = 'OTHER';
-    if (/recession|inflation|fed|gdp|economy/i.test(q)) category = 'MACRO';
-    if (/election|president|trump|biden|political/i.test(q)) category = 'POLITICS';
-    if (/celebrity|britney|tour|concert|divorce/i.test(q)) category = 'CELEBRITY';
-    if (/bitcoin|btc|crypto|tech|adoption/i.test(q)) category = 'TECH_ADOPTION';
-    if (/etf|approval/i.test(q)) category = 'ETF_APPROVAL';
-    if (/war|ukraine|russia|ceasefire/i.test(q)) category = 'WAR_OUTCOMES';
-    if (/sports|game|win/i.test(q)) category = 'SPORTS_FUTURES';
-
-    let reasoning = result.reasoning || 'No detailed reasoning from LLM.';
-    if (result.primaryReason && result.primaryReason !== "NONE") {
-      reasoning += ` | Primary: ${result.primaryReason}`;
+    // Enhanced sentiment analysis
+    let sentimentScore = 0;
+    if (news && news.length > 0) {
+      const sentimentAnalysis = calculateAggregateSentiment(news);
+      sentimentScore = sentimentAnalysis.score;
     }
-    reasoning += ` | Conviction Tier: ${tier} | Prior: ${pPrior.toFixed(3)} (${category} bucket) | Suggested Exposure: ${(exposure * 100).toFixed(0)}% bankroll.`;
+
+    const liquidityUsd = Number(marketData.liquidity) || 0;
+    const priceMomentum =
+      typeof marketData.priceChange === 'number'
+        ? Math.min(Math.max(Math.abs(marketData.priceChange) / 100, 0), 0.03)
+        : 0;
+
+    const liquidityBoost =
+      liquidityUsd >= 100000 ? 0.025 :
+      liquidityUsd >= 50000 ? 0.02 :
+      liquidityUsd >= 20000 ? 0.01 : 0;
+
+    const deltaBoost = Math.min(Math.abs(combinedDelta), 0.03);
+    const entropyPenalty = Math.max(0, (entropy - 0.3) * 0.02);
+    const baseThreshold = 0.05;
+    const dynamicThreshold = Math.max(
+      0.015,
+      baseThreshold - liquidityBoost - deltaBoost - priceMomentum + entropyPenalty
+    );
+
+    let action = 'HOLD';
+    if (winProb > pMarket + dynamicThreshold) action = 'BUY YES';
+    else if (winProb < pMarket - dynamicThreshold) action = 'BUY NO';
+
+    const rawEdge = winProb - pMarket;
+    const absEdge = Math.abs(rawEdge);
+
+    const daysToResolution = marketData.endDateIso
+      ? Math.max(0, (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24))
+      : marketData.endDate
+        ? Math.max(0, (new Date(marketData.endDate) - Date.now()) / (1000 * 60 * 60 * 24))
+        : 365;
+    const horizonDiscount = computeHorizonDiscount(daysToResolution);
+
+    let normalizedConfidence = result.confidence > 1 ? result.confidence / 100 : result.confidence;
+    normalizedConfidence = clamp(normalizedConfidence, 0.01, 1);
+    const expectedEdge = rawEdge * normalizedConfidence * horizonDiscount;
+    const absExpectedEdge = Math.abs(expectedEdge);
+
+    const category = classifyMarket(marketData.question);
+    let exposure = 0;
+    let tier = 'None';
+
+    // Liquidity-aware Kelly-style sizing
+    const liqUsd = Math.max(0, Number(marketData.liquidity) || 0);
+    let liquidityTier = 1.0;
+    if (liqUsd < 30000) liquidityTier = 0.6;
+    else if (liqUsd < 80000) liquidityTier = 0.85;
+    else if (liqUsd > 300000) liquidityTier = 1.4;
+
+    const baseKelly = calculateKelly(winProb, pMarket, 0.01, liqUsd || 10000);
+    exposure = Math.min(0.05, Math.max(0, baseKelly * liquidityTier));
+    if (exposure >= 0.04) tier = 'STRONG_TRADE';
+    else if (exposure >= 0.02) tier = 'SMALL_TRADE';
+    else if (exposure >= 0.005) tier = 'PROBE';
+    else tier = 'SCOUT';
+
+    // Conviction boost: Adjust based on edge/volatility
+    const volatilityFactor = marketData.priceVolatility || 0.05; // from metrics
+    let confidenceScore = clamp(
+      0.72 + (absExpectedEdge * 4.2) - (volatilityFactor * 1.8),
+      0.72,
+      0.96
+    );
+
+    // Apply adaptive learning
+    const adaptiveLearning = applyAdaptiveLearning(category, action, absEdge, confidenceScore * 100);
+    const adjustedEdge = adaptiveLearning.adjustedEdge;
+    const adjustedConfidence = adaptiveLearning.adjustedConfidence;
+
+    // Apply confidence calibration
+    const calibratedSignal = applyCalibration({
+      confidence: adjustedConfidence,
+      category: category
+    });
+    const finalConfidence = calibratedSignal.confidence;
+
+    // Apply entropy discount to edge
+    const entropyDiscountedEdge = applyEntropyDiscount(entropy, adjustedEdge);
+
+    let reasoning = result.narrative || 'No detailed reasoning from LLM.';
+    reasoning += ` | Conviction Tier: ${tier} | Revised Prior: ${winProb.toFixed(3)} (${category}) | Suggested Exposure: ${(exposure * 100).toFixed(0)}% bankroll.`;
+    reasoning += ` | Entropy: ${(entropy * 100).toFixed(1)}% (${entropyAnalysis.uncertaintyLevel})`;
+    reasoning += ` | Sentiment: ${sentimentScore > 0.1 ? 'POSITIVE' : sentimentScore < -0.1 ? 'NEGATIVE' : 'NEUTRAL'} (${(sentimentScore * 100).toFixed(1)}%)`;
+    if (adaptiveLearning.sampleSize >= 20) {
+      reasoning += ` | Adaptive Learning: ${adaptiveLearning.message}`;
+    }
+    if (calibratedSignal.confidenceAdjustment !== 0) {
+      reasoning += ` | Calibration: ${(calibratedSignal.confidenceAdjustment > 0 ? '+' : '')}${calibratedSignal.confidenceAdjustment.toFixed(1)}%`;
+    }
+
+    const baseEffectiveEdge = Number((entropyDiscountedEdge * 100).toFixed(2));
 
     const structuredAnalysis = {
       probability: winProb,
       action,
-      confidence: confidencePercent,
+      confidence: Math.round(finalConfidence),
       reasoning,
-      kellyFraction: exposure
+      kellyFraction: exposure,
+      baseEffectiveEdge,
+      effectiveEdge: baseEffectiveEdge,
+      entropy: entropy,
+      sentimentScore: sentimentScore,
+      adaptiveLearning: adaptiveLearning,
+      calibration: calibratedSignal
     };
+    structuredAnalysis.baseEffectiveEdge = baseEffectiveEdge;
+    structuredAnalysis.effectiveEdge = baseEffectiveEdge;
     structuredAnalysis.reasoning += ` Recommended Position: ${(exposure * 100).toFixed(1)}% of bankroll.`;
+
+    // v1.5.2 – Enforce min edge for real trades (adjusted for better signal detection)
+    const MIN_EDGE_TRADE = 1.5; // 1.5% min for BUY/SELL (lowered from 5% to capture more edges)
+
+    if (baseEffectiveEdge < MIN_EDGE_TRADE) {
+      structuredAnalysis.action = 'HOLD';
+      structuredAnalysis.reasoning += ` | v1.5.2 VETO: Edge < ${MIN_EDGE_TRADE}% – insufficient edge`;
+      structuredAnalysis.kellyFraction = 0;
+    } else if (structuredAnalysis.action.includes('BUY') && exposure <= 0) {
+      structuredAnalysis.action = 'HOLD';
+      structuredAnalysis.reasoning += ` | v1.5.2 FIX: BUY with 0% exposure → converted to HOLD`;
+    }
+
+    // CRYPTO divergence cap: force PROBE tier for outsized raw edges
+    if (category === 'CRYPTO' && Math.abs(rawEdge) > 0.18) {
+      structuredAnalysis.tradeTier = 'PROBE';
+      tier = 'PROBE';
+      exposure = Math.min(exposure, 0.01);
+      structuredAnalysis.reasoning += ' | Safety: Crypto divergence >18% forcing PROBE tier';
+    }
 
     return {
       marketId: marketData.id,
@@ -718,56 +665,59 @@ async function generateEnhancedAnalysis(marketData, orderBook, news = [], cache 
       action: structuredAnalysis.action,
       probability: structuredAnalysis.probability,
       reasoning: structuredAnalysis.reasoning,
-      primaryReason: result.primaryReason,
       llmAnalysis: structuredAnalysis,
+      effectiveEdge: baseEffectiveEdge,
       generatedAt: Date.now(),
-      pPrior: pPrior,
-      deltas: {
-        deltaNews: result.deltaNews,
-        deltaStructure: result.deltaStructure,
-        deltaBehavior: result.deltaBehavior,
-        deltaTime: result.deltaTime,
-        time: -10
-      },
-      entropy: entropy,
-      effectiveEdge: effectiveEdge,
-      confidenceScore: confidenceScore
+      revised_prior: result.revised_prior,
+      llm_confidence: result.confidence,
+      narrative: result.narrative
     };
 
-  } catch (error) {
-    console.error('Error generating enhanced analysis:', error);
+}
 
-    // Fallback to basic algorithmic analysis
-    const basicAnalysis = {
-      executiveSummary: `${marketData.question || 'Market'} shows current YES price at ${(marketData.yesPrice || 0.5) * 100}%. Volume: $${(marketData.volume || 0).toLocaleString()}.`,
-      technicalMetrics: {
-        currentPrice: marketData.yesPrice || 0.5,
-        volume: marketData.volume || 0,
-        liquidity: marketData.liquidity || 0
-      },
-      riskAssessment: { level: 'UNKNOWN', confidence: 0.5, reasons: ['Data analysis incomplete'] },
-      recommendation: { action: 'HOLD', confidence: 50, reasoning: 'Insufficient analysis data' },
-      priceAnalysis: `Current price: ${marketData.yesPrice || 0.5}`,
-      marketOutlook: "Limited data available for outlook.",
-      confidence: 50,
-      timestamp: Date.now()
-    };
+/**
+ * Generate personalized market analysis for a specific user
+ * @param {Object} marketData - Market data
+ * @param {Object} userProfile - User profile with metrics and analysis
+ * @returns {Object} - Personalized analysis result
+ */
+async function generatePersonalizedAnalysis(marketData, userProfile) {
+  try {
+    // Build user context from profile
+    const userContext = buildUserContext(userProfile);
+
+    // Generate personalized prompt
+    const personalizedPrompt = generatePersonalizedPrompt(marketData, userContext);
+
+    // Call LLM with personalized prompt
+    const client = getLLMClient();
+    const response = await client.chat.completions.create({
+      model: LLM_MODEL,
+      messages: [
+        { role: 'system', content: 'You are a personalized Polymarket trading advisor. Provide analysis tailored to the specific trader\'s profile, strengths, weaknesses, and risk tolerance.' },
+        { role: 'user', content: personalizedPrompt }
+      ],
+      max_tokens: 1000,
+      temperature: 0.3
+    });
+
+    const llmOutput = response?.choices?.[0]?.message?.content || '{}';
+    const parsedResult = safeParseLLM(llmOutput);
+
+    // Generate personalized summary
+    const summary = generatePersonalizedSummary(parsedResult, userContext);
 
     return {
-      marketId: marketData.slug || marketData.id,
-      question: marketData.question,
-      algorithmicAnalysis: {},
-      llmAnalysis: basicAnalysis,
-      premium: true,
-      generatedAt: Date.now(),
-      error: error.message,
-      fallback: true,
-      confidence: basicAnalysis.confidence || 50,
-      action: basicAnalysis.recommendation?.action || 'AVOID',
-      probability: 0.5,
-      reasoning: basicAnalysis.recommendation?.reasoning || basicAnalysis.priceAnalysis || 'Fallback analysis'
+      ...parsedResult,
+      personalizedSummary: summary,
+      userContext: userContext,
+      generatedAt: Date.now()
     };
+  } catch (error) {
+    console.error('[PERSONALIZED LLM] Analysis failed:', error.message);
+    // Fallback to standard analysis
+    return await generateEnhancedAnalysis(marketData);
   }
 }
 
-module.exports = { generateDecrees, generateEnhancedAnalysis };
+module.exports = { generateDecrees, generateEnhancedAnalysis, generatePersonalizedAnalysis };

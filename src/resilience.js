@@ -2,7 +2,9 @@
 const pRetry = require('p-retry');
 const pTimeout = require('p-timeout');
 
-// Exponential backoff configuration
+/**
+ * Exponential backoff configuration
+ */
 const RETRY_CONFIG = {
   retries: 3,
   factor: 2, // Exponential backoff: 1s, 2s, 4s
@@ -11,7 +13,9 @@ const RETRY_CONFIG = {
   randomize: true // Add jitter to prevent thundering herd
 };
 
-// Timeout configurations by API
+/**
+ * Timeout configurations by API
+ */
 const TIMEOUTS = {
   POLYMARKET_API: 8000,
   X_API: 15000,
@@ -30,6 +34,11 @@ let circuitBreakerState = {
 const CIRCUIT_BREAKER_THRESHOLD = 5; // Open after 5 failures
 const CIRCUIT_BREAKER_TIMEOUT = 60000; // Reset after 1 minute
 
+/**
+ * Check if circuit breaker is open for a service
+ * @param {string} service - Service name (polymarket, x, llm, acp)
+ * @returns {boolean} - True if circuit is open
+ */
 function isCircuitOpen(service) {
   const state = circuitBreakerState[service];
   if (state.state === 'open') {
@@ -44,6 +53,10 @@ function isCircuitOpen(service) {
   return false;
 }
 
+/**
+ * Record a failure for a service
+ * @param {string} service - Service name
+ */
 function recordFailure(service) {
   const state = circuitBreakerState[service];
   state.failures++;
@@ -55,6 +68,10 @@ function recordFailure(service) {
   }
 }
 
+/**
+ * Record a success for a service
+ * @param {string} service - Service name
+ */
 function recordSuccess(service) {
   const state = circuitBreakerState[service];
   state.failures = 0; // Reset on success
@@ -64,7 +81,14 @@ function recordSuccess(service) {
   }
 }
 
-// Safe API call wrapper with retry, backoff, timeout, and circuit breaker
+/**
+ * Safe API call wrapper with retry, backoff, timeout, and circuit breaker
+ * @param {string} service - Service name (polymarket, x, llm, acp)
+ * @param {Function} apiCall - Async function to execute
+ * @param {number|null} timeoutMs - Optional timeout override
+ * @returns {Promise<any>} - API call result
+ * @throws {Error} - If circuit is open or all retries fail
+ */
 async function safeApiCall(service, apiCall, timeoutMs = null) {
   const serviceKey = service.toLowerCase();
 

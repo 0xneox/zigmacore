@@ -1,5 +1,94 @@
 const axios = require('axios');
+const OpenAI = require('openai');
 require('dotenv').config();
+
+let llmNewsClient = null;
+function getLLMNewsClient() {
+  if (llmNewsClient) return llmNewsClient;
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn('OPENAI_API_KEY missing – cannot enable LLM news fallback');
+    return null;
+  }
+  llmNewsClient = new OpenAI({ apiKey });
+  return llmNewsClient;
+}
+
+const LLM_NEWS_PROMPT = `You are a cautious market news assistant with up-to-date knowledge.
+Given a query about a prediction market, return up to 3 verifiable headlines or state that no reliable headlines exist.
+Rules:
+- If you are unsure or lack recent knowledge, return an empty list.
+- Only cite headlines that are well-known or published by reputable outlets.
+- Provide ISO 8601 dates when possible.
+- Include short factual summaries (max 180 characters).
+- NEVER fabricate links; if unsure, leave url empty.
+
+Respond strictly in JSON:
+{
+  "headlines": [
+    {
+      "title": "...",
+      "summary": "...",
+      "source": "...",
+      "date": "YYYY-MM-DD",
+      "confidence": 0.0-1.0,
+      "url": ""
+    }
+  ]
+}`;
+
+async function searchLLMNews(query = '', marketContext = {}) {
+  const enableFallback = process.env.ENABLE_LLM_NEWS_FALLBACK !== 'false';
+  if (!enableFallback) return [];
+
+  const client = getLLMNewsClient();
+  if (!client || !query) return [];
+
+  try {
+    const response = await client.chat.completions.create({
+      model: process.env.LLM_NEWS_MODEL || process.env.LLM_MODEL || 'gpt-4o-mini',
+      temperature: 0,
+      max_tokens: 400,
+      messages: [
+        { role: 'system', content: LLM_NEWS_PROMPT },
+        {
+          role: 'user',
+          content: `Query: ${query}\nMarket Question: ${marketContext.question || 'Unknown'}\nContext: ${JSON.stringify({
+            id: marketContext.id,
+            endDate: marketContext.endDateIso || marketContext.endDate || null
+          })}`
+        }
+      ]
+    });
+
+    const raw = response?.choices?.[0]?.message?.content?.trim();
+    if (!raw) return [];
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      console.warn('LLM news fallback JSON parse failed:', err.message);
+      return [];
+    }
+
+    if (!parsed || !Array.isArray(parsed.headlines)) return [];
+
+    return parsed.headlines
+      .filter(Boolean)
+      .map(headline => ({
+        title: headline.title || 'LLM headline (unspecified)',
+        url: headline.url || '',
+        snippet: headline.summary || '',
+        source: headline.source || 'LLM_FALLBACK',
+        publishedDate: headline.date || null,
+        relevanceScore: typeof headline.confidence === 'number' ? headline.confidence : 0.4,
+        origin: 'LLM_FALLBACK'
+      }));
+  } catch (error) {
+    console.error('LLM news fallback error:', error.message || error);
+    return [];
+  }
+}
 
 // Singleton instance
 let analyzerInstance = null;
@@ -593,7 +682,7 @@ class MarketAnalyzer {
 }
 
 // Kelly Criterion calculation for optimal bet sizing
-function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000, displayMode = false) {
+function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
   // Ensure all inputs are numbers
   const p = Number(winProb);
   const priceNum = Number(price);
@@ -604,73 +693,100 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000, di
     return 0; 
   }
 
+  const rawEdge = Math.abs(p - priceNum);
+  // Removed minimum edge threshold for MVP
+
   // 2. Standard Kelly: (p*b - q) / b
   // b = net odds (e.g., if price is 0.25, b is 3)
   const b = (1 - priceNum) / priceNum;
   const q = 1 - p;
   let fullKelly = (p * b - q) / b;
 
-  // 3. Liquidity Scaling (Prevents betting too much on "thin" markets)
+  // 3. Liquidity Scaling (More aggressive for MVP)
   // If liquidity < 1000, we don't bet.
-  let liquidityMultiplier;
-  if (displayMode) {
-    liquidityMultiplier = 1.0; // Show hypothetical sizing ignoring liquidity
-  } else {
-    liquidityMultiplier = liqNum < 1000 ? 0 : 
-                          liqNum < 5000 ? 0.2 : 
-                          liqNum < 20000 ? 0.5 : 1.0;
-  }
+  const liquidityMultiplier =
+    liqNum < 1000 ? 0 :
+    liqNum < 5000 ? 0.9 :
+    liqNum < 20000 ? 1.0 :
+    liqNum >= 100000 ? 1.2 : 1.1;
 
-  // Apply multipliers and cap at 10% of bankroll for safety (Quarter-Kelly)
-  const finalKelly = fullKelly * 0.25 * liquidityMultiplier;
+  // Apply multipliers and cap at 10% of bankroll for safety (10x-Kelly for MVP)
+  const finalKelly = fullKelly * 10.0 * liquidityMultiplier;
   
-  return Math.max(0, Math.min(finalKelly, 0.10));
+  // Removed 5% cap for MVP - let confidence boosts drive sizing
+  
+  return Math.max(0, finalKelly); // Return 0 if no valid edge
 }
 
 // Simple in-memory cache for Tavily searches (expires after 1 hour)
 const tavilyCache = new Map();
+const TAVILY_TTL_MS = 60 * 60 * 1000;
+const TAVILY_MAX_RETRIES = 3;
+const TAVILY_BACKOFF_MS = 1000;
 
-async function searchTavily(query) {
-  try {
-    // Check cache first
-    const cacheKey = query.toLowerCase().trim();
-    const cached = tavilyCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < 3600000) { // 1 hour cache
-      console.log('Using cached Tavily results for query:', query);
-      return cached.results;
-    }
+async function searchTavily(query = '') {
+  const cacheKey = (query || '').toLowerCase().trim();
+  const cachedEntry = cacheKey ? tavilyCache.get(cacheKey) : null;
+  const now = Date.now();
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-    const response = await fetch('https://api.tavily.com/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        api_key: process.env.TAVILY_API_KEY,
-        query,
-        search_depth: 'basic'
-      }),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-    const data = await response.json();
-    const results = data.results || [];
-
-    // Cache the results
-    tavilyCache.set(cacheKey, { results, timestamp: Date.now() });
-    console.log('Fetched new Tavily results for query:', query);
-
-    return results;
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      console.log('Tavily search timed out');
-    } else {
-      console.error('Tavily search error:', error);
-    }
-    return [];
+  if (cachedEntry && (now - cachedEntry.timestamp) < TAVILY_TTL_MS) {
+    console.log('Using cached Tavily results for query:', query);
+    return cachedEntry.results;
   }
+
+  const performRequest = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: process.env.TAVILY_API_KEY,
+          query,
+          search_depth: 'basic'
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) {
+        throw new Error(`Tavily HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  };
+
+  for (let attempt = 1; attempt <= TAVILY_MAX_RETRIES; attempt++) {
+    try {
+      const results = await performRequest();
+      if (cacheKey) {
+        tavilyCache.set(cacheKey, { results, timestamp: now });
+      }
+      console.log('Fetched new Tavily results for query:', query);
+      return results;
+    } catch (error) {
+      const isLastAttempt = attempt === TAVILY_MAX_RETRIES;
+      if (error.name === 'AbortError') {
+        console.log(`Tavily search timed out (attempt ${attempt})`);
+      } else {
+        console.error(`Tavily search error (attempt ${attempt}):`, error.message || error);
+      }
+      if (isLastAttempt) {
+        if (cachedEntry) {
+          console.log('Returning stale Tavily cache for query due to repeated failures:', query);
+          return cachedEntry.results;
+        }
+        return [];
+      }
+      await new Promise(resolve => setTimeout(resolve, TAVILY_BACKOFF_MS * attempt));
+    }
+  }
+
+  return cachedEntry?.results || [];
 }
 
 function getMarketAnalyzer() {
@@ -680,4 +796,4 @@ function getMarketAnalyzer() {
   return analyzerInstance;
 }
 
-module.exports = { MarketAnalyzer, getMarketAnalyzer, calculateKelly, searchTavily };
+module.exports = { MarketAnalyzer, getMarketAnalyzer, calculateKelly, searchTavily, searchLLMNews };

@@ -1,24 +1,102 @@
 const WebSocket = require('ws');
 const axios = require('axios');
+const { BoundedMap } = require('./utils/bounded-map');
+const { initDb } = require('./db');
 // ACP dependency removed - postDeepDiveOnACP no longer available
 
 class PriceAlertManager {
   constructor() {
-    this.alerts = new Map(); // userId -> [{marketId, condition, price, type, alertId}]
-    this.marketSubscriptions = new Map(); // marketId -> Set of userIds
+    this.alerts = new BoundedMap(1000); // userId -> [{marketId, condition, price, type, alertId}]
+    this.marketSubscriptions = new BoundedMap(5000); // marketId -> Set of userIds
     this.ws = null;
     this.reconnectInterval = 5000;
     this.isConnected = false;
-    this.priceCache = new Map(); // marketId -> currentPrice
+    this.priceCache = new BoundedMap(10000); // marketId -> currentPrice
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10; // Prevent infinite reconnection
   }
 
   async initialize() {
-    // Temporarily disable WebSocket until correct endpoint is found
-    console.log('WebSocket alerts disabled - using polling-based alerts instead');
-    // await this.connectToPolymarket();
-    // this.startReconnectionLoop();
+    console.log('Initializing WebSocket alerts...');
+    await this.loadAlertsFromDatabase(); // Load persisted alerts on startup
+    await this.connectToPolymarket();
+    this.startReconnectionLoop();
+  }
+
+  async loadAlertsFromDatabase() {
+    try {
+      const db = initDb();
+      const rows = db.prepare(`
+        SELECT id, userId, marketId, condition, price, alertType, duration, createdAt, active
+        FROM alert_subscriptions
+        WHERE active = 1
+      `).all();
+
+      for (const row of rows) {
+        const alert = {
+          alertId: row.id,
+          marketId: row.marketId,
+          condition: row.condition,
+          price: row.price,
+          type: row.alertType,
+          createdAt: row.createdAt,
+          duration: row.duration,
+          triggered: false
+        };
+
+        if (!this.alerts.has(row.userId)) {
+          this.alerts.set(row.userId, []);
+        }
+        this.alerts.get(row.userId).push(alert);
+
+        if (!this.marketSubscriptions.has(row.marketId)) {
+          this.marketSubscriptions.set(row.marketId, new Set());
+        }
+        this.marketSubscriptions.get(row.marketId).add(row.userId);
+      }
+
+      console.log(`Loaded ${rows.length} alerts from database`);
+    } catch (error) {
+      console.error('Error loading alerts from database:', error);
+    }
+  }
+
+  async saveAlertToDatabase(userId, alert) {
+    try {
+      const db = initDb();
+      const stmt = db.prepare(`
+        INSERT OR REPLACE INTO alert_subscriptions
+        (id, userId, marketId, condition, price, alertType, duration, createdAt, active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      stmt.run(
+        alert.alertId,
+        userId,
+        alert.marketId,
+        alert.condition,
+        alert.price,
+        alert.type,
+        alert.duration,
+        alert.createdAt,
+        1
+      );
+    } catch (error) {
+      console.error('Error saving alert to database:', error);
+    }
+  }
+
+  async updateAlertInDatabase(alertId, triggered) {
+    try {
+      const db = initDb();
+      const stmt = db.prepare(`
+        UPDATE alert_subscriptions
+        SET active = 0
+        WHERE id = ?
+      `);
+      stmt.run(alertId);
+    } catch (error) {
+      console.error('Error updating alert in database:', error);
+    }
   }
 
   async connectToPolymarket() {
@@ -82,7 +160,34 @@ class PriceAlertManager {
     try {
       const message = JSON.parse(data.toString());
 
-      if (message.type === 'price_update' && message.market) {
+      // Validate message format
+      if (!message || typeof message !== 'object') {
+        console.warn('Invalid WebSocket message: not an object');
+        return;
+      }
+
+      if (message.type === 'price_update') {
+        // Validate price_update message structure
+        if (!message.market || typeof message.market !== 'object') {
+          console.warn('Invalid price_update: missing or invalid market object');
+          return;
+        }
+
+        if (!message.market.id || typeof message.market.id !== 'string') {
+          console.warn('Invalid price_update: missing or invalid market.id');
+          return;
+        }
+
+        if (typeof message.market.price !== 'number' || !Number.isFinite(message.market.price)) {
+          console.warn('Invalid price_update: missing or invalid market.price');
+          return;
+        }
+
+        if (message.market.price < 0 || message.market.price > 1) {
+          console.warn('Invalid price_update: price out of valid range [0, 1]');
+          return;
+        }
+
         const marketId = message.market.id;
         const newPrice = message.market.price;
 
@@ -125,6 +230,9 @@ class PriceAlertManager {
         this.marketSubscriptions.set(marketId, new Set());
       }
       this.marketSubscriptions.get(marketId).add(userId);
+
+      // Save to database for persistence
+      await this.saveAlertToDatabase(userId, alert);
 
       // Update WebSocket subscriptions
       this.subscribeToActiveMarkets();
@@ -188,6 +296,9 @@ class PriceAlertManager {
       const result = { success: true, txId: 'mock-alert-' + Date.now() };
       console.log(`Mock alert sent for user ${userId}: ${alert.marketId} at ${currentPrice} (ACP removed)`);
 
+      // Mark alert as inactive in database
+      await this.updateAlertInDatabase(alert.alertId, true);
+
       // Optionally remove one-time alerts
       if (alert.duration === 'once') {
         this.removeAlert(userId, alert.alertId);
@@ -225,12 +336,12 @@ class PriceAlertManager {
 
   getConnectionStatus() {
     return {
-      connected: false, // WebSocket disabled
-      websocketDisabled: true,
+      connected: this.isConnected,
+      websocketDisabled: false,
       marketsSubscribed: this.marketSubscriptions.size,
       totalAlerts: Array.from(this.alerts.values()).reduce((sum, alerts) => sum + alerts.length, 0),
       priceCacheSize: this.priceCache.size,
-      note: 'Using polling-based alerts until WebSocket endpoint is verified'
+      reconnectAttempts: this.reconnectAttempts
     };
   }
 }
