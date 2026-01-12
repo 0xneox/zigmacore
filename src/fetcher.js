@@ -89,15 +89,18 @@ async function fetchMarkets(limit = 500, offset = 0) {  // Reduced default limit
 
     console.log(`✅ Fetched ${markets.length} markets`);
 
-    // Hard sanity filter (cheap + safe)
-    markets = markets.filter(m =>
-      m &&
-      m.question &&
-      m.active === true &&
-      m.closed === false
-    );
+    // Validate markets before processing
+    function validateMarket(m) {
+      return m &&
+             typeof m.question === 'string' && m.question.length > 0 &&
+             typeof m.id === 'string' && m.id.length > 0 &&
+             (m.active !== false) &&
+             (m.closed !== true);
+    }
 
-    console.log(`📊 After sanity filter: ${markets.length}`);
+    markets = markets.filter(validateMarket);
+
+    console.log(`📊 After validation filter: ${markets.length}`);
     return markets;
   } catch (err) {
     if (err.code === 'ECONNABORTED') {
@@ -129,7 +132,7 @@ async function fetchAllMarkets() {
     order: 'startDate',
     sort: 'desc'
   };
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 100;
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 1000;
   let offset = 0;
   let allMarkets = [];
 
@@ -221,7 +224,7 @@ async function fetchClosedMarkets(limit = 200, offset = 0) {
   const allMarkets = [];
   let currentOffset = offset;
 
-  while (allMarkets.length < 100) {  // Cap at 1000 for backtesting
+  while (allMarkets.length < 1000) {  // Cap at 1000 for backtesting
     const url = `${GAMMA}/markets?closed=true&limit=${limit}&offset=${currentOffset}`;
     console.log(`🌐 FETCH CLOSED: ${url}`);
 

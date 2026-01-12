@@ -1,40 +1,59 @@
-// Structured logging with Pino
-const pino = require('pino');
+// Batch logging system to prevent blocking
+let logBatch = [];
+let batchTimeout = null;
+const BATCH_FLUSH_MS = 50;
 
-// Create logger instance
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  formatters: {
-    level: (label) => {
-      return { level: label };
-    },
-  },
-  timestamp: pino.stdTimeFunctions.isoTime,
-  // In production, you might want to use a transport to send logs to external service
-  ...(process.env.NODE_ENV === 'production' && {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: false,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname',
-      },
-    },
-  }),
-});
+/**
+ * Flush log batch to console
+ */
+function flushLogBatch() {
+  if (logBatch.length === 0) return;
 
-// Add convenience methods for common operations
-logger.cycleStart = (cycleId) => logger.info({ cycleId }, 'Agent Zigma cycle started');
-logger.cycleComplete = (cycleId, stats) => logger.info({ cycleId, stats }, 'Agent Zigma cycle completed successfully');
-logger.cycleError = (cycleId, error) => logger.error({ cycleId, error: error.message, stack: error.stack }, 'Agent Zigma cycle failed');
+  const batch = logBatch.splice(0);
+  batch.forEach(msg => console.log(msg));
 
-logger.apiCall = (service, operation, params) => logger.debug({ service, operation, params }, `API call to ${service}`);
-logger.apiSuccess = (service, operation, duration) => logger.info({ service, operation, duration }, `API call successful`);
-logger.apiError = (service, operation, error, attempt) => logger.warn({ service, operation, error: error.message, attempt }, `API call failed`);
+  batchTimeout = null;
+}
 
-logger.safeMode = (action, details) => logger.info({ action, details, safeMode: true }, `[SAFE_MODE] ${action}`);
-logger.paymentBlocked = (userId, amount, reason) => logger.warn({ userId, amount, reason }, 'Payment blocked by SAFE_MODE');
+/**
+ * Format log message with metadata
+ * @param {string} msg - Message to log
+ * @param {Object} meta - Metadata (marketId, signalId, correlationId, etc.)
+ * @returns {string} Formatted log message
+ */
+function formatLogMessage(msg, meta = {}) {
+  const metaParts = [];
+  if (meta.marketId) metaParts.push(`market=${meta.marketId}`);
+  if (meta.signalId) metaParts.push(`signal=${meta.signalId}`);
+  if (meta.correlationId) metaParts.push(`corr=${meta.correlationId}`);
+  if (meta.category) metaParts.push(`cat=${meta.category}`);
+  if (meta.action) metaParts.push(`action=${meta.action}`);
 
-logger.healthCheck = (metrics) => logger.debug({ metrics }, 'Health check performed');
+  const metaStr = metaParts.length > 0 ? `[${metaParts.join(' ')}] ` : '';
+  return `${metaStr}${msg}`;
+}
 
-module.exports = logger;
+/**
+ * Batch log function - collects messages and flushes periodically
+ * @param {string} msg - Message to log
+ * @param {Object} meta - Optional metadata
+ */
+function safeLog(msg, meta = {}) {
+  const formattedMsg = formatLogMessage(msg, meta);
+  logBatch.push(formattedMsg);
+
+  if (!batchTimeout) {
+    batchTimeout = setTimeout(() => {
+      flushLogBatch();
+    }, BATCH_FLUSH_MS);
+  }
+}
+
+// Export batch logging
+module.exports = {
+  safeLog,
+  info: (msg, meta) => safeLog(msg, meta),
+  error: (msg, meta) => safeLog(`[ERROR] ${msg}`, meta),
+  warn: (msg, meta) => safeLog(`[WARN] ${msg}`, meta),
+  debug: (msg, meta) => safeLog(`[DEBUG] ${msg}`, meta)
+};

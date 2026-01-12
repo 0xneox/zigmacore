@@ -2,6 +2,8 @@ const axios = require('axios');
 const OpenAI = require('openai');
 require('dotenv').config();
 
+const { classifyMarket } = require('./utils/classifier');
+
 let llmNewsClient = null;
 function getLLMNewsClient() {
   if (llmNewsClient) return llmNewsClient;
@@ -449,7 +451,7 @@ class MarketAnalyzer {
       };
 
       // Classify market type
-      const marketType = this.classifyMarket(marketData.question);
+      const marketType = classifyMarket(marketData.question);
 
       // Calculate price change from cache
       const lastPrice = cache[marketId]?.price;
@@ -487,23 +489,6 @@ class MarketAnalyzer {
         timestamp: Date.now()
       };
     }
-  }
-
-  // Classify market type for better analysis
-  classifyMarket(question) {
-    const q = question.toLowerCase();
-
-    if (q.includes('bitcoin') || q.includes('btc') || q.includes('eth') || q.includes('crypto')) {
-      return 'CRYPTO';
-    }
-    if (q.includes('election') || q.includes('trump') || q.includes('biden') || q.includes('president')) {
-      return 'POLITICAL';
-    }
-    if (q.includes('recession') || q.includes('inflation') || q.includes('fed') || q.includes('gdp')) {
-      return 'MACRO';
-    }
-
-    return 'EVENT';
   }
 
   // Assess market risk
@@ -710,10 +695,9 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
     liqNum < 20000 ? 1.0 :
     liqNum >= 100000 ? 1.2 : 1.1;
 
-  // Apply multipliers and cap at 10% of bankroll for safety (10x-Kelly for MVP)
-  const finalKelly = fullKelly * 10.0 * liquidityMultiplier;
-  
-  // Removed 5% cap for MVP - let confidence boosts drive sizing
+  // Apply multipliers with 2x Kelly multiplier and 5% max position cap
+  const MAX_POSITION_SIZE = 0.05; // 5% max of bankroll
+  const finalKelly = Math.min(fullKelly * 2.0 * liquidityMultiplier, MAX_POSITION_SIZE);
   
   return Math.max(0, finalKelly); // Return 0 if no valid edge
 }

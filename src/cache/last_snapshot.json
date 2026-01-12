@@ -80,12 +80,12 @@
     "price": 0.0245
   },
   "will-trump-elon-reduce-the-deficit-in-2025": {
-    "price": 0.1,
-    "volume": 2956.61121,
+    "price": 0.127,
+    "volume": 659.5461079999999,
     "priceHistory": [
       {
-        "price": 0.1,
-        "timestamp": 1768152613587
+        "price": 0.127,
+        "timestamp": 1768223761277
       }
     ],
     "priceVolatility": 0,
@@ -103,19 +103,8 @@
     "price": 0.989
   },
   "will-elon-cut-the-budget-by-at-least-10-in-2025": {
-    "price": 0.0105,
-    "volume": 2504.1647000000003,
-    "priceHistory": [
-      {
-        "price": 0.0105,
-        "timestamp": 1768152613596
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-02-05"
+    "volume": 103595.51584,
+    "price": 0.017
   },
   "ukraine-agrees-not-to-join-nato-before-july": {
     "volume": 8881.092903,
@@ -210,12 +199,12 @@
     "price": 0.987
   },
   "will-gta-6-cost-100": {
-    "price": 0.011,
-    "volume": 34545.725346,
+    "price": 0.013,
+    "volume": 51791.246858,
     "priceHistory": [
       {
-        "price": 0.011,
-        "timestamp": 1768152613610
+        "price": 0.013,
+        "timestamp": 1768223761278
       }
     ],
     "priceVolatility": 0,
@@ -285,12 +274,12 @@
     "price": 0.022
   },
   "will-the-us-collect-less-than-100b-in-revenue-in-2025": {
-    "price": 0.32,
-    "volume": 8596.481071000004,
+    "price": 0.342,
+    "volume": 6412.409678,
     "priceHistory": [
       {
-        "price": 0.32,
-        "timestamp": 1768152613629
+        "price": 0.342,
+        "timestamp": 1768223761278
       }
     ],
     "priceVolatility": 0,
@@ -301,11 +290,11 @@
   },
   "will-the-us-collect-between-100b-and-200b-in-revenue-in-2025": {
     "price": 0.28,
-    "volume": 4827.231220000001,
+    "volume": 3472.691265,
     "priceHistory": [
       {
         "price": 0.28,
-        "timestamp": 1768152613636
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -315,12 +304,12 @@
     "startDateIso": "2025-04-15"
   },
   "will-the-us-collect-between-200b-and-500b-in-revenue-in-2025": {
-    "price": 0.395,
-    "volume": 1458.548419,
+    "price": 0.34,
+    "volume": 2683.6443659999995,
     "priceHistory": [
       {
-        "price": 0.395,
-        "timestamp": 1768152613642
+        "price": 0.34,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -330,12 +319,12 @@
     "startDateIso": "2025-04-15"
   },
   "will-tariffs-generate-250b-in-2025": {
-    "price": 0.0135,
-    "volume": 3388.725227,
+    "price": 0.014,
+    "volume": 1464.3302239999998,
     "priceHistory": [
       {
-        "price": 0.0135,
-        "timestamp": 1768152613623
+        "price": 0.014,
+        "timestamp": 1768223761278
       }
     ],
     "priceVolatility": 0,
@@ -381,12 +370,12 @@
     "price": 0.15
   },
   "will-the-buffalo-bills-win-super-bowl-2026": {
-    "price": 0.085,
-    "volume": 122685.53452300002,
+    "price": 0.155,
+    "volume": 308518.2889900002,
     "priceHistory": [
       {
-        "price": 0.085,
-        "timestamp": 1768152613737
+        "price": 0.155,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -396,12 +385,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-chicago-bears-win-super-bowl-2026": {
-    "price": 0.0475,
-    "volume": 286396.164244,
+    "price": 0.048,
+    "volume": 211855.250658,
     "priceHistory": [
       {
-        "price": 0.0475,
-        "timestamp": 1768152613744
+        "price": 0.048,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -411,12 +400,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-denver-broncos-win-super-bowl-2026": {
-    "price": 0.1195,
-    "volume": 61292.22191100001,
+    "price": 0.1125,
+    "volume": 155001.53970299996,
     "priceHistory": [
       {
-        "price": 0.1195,
-        "timestamp": 1768152613749
+        "price": 0.1125,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -430,12 +419,12 @@
     "price": 0.0415
   },
   "will-the-houston-texans-win-super-bowl-2026": {
-    "price": 0.071,
-    "volume": 153859.21560600004,
+    "price": 0.072,
+    "volume": 82096.10549599993,
     "priceHistory": [
       {
-        "price": 0.071,
-        "timestamp": 1768152613755
+        "price": 0.072,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -445,42 +434,20 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-jacksonville-jaguars-win-super-bowl-2026": {
-    "price": 0.0685,
-    "volume": 104410.006143,
-    "priceHistory": [
-      {
-        "price": 0.0685,
-        "timestamp": 1768152613775
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-01"
+    "volume": 11072.993427,
+    "price": 0.0595
   },
   "will-the-los-angeles-chargers-win-super-bowl-2026": {
-    "price": 0.027,
-    "volume": 123236.044236,
-    "priceHistory": [
-      {
-        "price": 0.027,
-        "timestamp": 1768152613768
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-01"
+    "volume": 30363.18729799999,
+    "price": 0.0395
   },
   "will-the-los-angeles-rams-win-super-bowl-2026": {
-    "price": 0.1665,
-    "volume": 194343.954788,
+    "price": 0.204,
+    "volume": 217791.35026400007,
     "priceHistory": [
       {
-        "price": 0.1665,
-        "timestamp": 1768152613761
+        "price": 0.204,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -490,12 +457,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-new-england-patriots-win-super-bowl-2026": {
-    "price": 0.0815,
-    "volume": 56237.26879400001,
+    "price": 0.127,
+    "volume": 228932.8737439999,
     "priceHistory": [
       {
-        "price": 0.0815,
-        "timestamp": 1768152613781
+        "price": 0.127,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -505,27 +472,16 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-philadelphia-eagles-win-super-bowl-2026": {
-    "price": 0.115,
-    "volume": 100970.29252399996,
-    "priceHistory": [
-      {
-        "price": 0.115,
-        "timestamp": 1768152613804
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-01"
+    "volume": 9072.28369,
+    "price": 0.085
   },
   "will-the-pittsburgh-steelers-win-super-bowl-2026": {
-    "price": 0.0185,
-    "volume": 108373.23543400007,
+    "price": 0.019,
+    "volume": 159275.8927249999,
     "priceHistory": [
       {
-        "price": 0.0185,
-        "timestamp": 1768152613812
+        "price": 0.019,
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -535,12 +491,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-san-francisco-49ers-win-super-bowl-2026": {
-    "price": 0.0315,
-    "volume": 334151.5998069999,
+    "price": 0.048,
+    "volume": 578363.248432,
     "priceHistory": [
       {
-        "price": 0.0315,
-        "timestamp": 1768152613790
+        "price": 0.048,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -550,12 +506,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-seattle-seahawks-win-super-bowl-2026": {
-    "price": 0.1835,
-    "volume": 159956.65779799983,
+    "price": 0.222,
+    "volume": 184817.16046700004,
     "priceHistory": [
       {
-        "price": 0.1835,
-        "timestamp": 1768152613796
+        "price": 0.222,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -573,12 +529,12 @@
     "price": 0.0125
   },
   "will-the-bears-win-the-nfc-championship-1": {
-    "price": 0.1325,
-    "volume": 13995.330905,
+    "price": 0.1235,
+    "volume": 5588.232032000001,
     "priceHistory": [
       {
-        "price": 0.1325,
-        "timestamp": 1768152613704
+        "price": 0.1235,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -592,12 +548,12 @@
     "price": 0.09
   },
   "will-the-rams-win-the-nfc-championship-1": {
-    "price": 0.305,
-    "volume": 43675.106752999985,
+    "price": 0.35,
+    "volume": 23170.029904999996,
     "priceHistory": [
       {
-        "price": 0.305,
-        "timestamp": 1768152613711
+        "price": 0.35,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -607,27 +563,16 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-eagles-win-the-2026-nfc-championship": {
-    "price": 0.185,
-    "volume": 27341.222003000003,
-    "priceHistory": [
-      {
-        "price": 0.185,
-        "timestamp": 1768152613723
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-01"
+    "volume": 146240.834326,
+    "price": 0.155
   },
   "will-the-49ers-win-the-2026-nfc-championship": {
-    "price": 0.047,
-    "volume": 25554.593037000002,
+    "price": 0.11,
+    "volume": 88759.133479,
     "priceHistory": [
       {
-        "price": 0.047,
-        "timestamp": 1768152613716
+        "price": 0.11,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -637,12 +582,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-seahawks-win-the-2026-nfc-championship": {
-    "price": 0.345,
-    "volume": 8383.12949,
+    "price": 0.4145,
+    "volume": 4606.831607,
     "priceHistory": [
       {
-        "price": 0.345,
-        "timestamp": 1768152613731
+        "price": 0.4145,
+        "timestamp": 1768223761280
       }
     ],
     "priceVolatility": 0,
@@ -656,12 +601,12 @@
     "price": 0.0195
   },
   "will-the-bills-win-the-afc-championship-1": {
-    "price": 0.165,
-    "volume": 19696.628768,
+    "price": 0.275,
+    "volume": 92175.76672300001,
     "priceHistory": [
       {
-        "price": 0.165,
-        "timestamp": 1768152613656
+        "price": 0.275,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -671,12 +616,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-patriots-win-the-afc-championship-1": {
-    "price": 0.179,
-    "volume": 2787.38542,
+    "price": 0.293,
+    "volume": 13547.804921,
     "priceHistory": [
       {
-        "price": 0.179,
-        "timestamp": 1768152613661
+        "price": 0.293,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -690,12 +635,12 @@
     "price": 0.0205
   },
   "will-the-steelers-win-the-afc-championship-1": {
-    "price": 0.0535,
-    "volume": 6841.554382999999,
+    "price": 0.0545,
+    "volume": 11390.187104999999,
     "priceHistory": [
       {
-        "price": 0.0535,
-        "timestamp": 1768152613675
+        "price": 0.0545,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -705,12 +650,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-texans-win-the-afc-championship-1": {
-    "price": 0.1405,
-    "volume": 2751.481617,
+    "price": 0.1395,
+    "volume": 6921.196409,
     "priceHistory": [
       {
-        "price": 0.1405,
-        "timestamp": 1768152613680
+        "price": 0.1395,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -720,27 +665,16 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-jaguars-win-the-afc-championship-1": {
-    "price": 0.156,
-    "volume": 4468.295502000001,
-    "priceHistory": [
-      {
-        "price": 0.156,
-        "timestamp": 1768152613669
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-01"
+    "volume": 179.495695,
+    "price": 0.163
   },
   "will-the-broncos-win-the-afc-championship-1": {
-    "price": 0.265,
-    "volume": 8152.724744000001,
+    "price": 0.26,
+    "volume": 11008.295779999999,
     "priceHistory": [
       {
-        "price": 0.265,
-        "timestamp": 1768152613689
+        "price": 0.26,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -750,19 +684,8 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-chargers-win-the-afc-championship-1": {
-    "price": 0.057,
-    "volume": 3273.6845610000005,
-    "priceHistory": [
-      {
-        "price": 0.057,
-        "timestamp": 1768152613696
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-01"
+    "volume": 113.50517199999999,
+    "price": 0.0965
   },
   "will-the-pittsburgh-steelers-win-the-afc-north-1": {
     "volume": 745.5279310000001,
@@ -825,12 +748,12 @@
     "price": 0.385
   },
   "will-elon-cut-the-budget-by-at-least-5-in-2025": {
-    "price": 0.0135,
-    "volume": 40.54857,
+    "price": 0.0115,
+    "volume": 113.047817,
     "priceHistory": [
       {
-        "price": 0.0135,
-        "timestamp": 1768152613602
+        "price": 0.0115,
+        "timestamp": 1768223761278
       }
     ],
     "priceVolatility": 0,
@@ -840,12 +763,12 @@
     "startDateIso": "2025-02-05"
   },
   "negative-gdp-growth-in-2025": {
-    "price": 0.0135,
-    "volume": 737.8521350000001,
+    "price": 0.0125,
+    "volume": 717.9798609999999,
     "priceHistory": [
       {
-        "price": 0.0135,
-        "timestamp": 1768152613616
+        "price": 0.0125,
+        "timestamp": 1768223761278
       }
     ],
     "priceVolatility": 0,
@@ -855,12 +778,12 @@
     "startDateIso": "2025-04-03"
   },
   "will-the-us-collect-between-500b-and-1t-in-revenue-in-2025": {
-    "price": 0.015,
-    "volume": 1159.877996,
+    "price": 0.0175,
+    "volume": 1102.5155220000001,
     "priceHistory": [
       {
-        "price": 0.015,
-        "timestamp": 1768152613649
+        "price": 0.0175,
+        "timestamp": 1768223761279
       }
     ],
     "priceVolatility": 0,
@@ -870,12 +793,12 @@
     "startDateIso": "2025-04-15"
   },
   "russia-ukraine-ceasefire-before-gta-vi-554": {
-    "price": 0.6,
-    "volume": 1809.8231569999998,
+    "price": 0.595,
+    "volume": 45331.16087000001,
     "priceHistory": [
       {
-        "price": 0.6,
-        "timestamp": 1768152613817
+        "price": 0.595,
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -885,12 +808,12 @@
     "startDateIso": "2025-05-02"
   },
   "new-rhianna-album-before-gta-vi-926": {
-    "price": 0.54,
-    "volume": 1159.25,
+    "price": 0.555,
+    "volume": 1121.3800000000003,
     "priceHistory": [
       {
-        "price": 0.54,
-        "timestamp": 1768152613828
+        "price": 0.555,
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -900,12 +823,12 @@
     "startDateIso": "2025-05-02"
   },
   "new-playboi-carti-album-before-gta-vi-421": {
-    "price": 0.565,
-    "volume": 1459.434804,
+    "price": 0.545,
+    "volume": 1492.598634,
     "priceHistory": [
       {
-        "price": 0.565,
-        "timestamp": 1768152613834
+        "price": 0.545,
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -916,11 +839,11 @@
   },
   "will-china-invades-taiwan-before-gta-vi-716": {
     "price": 0.515,
-    "volume": 4993.218352,
+    "volume": 4987.574981999999,
     "priceHistory": [
       {
         "price": 0.515,
-        "timestamp": 1768152613841
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -931,11 +854,11 @@
   },
   "will-jesus-christ-return-before-gta-vi-665": {
     "price": 0.485,
-    "volume": 17856.412468999995,
+    "volume": 15929.830978000002,
     "priceHistory": [
       {
         "price": 0.485,
-        "timestamp": 1768152613847
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -946,11 +869,11 @@
   },
   "trump-out-as-president-before-gta-vi-846": {
     "price": 0.505,
-    "volume": 691.97392,
+    "volume": 287.92392,
     "priceHistory": [
       {
         "price": 0.505,
-        "timestamp": 1768152613853
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -961,11 +884,11 @@
   },
   "will-bitcoin-hit-1m-before-gta-vi-872": {
     "price": 0.485,
-    "volume": 5184.726238,
+    "volume": 1576.3455599999998,
     "priceHistory": [
       {
         "price": 0.485,
-        "timestamp": 1768152613860
+        "timestamp": 1768223761281
       }
     ],
     "priceVolatility": 0,
@@ -975,12 +898,12 @@
     "startDateIso": "2025-05-02"
   },
   "gta-vi-released-before-june-2026": {
-    "price": 0.0185,
-    "volume": 419.76103700000004,
+    "price": 0.021,
+    "volume": 748.565795,
     "priceHistory": [
       {
-        "price": 0.0185,
-        "timestamp": 1768152613866
+        "price": 0.021,
+        "timestamp": 1768223761282
       }
     ],
     "priceVolatility": 0,
@@ -990,12 +913,12 @@
     "startDateIso": "2025-05-02"
   },
   "will-nick-emmanowori-be-the-2025-2026-nfl-defensive-rookie-of-the-year": {
-    "price": 0.0205,
-    "volume": 252.4796,
+    "price": 0.022,
+    "volume": 50.04,
     "priceHistory": [
       {
-        "price": 0.0205,
-        "timestamp": 1768152613873
+        "price": 0.022,
+        "timestamp": 1768223761282
       }
     ],
     "priceVolatility": 0,
@@ -1005,12 +928,12 @@
     "startDateIso": "2025-05-06"
   },
   "will-james-pearce-jr-be-the-2025-2026-nfl-defensive-rookie-of-the-year": {
-    "price": 0.03,
-    "volume": 297.06,
+    "price": 0.0115,
+    "volume": 326.03999999999996,
     "priceHistory": [
       {
-        "price": 0.03,
-        "timestamp": 1768152613878
+        "price": 0.0115,
+        "timestamp": 1768223761282
       }
     ],
     "priceVolatility": 0,
@@ -1020,27 +943,12 @@
     "startDateIso": "2025-05-06"
   },
   "will-carson-schwesinger-be-the-2025-2026-nfl-defensive-rookie-of-the-year": {
-    "price": 0.93,
-    "volume": 17599.246114,
+    "price": 0.945,
+    "volume": 101,
     "priceHistory": [
       {
-        "price": 0.93,
-        "timestamp": 1768152613886
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-06"
-  },
-  "will-tyler-shough-be-the-2025-2026-nfl-offensive-rookie-of-the-year-166": {
-    "price": 0.013,
-    "volume": 31182.25784,
-    "priceHistory": [
-      {
-        "price": 0.013,
-        "timestamp": 1768152613895
+        "price": 0.945,
+        "timestamp": 1768223761282
       }
     ],
     "priceVolatility": 0,
@@ -1050,12 +958,12 @@
     "startDateIso": "2025-05-06"
   },
   "will-tetairoa-mcmillan-be-the-2025-2026-nfl-offensive-rookie-of-the-year-271": {
-    "price": 0.936,
-    "volume": 4975.210983999999,
+    "price": 0.9435,
+    "volume": 727.408377,
     "priceHistory": [
       {
-        "price": 0.936,
-        "timestamp": 1768152613903
+        "price": 0.9435,
+        "timestamp": 1768223761282
       }
     ],
     "priceVolatility": 0,
@@ -1063,5 +971,4835 @@
     "avgVvel": 0,
     "vVel": 0,
     "startDateIso": "2025-05-06"
+  },
+  "will-jaxson-dart-be-the-2025-2026-nfl-offensive-rookie-of-the-year-531": {
+    "price": 0.0305,
+    "volume": 636.690867,
+    "priceHistory": [
+      {
+        "price": 0.0305,
+        "timestamp": 1768223761282
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-06"
+  },
+  "will-emeka-egbuka-be-the-2025-2026-nfl-offensive-rookie-of-the-year-158": {
+    "price": 0.012,
+    "volume": 664.2681790000001,
+    "priceHistory": [
+      {
+        "price": 0.012,
+        "timestamp": 1768223761282
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-06"
+  },
+  "will-aidan-hutchinson-be-the-2025-2026-nfl-comeback-player-of-the-year": {
+    "price": 0.011,
+    "volume": 116.29,
+    "priceHistory": [
+      {
+        "price": 0.011,
+        "timestamp": 1768223761283
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-06"
+  },
+  "will-christian-mccaffrey-be-the-2025-2026-nfl-comeback-player-of-the-year": {
+    "price": 0.925,
+    "volume": 317.25472199999996,
+    "priceHistory": [
+      {
+        "price": 0.925,
+        "timestamp": 1768223761283
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-06"
+  },
+  "will-trevor-lawrence-be-the-2025-2026-nfl-comeback-player-of-the-year": {
+    "price": 0.038,
+    "volume": 455,
+    "priceHistory": [
+      {
+        "price": 0.038,
+        "timestamp": 1768223761283
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-06"
+  },
+  "will-mike-vrabel-win-nfl-coach-of-the-year": {
+    "price": 0.695,
+    "volume": 124633.790263,
+    "priceHistory": [
+      {
+        "price": 0.695,
+        "timestamp": 1768223761283
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-07"
+  },
+  "will-ben-johnson-win-nfl-coach-of-the-year": {
+    "price": 0.0265,
+    "volume": 1093.309333,
+    "priceHistory": [
+      {
+        "price": 0.0265,
+        "timestamp": 1768223761284
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-07"
+  },
+  "will-liam-coen-win-nfl-coach-of-the-year": {
+    "price": 0.0105,
+    "volume": 941.389058,
+    "priceHistory": [
+      {
+        "price": 0.0105,
+        "timestamp": 1768223761284
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-07"
+  },
+  "will-mike-macdonald-win-nfl-coach-of-the-year": {
+    "price": 0.206,
+    "volume": 2089.287069,
+    "priceHistory": [
+      {
+        "price": 0.206,
+        "timestamp": 1768223761285
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-07"
+  },
+  "will-openai-launch-a-new-consumer-hardware-product-by-march-31-2026": {
+    "price": 0.064,
+    "volume": 321.540372,
+    "priceHistory": [
+      {
+        "price": 0.064,
+        "timestamp": 1768223761285
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-05-22"
+  },
+  "will-poland-qualify-for-the-2026-fifa-world-cup": {
+    "price": 0.32,
+    "volume": 1466.976292,
+    "priceHistory": [
+      {
+        "price": 0.32,
+        "timestamp": 1768223761285
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-09"
+  },
+  "will-sweden-qualify-for-the-2026-fifa-world-cup": {
+    "price": 0.265,
+    "volume": 3.333332,
+    "priceHistory": [
+      {
+        "price": 0.265,
+        "timestamp": 1768223761286
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-09"
+  },
+  "will-italy-qualify-for-the-2026-fifa-world-cup": {
+    "price": 0.64,
+    "volume": 301.37734,
+    "priceHistory": [
+      {
+        "price": 0.64,
+        "timestamp": 1768223761286
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-09"
+  },
+  "will-ukraine-qualify-for-the-2026-fifa-world-cup": {
+    "price": 0.31,
+    "volume": 355.15000000000003,
+    "priceHistory": [
+      {
+        "price": 0.31,
+        "timestamp": 1768223761286
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-09"
+  },
+  "will-the-carolina-hurricanes-win-the-2026-nhl-stanley-cup": {
+    "price": 0.075,
+    "volume": 1806.209312,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761286
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-florida-panthers-win-the-2026-nhl-stanley-cup": {
+    "price": 0.075,
+    "volume": 262.089312,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761286
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-edmonton-oilers-win-the-2026-nhl-stanley-cup": {
+    "price": 0.085,
+    "volume": 1147.967689,
+    "priceHistory": [
+      {
+        "price": 0.085,
+        "timestamp": 1768223761286
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-tampa-bay-lightning-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0925,
+    "volume": 1470.8007380000004,
+    "priceHistory": [
+      {
+        "price": 0.0925,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-dallas-stars-win-the-2026-nhl-stanley-cup": {
+    "price": 0.055,
+    "volume": 288.457665,
+    "priceHistory": [
+      {
+        "price": 0.055,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-colorado-avalanche-win-the-2026-nhl-stanley-cup": {
+    "price": 0.2285,
+    "volume": 109957.53683200001,
+    "priceHistory": [
+      {
+        "price": 0.2285,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-vegas-golden-knights-win-the-2026-nhl-stanley-cup": {
+    "price": 0.066,
+    "volume": 664.163887,
+    "priceHistory": [
+      {
+        "price": 0.066,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-toronto-maple-leafs-win-the-2026-nhl-stanley-cup": {
+    "price": 0.021,
+    "volume": 32924.933433,
+    "priceHistory": [
+      {
+        "price": 0.021,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-new-jersey-devils-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0205,
+    "volume": 232.787653,
+    "priceHistory": [
+      {
+        "price": 0.0205,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-winnipeg-jets-win-the-2026-nhl-stanley-cup": {
+    "price": 0.016,
+    "volume": 1477.420058,
+    "priceHistory": [
+      {
+        "price": 0.016,
+        "timestamp": 1768223761287
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-los-angeles-kings-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0185,
+    "volume": 273.329331,
+    "priceHistory": [
+      {
+        "price": 0.0185,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-minnesota-wild-win-the-2026-nhl-stanley-cup": {
+    "price": 0.055,
+    "volume": 46560.569631,
+    "priceHistory": [
+      {
+        "price": 0.055,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-washington-capitals-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0225,
+    "volume": 225.33050599999999,
+    "priceHistory": [
+      {
+        "price": 0.0225,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-ottawa-senators-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0105,
+    "volume": 3863.437297,
+    "priceHistory": [
+      {
+        "price": 0.0105,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-new-york-islanders-win-the-2026-nhl-stanley-cup": {
+    "price": 0.017,
+    "volume": 1897.480931,
+    "priceHistory": [
+      {
+        "price": 0.017,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-philadelphia-flyers-win-the-2026-nhl-stanley-cup": {
+    "price": 0.015,
+    "volume": 1550.7184470000002,
+    "priceHistory": [
+      {
+        "price": 0.015,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-detroit-red-wings-win-the-2026-nhl-stanley-cup": {
+    "price": 0.018,
+    "volume": 225.945407,
+    "priceHistory": [
+      {
+        "price": 0.018,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-anaheim-ducks-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0145,
+    "volume": 1786.7176749999999,
+    "priceHistory": [
+      {
+        "price": 0.0145,
+        "timestamp": 1768223761288
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-montreal-canadiens-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0285,
+    "volume": 7469.394340999999,
+    "priceHistory": [
+      {
+        "price": 0.0285,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-pittsburgh-penguins-win-the-2026-nhl-stanley-cup": {
+    "price": 0.018,
+    "volume": 1206.857782,
+    "priceHistory": [
+      {
+        "price": 0.018,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-buffalo-sabres-win-the-2026-nhl-stanley-cup": {
+    "price": 0.015,
+    "volume": 225.327755,
+    "priceHistory": [
+      {
+        "price": 0.015,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-san-jose-sharks-win-the-2026-nhl-stanley-cup": {
+    "price": 0.0115,
+    "volume": 312.27996299999995,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-oklahoma-city-thunder-win-the-2026-nba-finals": {
+    "price": 0.395,
+    "volume": 34314.151130999984,
+    "priceHistory": [
+      {
+        "price": 0.395,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-houston-rockets-win-the-2026-nba-finals": {
+    "price": 0.065,
+    "volume": 17572.260803000016,
+    "priceHistory": [
+      {
+        "price": 0.065,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-new-york-knicks-win-the-2026-nba-finals": {
+    "price": 0.075,
+    "volume": 35536.985598,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761289
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-cleveland-cavaliers-win-the-2026-nba-finals": {
+    "price": 0.031,
+    "volume": 31121.464766999994,
+    "priceHistory": [
+      {
+        "price": 0.031,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-minnesota-timberwolves-win-the-2026-nba-finals": {
+    "price": 0.0295,
+    "volume": 33267.715082999974,
+    "priceHistory": [
+      {
+        "price": 0.0295,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-los-angeles-lakers-win-the-2026-nba-finals": {
+    "price": 0.0295,
+    "volume": 26304.685481999997,
+    "priceHistory": [
+      {
+        "price": 0.0295,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-boston-celtics-win-the-2026-nba-finals": {
+    "price": 0.0555,
+    "volume": 120592.88757999997,
+    "priceHistory": [
+      {
+        "price": 0.0555,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-golden-state-warriors-win-the-2026-nba-finals": {
+    "price": 0.0275,
+    "volume": 35825.301414000016,
+    "priceHistory": [
+      {
+        "price": 0.0275,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-orlando-magic-win-the-2026-nba-finals": {
+    "price": 0.0165,
+    "volume": 25664.69896099997,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-denver-nuggets-win-the-2026-nba-finals": {
+    "price": 0.095,
+    "volume": 17651.26711500001,
+    "priceHistory": [
+      {
+        "price": 0.095,
+        "timestamp": 1768223761290
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-philadelphia-76ers-win-the-2026-nba-finals": {
+    "price": 0.0125,
+    "volume": 41049.40111899998,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761291
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-san-antonio-spurs-win-the-2026-nba-finals": {
+    "price": 0.0655,
+    "volume": 49106.604282,
+    "priceHistory": [
+      {
+        "price": 0.0655,
+        "timestamp": 1768223761291
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-detroit-pistons-win-the-2026-nba-finals": {
+    "price": 0.0495,
+    "volume": 43212.16048699999,
+    "priceHistory": [
+      {
+        "price": 0.0495,
+        "timestamp": 1768223761291
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-miami-heat-win-the-2026-nba-finals": {
+    "price": 0.0145,
+    "volume": 41640.89049399998,
+    "priceHistory": [
+      {
+        "price": 0.0145,
+        "timestamp": 1768223761291
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-the-phoenix-suns-win-the-2026-nba-finals": {
+    "price": 0.0165,
+    "volume": 65305.224073999954,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761291
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-23"
+  },
+  "will-justin-bieber-perform-during-the-super-bowl-lx-halftime-show-731": {
+    "price": 0.037,
+    "volume": 60.04,
+    "priceHistory": [
+      {
+        "price": 0.037,
+        "timestamp": 1768223761291
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-robbie-williams-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.0215,
+    "volume": 1.9,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-no-doubt-perform-during-the-super-bowl-lx-halftime-show-739": {
+    "price": 0.0165,
+    "volume": 230.74,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-sabrina-carpenter-perform-during-the-super-bowl-lx-halftime-show-522": {
+    "price": 0.019,
+    "volume": 50.04,
+    "priceHistory": [
+      {
+        "price": 0.019,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-bad-bunny-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.982,
+    "volume": 1530.37692,
+    "priceHistory": [
+      {
+        "price": 0.982,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-miley-cyrus-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.0135,
+    "volume": 19039.947123,
+    "priceHistory": [
+      {
+        "price": 0.0135,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-travis-scott-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.0645,
+    "volume": 34,
+    "priceHistory": [
+      {
+        "price": 0.0645,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-oasis-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.0125,
+    "volume": 50.019999999999996,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-christina-aguilera-perform-during-the-super-bowl-lx-halftime-show-677": {
+    "price": 0.017,
+    "volume": 1697.499436,
+    "priceHistory": [
+      {
+        "price": 0.017,
+        "timestamp": 1768223761292
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-metallica-perform-during-the-super-bowl-lx-halftime-show-383": {
+    "price": 0.0265,
+    "volume": 21.2,
+    "priceHistory": [
+      {
+        "price": 0.0265,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-the-killers-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.018,
+    "volume": 36.97,
+    "priceHistory": [
+      {
+        "price": 0.018,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-taylor-swift-perform-during-the-super-bowl-lx-halftime-show-575-927": {
+    "price": 0.017,
+    "volume": 679.735788,
+    "priceHistory": [
+      {
+        "price": 0.017,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-olivia-rodrigo-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.0245,
+    "volume": 7043.703081,
+    "priceHistory": [
+      {
+        "price": 0.0245,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-drake-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.068,
+    "volume": 20982.904704,
+    "priceHistory": [
+      {
+        "price": 0.068,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-harry-styles-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.021,
+    "volume": 2069.056423,
+    "priceHistory": [
+      {
+        "price": 0.021,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-post-malone-perform-during-the-super-bowl-lx-halftime-show-334": {
+    "price": 0.115,
+    "volume": 201.62,
+    "priceHistory": [
+      {
+        "price": 0.115,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-adele-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.012,
+    "volume": 3656.624725,
+    "priceHistory": [
+      {
+        "price": 0.012,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-charli-xcx-perform-during-the-super-bowl-lx-halftime-show-616": {
+    "price": 0.0345,
+    "volume": 83.95,
+    "priceHistory": [
+      {
+        "price": 0.0345,
+        "timestamp": 1768223761293
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-pink-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.028,
+    "volume": 50,
+    "priceHistory": [
+      {
+        "price": 0.028,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-billie-eilish-perform-during-the-super-bowl-lx-halftime-show-375": {
+    "price": 0.0205,
+    "volume": 50.04,
+    "priceHistory": [
+      {
+        "price": 0.0205,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-dua-lipa-perform-during-the-super-bowl-lx-halftime-show-523": {
+    "price": 0.1665,
+    "volume": 30.05,
+    "priceHistory": [
+      {
+        "price": 0.1665,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-gracie-abrams-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.034,
+    "volume": 81.88,
+    "priceHistory": [
+      {
+        "price": 0.034,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-morgan-wallen-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.024,
+    "volume": 175.397757,
+    "priceHistory": [
+      {
+        "price": 0.024,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-cardi-b-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.47,
+    "volume": 400.77000000000004,
+    "priceHistory": [
+      {
+        "price": 0.47,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-luke-combs-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.029,
+    "volume": 90.92,
+    "priceHistory": [
+      {
+        "price": 0.029,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "will-green-day-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.0275,
+    "volume": 1673.819535,
+    "priceHistory": [
+      {
+        "price": 0.0275,
+        "timestamp": 1768223761294
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-25"
+  },
+  "megaeth-market-cap-fdv-6b-one-day-after-launch-365-559-334": {
+    "price": 0.03,
+    "volume": 10548.514612999998,
+    "priceHistory": [
+      {
+        "price": 0.03,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-26"
+  },
+  "will-megaeth-perform-an-airdrop-by-june-30-143": {
+    "price": 0.9475,
+    "volume": 2971.221098,
+    "priceHistory": [
+      {
+        "price": 0.9475,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-26"
+  },
+  "will-jay-z-perform-during-the-super-bowl-lx-halftime-show": {
+    "price": 0.02,
+    "volume": 328.9,
+    "priceHistory": [
+      {
+        "price": 0.02,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-06-27"
+  },
+  "will-spain-win-the-2026-fifa-world-cup-963": {
+    "price": 0.155,
+    "volume": 39897.163493000015,
+    "priceHistory": [
+      {
+        "price": 0.155,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-argentina-win-the-2026-fifa-world-cup-245": {
+    "price": 0.105,
+    "volume": 7362.696133999999,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-england-win-the-2026-fifa-world-cup-937": {
+    "price": 0.135,
+    "volume": 10344.673319000003,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-france-win-the-2026-fifa-world-cup-924": {
+    "price": 0.125,
+    "volume": 5458.200391,
+    "priceHistory": [
+      {
+        "price": 0.125,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-brazil-win-the-2026-fifa-world-cup-183": {
+    "price": 0.095,
+    "volume": 5716.725142999999,
+    "priceHistory": [
+      {
+        "price": 0.095,
+        "timestamp": 1768223761295
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-germany-win-the-2026-fifa-world-cup-467": {
+    "price": 0.063,
+    "volume": 31951.825803,
+    "priceHistory": [
+      {
+        "price": 0.063,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-netherlands-win-the-2026-fifa-world-cup-739": {
+    "price": 0.0335,
+    "volume": 43617.573374000014,
+    "priceHistory": [
+      {
+        "price": 0.0335,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-italy-win-the-2026-fifa-world-cup-813": {
+    "price": 0.0215,
+    "volume": 14407.946732000008,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-portugal-win-the-2026-fifa-world-cup-912": {
+    "price": 0.0795,
+    "volume": 45707.923727999994,
+    "priceHistory": [
+      {
+        "price": 0.0795,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-usa-win-the-2026-fifa-world-cup-467": {
+    "price": 0.0145,
+    "volume": 70037.357462,
+    "priceHistory": [
+      {
+        "price": 0.0145,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-uruguay-win-the-2026-fifa-world-cup-932": {
+    "price": 0.0115,
+    "volume": 24919.597054000005,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-colombia-win-the-2026-fifa-world-cup-734": {
+    "price": 0.0165,
+    "volume": 14444.10941799999,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-japan-win-the-2026-fifa-world-cup-112": {
+    "price": 0.0135,
+    "volume": 14865.510973999993,
+    "priceHistory": [
+      {
+        "price": 0.0135,
+        "timestamp": 1768223761296
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-belgium-win-the-2026-fifa-world-cup-358": {
+    "price": 0.0165,
+    "volume": 18929.341803999996,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-norway-win-the-2026-fifa-world-cup-893": {
+    "price": 0.0305,
+    "volume": 17915.358313000004,
+    "priceHistory": [
+      {
+        "price": 0.0305,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-morocco-win-the-2026-fifa-world-cup-464": {
+    "price": 0.0185,
+    "volume": 47258.420047,
+    "priceHistory": [
+      {
+        "price": 0.0185,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-croatia-win-the-2026-fifa-world-cup": {
+    "price": 0.0115,
+    "volume": 20112.096906,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-miami-florida-win-the-2026-college-football-national-championship": {
+    "price": 0.259,
+    "volume": 14677.534429,
+    "priceHistory": [
+      {
+        "price": 0.259,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "will-indiana-win-the-2026-college-football-national-championship": {
+    "price": 0.7315,
+    "volume": 73251.67555200003,
+    "priceHistory": [
+      {
+        "price": 0.7315,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-02"
+  },
+  "xi-jinping-out-before-2027": {
+    "price": 0.065,
+    "volume": 14206.195118999998,
+    "priceHistory": [
+      {
+        "price": 0.065,
+        "timestamp": 1768223761297
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-03"
+  },
+  "putin-out-before-2027": {
+    "price": 0.095,
+    "volume": 20000.587072000002,
+    "priceHistory": [
+      {
+        "price": 0.095,
+        "timestamp": 1768223761298
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-06"
+  },
+  "will-dick-schoof-become-the-next-prime-minister-of-the-netherlands": {
+    "price": 0.012,
+    "volume": 489.59503600000005,
+    "priceHistory": [
+      {
+        "price": 0.012,
+        "timestamp": 1768223761298
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-07"
+  },
+  "will-rob-jetten-become-the-next-prime-minister-of-the-netherlands": {
+    "price": 0.954,
+    "volume": 5415.513269,
+    "priceHistory": [
+      {
+        "price": 0.954,
+        "timestamp": 1768223761298
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-07"
+  },
+  "will-cooper-flagg-win-the-202526-nba-rookie-of-the-year-award": {
+    "price": 0.815,
+    "volume": 96.860468,
+    "priceHistory": [
+      {
+        "price": 0.815,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-09"
+  },
+  "will-vj-edgecombe-win-the-202526-nba-rookie-of-the-year-award": {
+    "price": 0.0365,
+    "volume": 12.018416,
+    "priceHistory": [
+      {
+        "price": 0.0365,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-09"
+  },
+  "will-kon-knueppel-win-the-202526-nba-rookie-of-the-year-award": {
+    "price": 0.138,
+    "volume": 413.216218,
+    "priceHistory": [
+      {
+        "price": 0.138,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-09"
+  },
+  "russia-x-ukraine-ceasefire-by-march-31-2026": {
+    "price": 0.135,
+    "volume": 198249.99689900008,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-10"
+  },
+  "will-ken-paxton-win-the-2026-republican-primary": {
+    "price": 0.615,
+    "volume": 500.3804999999999,
+    "priceHistory": [
+      {
+        "price": 0.615,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-10"
+  },
+  "will-john-cornyn-win-the-2026-republican-primary": {
+    "price": 0.28,
+    "volume": 28695.322988000004,
+    "priceHistory": [
+      {
+        "price": 0.28,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-10"
+  },
+  "will-wesley-hunt-win-the-2026-republican-primary": {
+    "price": 0.0565,
+    "volume": 1794.438088,
+    "priceHistory": [
+      {
+        "price": 0.0565,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-10"
+  },
+  "will-gavin-newsom-win-the-2028-democratic-presidential-nomination-568": {
+    "price": 0.345,
+    "volume": 10221.306265000003,
+    "priceHistory": [
+      {
+        "price": 0.345,
+        "timestamp": 1768223761299
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-pete-buttigieg-win-the-2028-democratic-presidential-nomination-687": {
+    "price": 0.045,
+    "volume": 4509.3,
+    "priceHistory": [
+      {
+        "price": 0.045,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-alexandria-ocasio-cortez-win-the-2028-democratic-presidential-nomination-653": {
+    "price": 0.105,
+    "volume": 4563.42866,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-wes-moore-win-the-2028-democratic-presidential-nomination-714": {
+    "price": 0.0205,
+    "volume": 12687.542188000005,
+    "priceHistory": [
+      {
+        "price": 0.0205,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-josh-shapiro-win-the-2028-democratic-presidential-nomination-977": {
+    "price": 0.046,
+    "volume": 27806.684348000003,
+    "priceHistory": [
+      {
+        "price": 0.046,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-kamala-harris-win-the-2028-democratic-presidential-nomination-641": {
+    "price": 0.0385,
+    "volume": 16930.703679999995,
+    "priceHistory": [
+      {
+        "price": 0.0385,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-andy-beshear-win-the-2028-democratic-presidential-nomination-832": {
+    "price": 0.0235,
+    "volume": 20649.338621999996,
+    "priceHistory": [
+      {
+        "price": 0.0235,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-gretchen-whitmer-win-the-2028-democratic-presidential-nomination-676": {
+    "price": 0.0165,
+    "volume": 14067.769995999988,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-jon-ossoff-win-the-2028-democratic-presidential-nomination-885": {
+    "price": 0.0275,
+    "volume": 14207.56432,
+    "priceHistory": [
+      {
+        "price": 0.0275,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-jb-pritzker-win-the-2028-democratic-presidential-nomination-288": {
+    "price": 0.0265,
+    "volume": 38145.21000000001,
+    "priceHistory": [
+      {
+        "price": 0.0265,
+        "timestamp": 1768223761300
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-mark-kelly-win-the-2028-democratic-presidential-nomination-479": {
+    "price": 0.0125,
+    "volume": 21378.736745000013,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761301
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-rahm-emanuel-win-the-2028-democratic-presidential-nomination-299": {
+    "price": 0.0195,
+    "volume": 13305.387482999997,
+    "priceHistory": [
+      {
+        "price": 0.0195,
+        "timestamp": 1768223761301
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-john-fetterman-win-the-2028-democratic-presidential-nomination-941": {
+    "price": 0.0125,
+    "volume": 23924.69654800002,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761301
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-ro-khanna-win-the-2028-democratic-presidential-nomination": {
+    "price": 0.0205,
+    "volume": 35968.93166600001,
+    "priceHistory": [
+      {
+        "price": 0.0205,
+        "timestamp": 1768223761301
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-jd-vance-win-the-2028-us-presidential-election": {
+    "price": 0.285,
+    "volume": 57520.26045400003,
+    "priceHistory": [
+      {
+        "price": 0.285,
+        "timestamp": 1768223761302
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-alexandria-ocasio-cortez-win-the-2028-us-presidential-election": {
+    "price": 0.075,
+    "volume": 1383.5187,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761302
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-gavin-newsom-win-the-2028-us-presidential-election": {
+    "price": 0.185,
+    "volume": 11623.46086,
+    "priceHistory": [
+      {
+        "price": 0.185,
+        "timestamp": 1768223761302
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-pete-buttigieg-win-the-2028-us-presidential-election": {
+    "price": 0.0245,
+    "volume": 24185.130276999993,
+    "priceHistory": [
+      {
+        "price": 0.0245,
+        "timestamp": 1768223761302
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-josh-shapiro-win-the-2028-us-presidential-election": {
+    "price": 0.0255,
+    "volume": 12305.163376000004,
+    "priceHistory": [
+      {
+        "price": 0.0255,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-marco-rubio-win-the-2028-us-presidential-election": {
+    "price": 0.0975,
+    "volume": 36594.815878,
+    "priceHistory": [
+      {
+        "price": 0.0975,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-wes-moore-win-the-2028-us-presidential-election": {
+    "price": 0.0125,
+    "volume": 10956.718571000009,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-andy-beshear-win-the-2028-us-presidential-election": {
+    "price": 0.0145,
+    "volume": 21282.450737,
+    "priceHistory": [
+      {
+        "price": 0.0145,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-kamala-harris-win-the-2028-us-presidential-election": {
+    "price": 0.0245,
+    "volume": 9700.910218,
+    "priceHistory": [
+      {
+        "price": 0.0245,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-jb-pritzker-win-the-2028-us-presidential-election": {
+    "price": 0.0245,
+    "volume": 62861.151516,
+    "priceHistory": [
+      {
+        "price": 0.0245,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-donald-trump-win-the-2028-us-presidential-election": {
+    "price": 0.0315,
+    "volume": 99897.024316,
+    "priceHistory": [
+      {
+        "price": 0.0315,
+        "timestamp": 1768223761303
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-donald-trump-jr-win-the-2028-us-presidential-election": {
+    "price": 0.0115,
+    "volume": 9331.981635,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-ron-desantis-win-the-2028-us-presidential-election": {
+    "price": 0.0165,
+    "volume": 9272.539399,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-tucker-carlson-win-the-2028-us-presidential-election": {
+    "price": 0.0115,
+    "volume": 13209.316239999996,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-dwayne-the-rock-johnson-win-the-2028-us-presidential-election": {
+    "price": 0.0145,
+    "volume": 17595.183031999997,
+    "priceHistory": [
+      {
+        "price": 0.0145,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-ivanka-trump-win-the-2028-us-presidential-election": {
+    "price": 0.0125,
+    "volume": 19858.379366000005,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-jd-vance-win-the-2028-republican-presidential-nomination": {
+    "price": 0.515,
+    "volume": 8319.626168999997,
+    "priceHistory": [
+      {
+        "price": 0.515,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-donald-trump-win-the-2028-republican-presidential-nomination": {
+    "price": 0.038,
+    "volume": 114573.34857699998,
+    "priceHistory": [
+      {
+        "price": 0.038,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-marco-rubio-win-the-2028-republican-presidential-nomination": {
+    "price": 0.1335,
+    "volume": 33775.123198,
+    "priceHistory": [
+      {
+        "price": 0.1335,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-glenn-youngkin-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0135,
+    "volume": 18662.285856,
+    "priceHistory": [
+      {
+        "price": 0.0135,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-donald-trump-jr-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0165,
+    "volume": 11432.742578999992,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-ron-desantis-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0295,
+    "volume": 21812.354619,
+    "priceHistory": [
+      {
+        "price": 0.0295,
+        "timestamp": 1768223761304
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-nikki-haley-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0115,
+    "volume": 13090.570000000005,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-vivek-ramaswamy-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0105,
+    "volume": 68333.61649300001,
+    "priceHistory": [
+      {
+        "price": 0.0105,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-brian-kemp-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0105,
+    "volume": 39936.52005400001,
+    "priceHistory": [
+      {
+        "price": 0.0105,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-ted-cruz-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0165,
+    "volume": 28841.43622499999,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-tucker-carlson-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0215,
+    "volume": 13929.910427,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-marjorie-taylor-greene-win-the-2028-republican-presidential-nomination": {
+    "price": 0.0155,
+    "volume": 17432.783750000002,
+    "priceHistory": [
+      {
+        "price": 0.0155,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-the-democratic-party-control-the-senate-after-the-2026-midterm-elections": {
+    "price": 0.345,
+    "volume": 30.12,
+    "priceHistory": [
+      {
+        "price": 0.345,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "will-the-republican-party-control-the-senate-after-the-2026-midterm-elections": {
+    "price": 0.655,
+    "volume": 1782.864843,
+    "priceHistory": [
+      {
+        "price": 0.655,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "2026-balance-of-power-d-senate-d-house-949": {
+    "price": 0.355,
+    "volume": 1766.8506309999998,
+    "priceHistory": [
+      {
+        "price": 0.355,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "2026-balance-of-power-r-senate-d-house-444": {
+    "price": 0.455,
+    "volume": 2198.3640029999997,
+    "priceHistory": [
+      {
+        "price": 0.455,
+        "timestamp": 1768223761305
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "2026-balance-of-power-d-senate-r-house-692": {
+    "price": 0.0175,
+    "volume": 2928.3565580000004,
+    "priceHistory": [
+      {
+        "price": 0.0175,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "2026-balance-of-power-r-senate-r-house-537": {
+    "price": 0.185,
+    "volume": 1405.09118,
+    "priceHistory": [
+      {
+        "price": 0.185,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-11"
+  },
+  "scotus-accepts-sports-event-contract-case-by-july-31-2026": {
+    "price": 0.25,
+    "volume": 34.339999999999996,
+    "priceHistory": [
+      {
+        "price": 0.25,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-16"
+  },
+  "will-nikola-jokic-win-the-20252026-nba-mvp": {
+    "price": 0.115,
+    "volume": 28631.410648999998,
+    "priceHistory": [
+      {
+        "price": 0.115,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-shai-gilgeous-alexander-win-the-20252026-nba-mvp": {
+    "price": 0.725,
+    "volume": 2429.3959120000004,
+    "priceHistory": [
+      {
+        "price": 0.725,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-luka-doncic-win-the-20252026-nba-mvp": {
+    "price": 0.0935,
+    "volume": 1087.8742599999998,
+    "priceHistory": [
+      {
+        "price": 0.0935,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-cade-cunningham-win-the-20252026-nba-mvp": {
+    "price": 0.0215,
+    "volume": 984.690276,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-jaylen-brown-win-the-20252026-nba-mvp": {
+    "price": 0.023,
+    "volume": 1485.480912,
+    "priceHistory": [
+      {
+        "price": 0.023,
+        "timestamp": 1768223761306
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-orlando-magic-win-the-nba-eastern-conference-finals": {
+    "price": 0.05,
+    "volume": 9530.36967,
+    "priceHistory": [
+      {
+        "price": 0.05,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-cleveland-cavaliers-win-the-nba-eastern-conference-finals": {
+    "price": 0.12,
+    "volume": 24.89,
+    "priceHistory": [
+      {
+        "price": 0.12,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-new-york-knicks-win-the-nba-eastern-conference-finals": {
+    "price": 0.235,
+    "volume": 20.2,
+    "priceHistory": [
+      {
+        "price": 0.235,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-atlanta-hawks-win-the-nba-eastern-conference-finals": {
+    "price": 0.028,
+    "volume": 10251.270418,
+    "priceHistory": [
+      {
+        "price": 0.028,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-philadelphia-76ers-win-the-nba-eastern-conference-finals": {
+    "price": 0.129,
+    "volume": 27743.37339,
+    "priceHistory": [
+      {
+        "price": 0.129,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-detroit-pistons-win-the-nba-eastern-conference-finals": {
+    "price": 0.175,
+    "volume": 57.7,
+    "priceHistory": [
+      {
+        "price": 0.175,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-boston-celtics-win-the-nba-eastern-conference-finals": {
+    "price": 0.186,
+    "volume": 228.906542,
+    "priceHistory": [
+      {
+        "price": 0.186,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-milwaukee-bucks-win-the-nba-eastern-conference-finals": {
+    "price": 0.017,
+    "volume": 173.25,
+    "priceHistory": [
+      {
+        "price": 0.017,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-miami-heat-win-the-nba-eastern-conference-finals": {
+    "price": 0.0355,
+    "volume": 18247.373418,
+    "priceHistory": [
+      {
+        "price": 0.0355,
+        "timestamp": 1768223761307
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-toronto-raptors-win-the-nba-eastern-conference-finals": {
+    "price": 0.0465,
+    "volume": 2000,
+    "priceHistory": [
+      {
+        "price": 0.0465,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-oklahoma-city-thunder-win-the-nba-western-conference-finals": {
+    "price": 0.54,
+    "volume": 20.2,
+    "priceHistory": [
+      {
+        "price": 0.54,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-houston-rockets-win-the-nba-western-conference-finals": {
+    "price": 0.105,
+    "volume": 1413.55,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-denver-nuggets-win-the-nba-western-conference-finals": {
+    "price": 0.14,
+    "volume": 33.526665,
+    "priceHistory": [
+      {
+        "price": 0.14,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-los-angeles-lakers-win-the-nba-western-conference-finals": {
+    "price": 0.043,
+    "volume": 100,
+    "priceHistory": [
+      {
+        "price": 0.043,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-los-angeles-clippers-win-the-nba-western-conference-finals": {
+    "price": 0.018,
+    "volume": 8595.498411,
+    "priceHistory": [
+      {
+        "price": 0.018,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-minnesota-timberwolves-win-the-nba-western-conference-finals": {
+    "price": 0.036,
+    "volume": 5710.062007,
+    "priceHistory": [
+      {
+        "price": 0.036,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-golden-state-warriors-win-the-nba-western-conference-finals": {
+    "price": 0.029,
+    "volume": 118.049375,
+    "priceHistory": [
+      {
+        "price": 0.029,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-san-antonio-spurs-win-the-nba-western-conference-finals": {
+    "price": 0.1035,
+    "volume": 8.064515,
+    "priceHistory": [
+      {
+        "price": 0.1035,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-phoenix-suns-win-the-nba-western-conference-finals": {
+    "price": 0.013,
+    "volume": 25800.175158,
+    "priceHistory": [
+      {
+        "price": 0.013,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-17"
+  },
+  "will-the-democrats-win-the-2028-us-presidential-election": {
+    "price": 0.535,
+    "volume": 245.925923,
+    "priceHistory": [
+      {
+        "price": 0.535,
+        "timestamp": 1768223761308
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-18"
+  },
+  "will-the-republicans-win-the-2028-us-presidential-election": {
+    "price": 0.455,
+    "volume": 828.305216,
+    "priceHistory": [
+      {
+        "price": 0.455,
+        "timestamp": 1768223761309
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-18"
+  },
+  "tesla-launches-unsupervised-full-self-driving-fsd-by-october-31-717-337": {
+    "price": 0.43,
+    "volume": 1926.24576,
+    "priceHistory": [
+      {
+        "price": 0.43,
+        "timestamp": 1768223761314
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-21"
+  },
+  "will-trump-pardon-ghislaine-maxwell": {
+    "price": 0.105,
+    "volume": 11.29,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-23"
+  },
+  "will-matthew-stafford-win-the-202526-nfl-mvp-award": {
+    "price": 0.7835,
+    "volume": 12750.056037,
+    "priceHistory": [
+      {
+        "price": 0.7835,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-23"
+  },
+  "will-drake-maye-win-the-202526-nfl-mvp-award": {
+    "price": 0.179,
+    "volume": 8953.23428,
+    "priceHistory": [
+      {
+        "price": 0.179,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-23"
+  },
+  "will-arsenal-win-the-202526-english-premier-league": {
+    "price": 0.755,
+    "volume": 11919.378353999999,
+    "priceHistory": [
+      {
+        "price": 0.755,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "will-manchester-city-win-the-202526-english-premier-league": {
+    "price": 0.195,
+    "volume": 9790.390000000001,
+    "priceHistory": [
+      {
+        "price": 0.195,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "will-aston-villa-win-the-202526-english-premier-league": {
+    "price": 0.0285,
+    "volume": 215881.4526390005,
+    "priceHistory": [
+      {
+        "price": 0.0285,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "will-the-next-prime-minister-of-hungary-be-viktor-orbn": {
+    "price": 0.44,
+    "volume": 15433.582560000003,
+    "priceHistory": [
+      {
+        "price": 0.44,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "will-the-next-prime-minister-of-hungary-be-pter-magyar": {
+    "price": 0.545,
+    "volume": 20603.988855,
+    "priceHistory": [
+      {
+        "price": 0.545,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "zelenskyy-out-as-ukraine-president-before-2027": {
+    "price": 0.295,
+    "volume": 6372.368931,
+    "priceHistory": [
+      {
+        "price": 0.295,
+        "timestamp": 1768223761315
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "erdoan-out-before-2027": {
+    "price": 0.11,
+    "volume": 608.883332,
+    "priceHistory": [
+      {
+        "price": 0.11,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "will-china-invade-taiwan-before-2027": {
+    "price": 0.135,
+    "volume": 118081.84486700004,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "russia-x-ukraine-ceasefire-before-2027": {
+    "price": 0.445,
+    "volume": 18877.910460000006,
+    "priceHistory": [
+      {
+        "price": 0.445,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "netanyahu-out-before-2027": {
+    "price": 0.455,
+    "volume": 19790.761229999996,
+    "priceHistory": [
+      {
+        "price": 0.455,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-24"
+  },
+  "will-trump-be-impeached-by-december-31-2026": {
+    "price": 0.115,
+    "volume": 7466.6361529999995,
+    "priceHistory": [
+      {
+        "price": 0.115,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-25"
+  },
+  "will-trump-resign-by-december-31-2026": {
+    "price": 0.065,
+    "volume": 1890.265708,
+    "priceHistory": [
+      {
+        "price": 0.065,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-25"
+  },
+  "will-real-madrid-win-the-202526-la-liga": {
+    "price": 0.315,
+    "volume": 6468.847479,
+    "priceHistory": [
+      {
+        "price": 0.315,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-barcelona-win-the-202526-la-liga": {
+    "price": 0.655,
+    "volume": 8268.382349000003,
+    "priceHistory": [
+      {
+        "price": 0.655,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-villarreal-win-the-202526-la-liga": {
+    "price": 0.0105,
+    "volume": 66938.3697889999,
+    "priceHistory": [
+      {
+        "price": 0.0105,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-psg-win-the-202526-champions-league": {
+    "price": 0.105,
+    "volume": 912.796359,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-liverpool-win-the-202526-champions-league": {
+    "price": 0.075,
+    "volume": 346.78999999999996,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-real-madrid-win-the-202526-champions-league": {
+    "price": 0.085,
+    "volume": 1387.6499850000005,
+    "priceHistory": [
+      {
+        "price": 0.085,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-barcelona-win-the-202526-champions-league": {
+    "price": 0.095,
+    "volume": 6174.833631,
+    "priceHistory": [
+      {
+        "price": 0.095,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-arsenal-win-the-202526-champions-league": {
+    "price": 0.175,
+    "volume": 17140.006295000003,
+    "priceHistory": [
+      {
+        "price": 0.175,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-man-city-win-the-202526-champions-league": {
+    "price": 0.115,
+    "volume": 320.189997,
+    "priceHistory": [
+      {
+        "price": 0.115,
+        "timestamp": 1768223761316
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-bayern-munich-win-the-202526-champions-league": {
+    "price": 0.165,
+    "volume": 3956.918214000001,
+    "priceHistory": [
+      {
+        "price": 0.165,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-chelsea-win-the-202526-champions-league": {
+    "price": 0.0435,
+    "volume": 26662.859096999986,
+    "priceHistory": [
+      {
+        "price": 0.0435,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-atletico-madrid-win-the-202526-champions-league": {
+    "price": 0.0235,
+    "volume": 19980.469999999994,
+    "priceHistory": [
+      {
+        "price": 0.0235,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-newcastle-win-the-202526-champions-league": {
+    "price": 0.0165,
+    "volume": 25048.068377000003,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-inter-win-the-202526-champions-league": {
+    "price": 0.0295,
+    "volume": 21436.174414999998,
+    "priceHistory": [
+      {
+        "price": 0.0295,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-tottenham-win-the-202526-champions-league": {
+    "price": 0.0165,
+    "volume": 23250.25110199999,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-dortmund-win-the-202526-champions-league": {
+    "price": 0.0155,
+    "volume": 21382.086566000005,
+    "priceHistory": [
+      {
+        "price": 0.0155,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-bayern-munich-win-the-202526-bundesliga": {
+    "price": 0.945,
+    "volume": 2273.035167,
+    "priceHistory": [
+      {
+        "price": 0.945,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-dortmund-win-the-202526-bundesliga": {
+    "price": 0.0185,
+    "volume": 8566.440111,
+    "priceHistory": [
+      {
+        "price": 0.0185,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-leverkusen-win-the-202526-bundesliga": {
+    "price": 0.012,
+    "volume": 1246.530908,
+    "priceHistory": [
+      {
+        "price": 0.012,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-napoli-win-the-202526-serie-a-league": {
+    "price": 0.135,
+    "volume": 1406.855069,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-inter-win-the-202526-serie-a-league": {
+    "price": 0.67,
+    "volume": 3709.211486,
+    "priceHistory": [
+      {
+        "price": 0.67,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-juventus-win-the-202526-serie-a-league": {
+    "price": 0.0455,
+    "volume": 1499.94576,
+    "priceHistory": [
+      {
+        "price": 0.0455,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-ac-milan-win-the-202526-serie-a-league": {
+    "price": 0.12,
+    "volume": 2314.650354,
+    "priceHistory": [
+      {
+        "price": 0.12,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-roma-win-the-202526-serie-a-league": {
+    "price": 0.022,
+    "volume": 1104.759937,
+    "priceHistory": [
+      {
+        "price": 0.022,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-psg-win-the-202526-french-ligue-1": {
+    "price": 0.885,
+    "volume": 1131.840794,
+    "priceHistory": [
+      {
+        "price": 0.885,
+        "timestamp": 1768223761317
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-marseille-win-the-202526-french-ligue-1": {
+    "price": 0.0165,
+    "volume": 329.800273,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-lens-win-the-202526-french-ligue-1": {
+    "price": 0.084,
+    "volume": 202.996094,
+    "priceHistory": [
+      {
+        "price": 0.084,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-28"
+  },
+  "will-any-presidential-candidate-win-outright-in-the-first-round-of-the-colombias-election": {
+    "price": 0.155,
+    "volume": 255.295603,
+    "priceHistory": [
+      {
+        "price": 0.155,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-pcc-win-the-most-seats-in-the-2026-colombian-senate-election": {
+    "price": 0.08,
+    "volume": 10.1,
+    "priceHistory": [
+      {
+        "price": 0.08,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-ph-win-the-most-seats-in-the-2026-colombian-senate-election": {
+    "price": 0.525,
+    "volume": 162.18922,
+    "priceHistory": [
+      {
+        "price": 0.525,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-avcce-win-the-most-seats-in-the-2026-colombian-senate-election": {
+    "price": 0.0405,
+    "volume": 114513.081509,
+    "priceHistory": [
+      {
+        "price": 0.0405,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-plc-win-the-most-seats-in-the-2026-colombian-senate-election": {
+    "price": 0.044,
+    "volume": 20913.311744,
+    "priceHistory": [
+      {
+        "price": 0.044,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-cr-win-the-most-seats-in-the-2026-colombian-senate-election": {
+    "price": 0.0215,
+    "volume": 273.53,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-cd-win-the-most-seats-in-the-2026-colombian-senate-election": {
+    "price": 0.29,
+    "volume": 134.716128,
+    "priceHistory": [
+      {
+        "price": 0.29,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-ph-win-the-most-seats-in-the-2026-colombian-chamber-of-representatives-election": {
+    "price": 0.325,
+    "volume": 333.292751,
+    "priceHistory": [
+      {
+        "price": 0.325,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-conservative-win-the-most-seats-in-the-2026-colombian-chamber-of-representatives-election": {
+    "price": 0.044,
+    "volume": 10167.782875,
+    "priceHistory": [
+      {
+        "price": 0.044,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-plc-win-the-most-seats-in-the-2026-colombian-chamber-of-representatives-election": {
+    "price": 0.51,
+    "volume": 69.8,
+    "priceHistory": [
+      {
+        "price": 0.51,
+        "timestamp": 1768223761318
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-cd-win-the-most-seats-in-the-2026-colombian-chamber-of-representatives-election": {
+    "price": 0.079,
+    "volume": 240.635594,
+    "priceHistory": [
+      {
+        "price": 0.079,
+        "timestamp": 1768223761319
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-cr-win-the-most-seats-in-the-2026-colombian-chamber-of-representatives-election": {
+    "price": 0.016,
+    "volume": 4601.914829,
+    "priceHistory": [
+      {
+        "price": 0.016,
+        "timestamp": 1768223761319
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-sergio-fajardo-win-the-2026-colombian-presidential-election": {
+    "price": 0.045,
+    "volume": 2052.6595749999997,
+    "priceHistory": [
+      {
+        "price": 0.045,
+        "timestamp": 1768223761319
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-abelardo-de-la-espriella-win-the-2026-colombian-presidential-election": {
+    "price": 0.47,
+    "volume": 5062.963023,
+    "priceHistory": [
+      {
+        "price": 0.47,
+        "timestamp": 1768223761319
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-ivan-cepeda-castro-win-the-2026-colombian-presidential-election": {
+    "price": 0.355,
+    "volume": 5656.883176,
+    "priceHistory": [
+      {
+        "price": 0.355,
+        "timestamp": 1768223761319
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-roy-barreras-win-the-2026-colombian-presidential-election": {
+    "price": 0.0185,
+    "volume": 3027.6511979999996,
+    "priceHistory": [
+      {
+        "price": 0.0185,
+        "timestamp": 1768223761319
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-juan-carlos-pinzn-win-the-2026-colombian-presidential-election": {
+    "price": 0.0485,
+    "volume": 4462.191918,
+    "priceHistory": [
+      {
+        "price": 0.0485,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "will-paloma-valencia-win-the-2026-colombian-presidential-election": {
+    "price": 0.055,
+    "volume": 3705.85073,
+    "priceHistory": [
+      {
+        "price": 0.055,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-07-29"
+  },
+  "aaron-taylor-johnson-announced-as-next-james-bond": {
+    "price": 0.036,
+    "volume": 39.54,
+    "priceHistory": [
+      {
+        "price": 0.036,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-04"
+  },
+  "tom-holland-announced-as-next-james-bond-679": {
+    "price": 0.0205,
+    "volume": 20.68,
+    "priceHistory": [
+      {
+        "price": 0.0205,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-04"
+  },
+  "henry-cavill-announced-as-next-james-bond-857-642": {
+    "price": 0.0365,
+    "volume": 20.68,
+    "priceHistory": [
+      {
+        "price": 0.0365,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-04"
+  },
+  "callum-turner-announced-as-next-james-bond": {
+    "price": 0.44,
+    "volume": 31,
+    "priceHistory": [
+      {
+        "price": 0.44,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-04"
+  },
+  "no-one-announced-as-next-james-bond-962": {
+    "price": 0.43,
+    "volume": 1195.07,
+    "priceHistory": [
+      {
+        "price": 0.43,
+        "timestamp": 1768223761320
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-04"
+  },
+  "will-trump-nominate-kevin-warsh-as-the-next-fed-chair": {
+    "price": 0.405,
+    "volume": 133405.289037,
+    "priceHistory": [
+      {
+        "price": 0.405,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-kevin-hassett-as-the-next-fed-chair": {
+    "price": 0.42,
+    "volume": 212923.2607299999,
+    "priceHistory": [
+      {
+        "price": 0.42,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-christopher-waller-as-the-next-fed-chair": {
+    "price": 0.0835,
+    "volume": 116154.35249399998,
+    "priceHistory": [
+      {
+        "price": 0.0835,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-judy-shelton-as-the-next-fed-chair": {
+    "price": 0.017,
+    "volume": 189697.66779899996,
+    "priceHistory": [
+      {
+        "price": 0.017,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-scott-bessent-as-the-next-fed-chair": {
+    "price": 0.0165,
+    "volume": 88879.075744,
+    "priceHistory": [
+      {
+        "price": 0.0165,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-michelle-bowman-as-the-next-fed-chair": {
+    "price": 0.0175,
+    "volume": 168446.3427869999,
+    "priceHistory": [
+      {
+        "price": 0.0175,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-rick-rieder-as-the-next-fed-chair": {
+    "price": 0.0285,
+    "volume": 91760.115863,
+    "priceHistory": [
+      {
+        "price": 0.0285,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-liverpool-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0795,
+    "volume": 11,
+    "priceHistory": [
+      {
+        "price": 0.0795,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-chelsea-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0745,
+    "volume": 5.54,
+    "priceHistory": [
+      {
+        "price": 0.0745,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-man-utd-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0805,
+    "volume": 200.712,
+    "priceHistory": [
+      {
+        "price": 0.0805,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-man-city-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.046,
+    "volume": 42.248357,
+    "priceHistory": [
+      {
+        "price": 0.046,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-aston-villa-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0125,
+    "volume": 61609.027725,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-nottm-forest-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.135,
+    "volume": 16.822953,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-tottenham-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0255,
+    "volume": 359.172585,
+    "priceHistory": [
+      {
+        "price": 0.0255,
+        "timestamp": 1768223761321
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-brighton-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0905,
+    "volume": 235,
+    "priceHistory": [
+      {
+        "price": 0.0905,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-bournemouth-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.105,
+    "volume": 10.1,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-west-ham-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.78,
+    "volume": 90,
+    "priceHistory": [
+      {
+        "price": 0.78,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-leeds-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.135,
+    "volume": 20.75125,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-crystal-palace-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.079,
+    "volume": 21.03,
+    "priceHistory": [
+      {
+        "price": 0.079,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-everton-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.08,
+    "volume": 274.52665,
+    "priceHistory": [
+      {
+        "price": 0.08,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-fulham-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.047,
+    "volume": 4407.051857,
+    "priceHistory": [
+      {
+        "price": 0.047,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-brentford-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.0475,
+    "volume": 4041.677526,
+    "priceHistory": [
+      {
+        "price": 0.0475,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-sunderland-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.075,
+    "volume": 34.37,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-wolves-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.9195,
+    "volume": 7257.369937,
+    "priceHistory": [
+      {
+        "price": 0.9195,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-burnley-be-relegated-from-the-english-premier-league-after-the-202526-season": {
+    "price": 0.905,
+    "volume": 10.1,
+    "priceHistory": [
+      {
+        "price": 0.905,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-burnley-finish-in-last-place-in-the-2025-26-english-premier-league": {
+    "price": 0.266,
+    "volume": 10.025443,
+    "priceHistory": [
+      {
+        "price": 0.266,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-wolves-finish-in-last-place-in-the-2025-26-english-premier-league": {
+    "price": 0.6065,
+    "volume": 14.198606,
+    "priceHistory": [
+      {
+        "price": 0.6065,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-liverpool-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.0495,
+    "volume": 444.104023,
+    "priceHistory": [
+      {
+        "price": 0.0495,
+        "timestamp": 1768223761322
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-arsenal-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.15,
+    "volume": 505.537972,
+    "priceHistory": [
+      {
+        "price": 0.15,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-manchester-city-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.67,
+    "volume": 454.428548,
+    "priceHistory": [
+      {
+        "price": 0.67,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-tottenham-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.0215,
+    "volume": 439.1019,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-aston-villa-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.105,
+    "volume": 439.100106,
+    "priceHistory": [
+      {
+        "price": 0.105,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-crystal-palace-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.0115,
+    "volume": 439.11400000000003,
+    "priceHistory": [
+      {
+        "price": 0.0115,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-arsenal-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.06,
+    "volume": 847.968723,
+    "priceHistory": [
+      {
+        "price": 0.06,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-chelsea-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.135,
+    "volume": 10.1,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-newcastle-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.087,
+    "volume": 1909.381328,
+    "priceHistory": [
+      {
+        "price": 0.087,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-manchester-united-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.04,
+    "volume": 30.1,
+    "priceHistory": [
+      {
+        "price": 0.04,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-aston-villa-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.3825,
+    "volume": 1050.252834,
+    "priceHistory": [
+      {
+        "price": 0.3825,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-tottenham-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.0365,
+    "volume": 3194.0492,
+    "priceHistory": [
+      {
+        "price": 0.0365,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-brighton-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.0415,
+    "volume": 2317.4745,
+    "priceHistory": [
+      {
+        "price": 0.0415,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-crystal-palace-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.017,
+    "volume": 3070.241742,
+    "priceHistory": [
+      {
+        "price": 0.017,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-sunderland-finish-in-3rd-place-in-the-2025-26-english-premier-league": {
+    "price": 0.039,
+    "volume": 2705.395505,
+    "priceHistory": [
+      {
+        "price": 0.039,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-06"
+  },
+  "will-gpt-6-be-released": {
+    "price": 0.625,
+    "volume": 1621.768115,
+    "priceHistory": [
+      {
+        "price": 0.625,
+        "timestamp": 1768223761323
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-07"
+  },
+  "will-bitcoin-hit-150k-by-june-30-2026": {
+    "price": 0.135,
+    "volume": 2941.06,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-07"
+  },
+  "will-bitcoin-hit-150k-by-december-31-2026": {
+    "price": 0.245,
+    "volume": 1301.58311,
+    "priceHistory": [
+      {
+        "price": 0.245,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-07"
+  },
+  "will-bitcoin-hit-150k-by-march-31-2026": {
+    "price": 0.0435,
+    "volume": 147.363162,
+    "priceHistory": [
+      {
+        "price": 0.0435,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-07"
+  },
+  "grok-5-released-by-march-31-2026": {
+    "price": 0.075,
+    "volume": 326.91,
+    "priceHistory": [
+      {
+        "price": 0.075,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-07"
+  },
+  "will-claude-5-be-released-by-march-31-2026": {
+    "price": 0.375,
+    "volume": 69.729728,
+    "priceHistory": [
+      {
+        "price": 0.375,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-07"
+  },
+  "will-wrexham-be-promoted-to-the-epl": {
+    "price": 0.145,
+    "volume": 590.379942,
+    "priceHistory": [
+      {
+        "price": 0.145,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-08"
+  },
+  "will-oviedo-be-relegated-from-la-liga-after-the-202526-season": {
+    "price": 0.885,
+    "volume": 1542.815853,
+    "priceHistory": [
+      {
+        "price": 0.885,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-15"
+  },
+  "will-sevilla-be-relegated-from-la-liga-after-the-202526-season": {
+    "price": 0.14,
+    "volume": 2458.451912,
+    "priceHistory": [
+      {
+        "price": 0.14,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-15"
+  },
+  "will-us-gdp-growth-in-2025-be-between-2pt0-and-2pt5": {
+    "price": 0.74,
+    "volume": 251,
+    "priceHistory": [
+      {
+        "price": 0.74,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-15"
+  },
+  "will-us-gdp-growth-in-2025-be-between-1pt5-and-2pt0": {
+    "price": 0.0155,
+    "volume": 1487.6447349999999,
+    "priceHistory": [
+      {
+        "price": 0.0155,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-15"
+  },
+  "will-us-gdp-growth-in-2025-be-greater-than-2pt5": {
+    "price": 0.236,
+    "volume": 965.047157,
+    "priceHistory": [
+      {
+        "price": 0.236,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-15"
+  },
+  "will-serhou-guirassy-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.022,
+    "volume": 4.59,
+    "priceHistory": [
+      {
+        "price": 0.022,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-harry-kane-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.9415,
+    "volume": 4.589264,
+    "priceHistory": [
+      {
+        "price": 0.9415,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-patrik-schick-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.0215,
+    "volume": 4.59,
+    "priceHistory": [
+      {
+        "price": 0.0215,
+        "timestamp": 1768223761324
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-michael-olise-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.0225,
+    "volume": 4.59,
+    "priceHistory": [
+      {
+        "price": 0.0225,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-luis-diaz-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.0225,
+    "volume": 4.59,
+    "priceHistory": [
+      {
+        "price": 0.0225,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-victor-boniface-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.0125,
+    "volume": 4.59,
+    "priceHistory": [
+      {
+        "price": 0.0125,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-mohammed-amoura-be-the-top-goal-scorer-in-the-202526-bundesliga-season": {
+    "price": 0.024,
+    "volume": 4.59,
+    "priceHistory": [
+      {
+        "price": 0.024,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-erling-haaland-be-the-top-goal-scorer-in-the-202526-english-premier-league-season": {
+    "price": 0.875,
+    "volume": 340.18000000000006,
+    "priceHistory": [
+      {
+        "price": 0.875,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-hugo-ekitike-be-the-top-goal-scorer-in-the-202526-english-premier-league-season": {
+    "price": 0.036,
+    "volume": 7576.045213,
+    "priceHistory": [
+      {
+        "price": 0.036,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-kylian-mbappe-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.915,
+    "volume": 13.325800000000001,
+    "priceHistory": [
+      {
+        "price": 0.915,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-robert-lewandowski-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.019,
+    "volume": 11454.538964,
+    "priceHistory": [
+      {
+        "price": 0.019,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-ante-budimir-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.023,
+    "volume": 1647.9745,
+    "priceHistory": [
+      {
+        "price": 0.023,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-raphinha-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.025,
+    "volume": 1557.517256,
+    "priceHistory": [
+      {
+        "price": 0.025,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-julian-alvarez-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.0185,
+    "volume": 1788.588525,
+    "priceHistory": [
+      {
+        "price": 0.0185,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-ferran-torres-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.0285,
+    "volume": 1687.187517,
+    "priceHistory": [
+      {
+        "price": 0.0285,
+        "timestamp": 1768223761325
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-mikel-oyarzabal-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.021,
+    "volume": 688.075859,
+    "priceHistory": [
+      {
+        "price": 0.021,
+        "timestamp": 1768223761326
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
+  },
+  "will-abel-ruiz-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
+    "price": 0.0205,
+    "volume": 2261.141,
+    "priceHistory": [
+      {
+        "price": 0.0205,
+        "timestamp": 1768223761326
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-18"
   }
 }

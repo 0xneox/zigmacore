@@ -16,7 +16,7 @@ const { getVolumeSnapshots, saveVolumeSnapshot } = require('./db');
 const { searchTavily, searchLLMNews } = require('./market_analysis');
 const { searchNewsMultiple } = require('./news-search-multi');
 
-const NEWS_CACHE_TTL_MS = 10 * 60 * 1000;
+const NEWS_CACHE_TTL_MS = 2 * 60 * 1000; // Reduced to 2 minutes
 const MAX_NEWS_RESULTS = 12;
 const HIGH_CRED_SOURCES = ['reuters', 'bloomberg', 'financial times', 'wall street journal', 'wsj', 'ap', 'associated press', 'ft'];
 const POSITIVE_TERMS = ['approval', 'surge', 'record', 'beats', 'wins', 'launch', 'uphold', 'favorable', 'sec clears', 'momentum', 'support'];
@@ -208,6 +208,26 @@ function buildNewsQuery(market = {}) {
   return 'NFL futures odds news';
 }
 
+function extractHostname(url) {
+  try {
+    if (!url) return '';
+    const hostname = new URL(url).hostname;
+    return hostname.replace('www.', '');
+  } catch {
+    return '';
+  }
+}
+
+function getSourceCredibility(source = '') {
+  const normalized = source.toLowerCase();
+  if (!normalized) return 0.1;
+  if (HIGH_CRED_SOURCES.some(name => normalized.includes(name))) {
+    return 1;
+  }
+  if (normalized.includes('.')) return 0.4;
+  return 0.2;
+}
+
 function extractEntityTokens(market = {}) {
   const question = (market.question || '').toLowerCase();
   const tokens = question
@@ -253,12 +273,20 @@ function enrichNewsResult(hit = {}, market = {}) {
     (questionOverlap ? 0.05 : 0) +
     ((hit.score || 0) / 100) * 0.05 +
     (hit.query?.includes('prediction') ? 0.05 : 0);
-  if (!normalized) return 0.1;
-  if (HIGH_CRED_SOURCES.some(name => normalized.includes(name))) {
-    return 1;
-  }
-  if (normalized.includes('.')) return 0.4;
-  return 0.2;
+
+  return {
+    title,
+    snippet,
+    url,
+    source,
+    publishedAtRaw,
+    recencyHours,
+    sentiment,
+    sourceCred,
+    relevanceScore: Number(relevanceScore.toFixed(3)),
+    entityMatch,
+    questionOverlap
+  };
 }
 
 function computeSentimentScore(text = '') {

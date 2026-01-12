@@ -63,19 +63,19 @@ function applyAdaptiveLearning(category, actionType, baseEdge, baseConfidence) {
     const avgEdge = recentSignals.reduce((sum, s) => sum + (s.edge || 0), 0) / recentSignals.length;
     const edgePerformance = recentSignals.filter(s => s.outcome === 'YES').length / recentSignals.length;
 
-    // Apply learning adjustments
+    // Apply learning adjustments - ENABLED with conservative factors
     let edgeAdjustment = 0;
     let confidenceAdjustment = 0;
 
     // If model is overconfident, reduce confidence
     if (accuracyError < -0.1) {
-      confidenceAdjustment = accuracyError * 0.5; // Reduce confidence
-      edgeAdjustment = -Math.abs(baseEdge) * 0.1; // Reduce edge
+      confidenceAdjustment = accuracyError * 0.3; // Reduced from 0.5
+      edgeAdjustment = -Math.abs(baseEdge) * 0.05; // Reduced from 0.1
     }
     // If model is underconfident, increase confidence
     else if (accuracyError > 0.1) {
-      confidenceAdjustment = accuracyError * 0.3; // Increase confidence
-      edgeAdjustment = Math.abs(baseEdge) * 0.05; // Slightly increase edge
+      confidenceAdjustment = accuracyError * 0.2; // Reduced from 0.3
+      edgeAdjustment = Math.abs(baseEdge) * 0.03; // Reduced from 0.05
     }
 
     // Apply learning rate

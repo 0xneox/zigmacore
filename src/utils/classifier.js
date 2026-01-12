@@ -14,7 +14,8 @@ function classifyMarket(question) {
   // CRYPTO - Check first to avoid false positives
   if (/^(bitcoin|ethereum|btc|eth|solana|bnb|ada|doge|avax|matic|link|uni|aave|comp|crv|snx)\b/i.test(q)) return 'CRYPTO';
   if (/\b(crypto|cryptocurrency|defi|dex|cex|nft|web3|blockchain|token|altcoin|stablecoin|yield farming|liquidity mining)\b/i.test(q)) return 'CRYPTO';
-  if (/\b(bitcoin|ethereum|solana|cardano|polkadot|avalanche|polygon|chainlink|uniswap|aave|compound|curve)\b/i.test(q)) return 'CRYPTO';
+  // Exclude "Colorado Avalanche" from crypto pattern
+  if (/\b(bitcoin|ethereum|solana|cardano|polkadot|polygon|chainlink|uniswap|aave|compound|curve)\b/i.test(q) && !/\bcolorado avalanche\b/i.test(q)) return 'CRYPTO';
 
   // POLITICS - Check before MACRO for election-related macro
   if (/\b(election|president|trump|biden|harris|senate|congress|parliament|vote|primary|ballot|campaign|democrat|republican)\b/i.test(q)) return 'POLITICS';

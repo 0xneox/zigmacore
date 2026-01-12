@@ -57,6 +57,39 @@ function emitLLMMetrics(event = {}) {
   console.log(JSON.stringify(payload));
 }
 
+const llmCircuitBreaker = {
+  failureCount: 0,
+  isOpen: false,
+  openUntil: 0,
+  FAILURE_THRESHOLD: 5,
+  RESET_MS: 300000
+};
+
+function checkCircuitBreaker() {
+  if (llmCircuitBreaker.isOpen && Date.now() < llmCircuitBreaker.openUntil) {
+    return false;
+  }
+  if (llmCircuitBreaker.isOpen && Date.now() >= llmCircuitBreaker.openUntil) {
+    llmCircuitBreaker.isOpen = false;
+    llmCircuitBreaker.failureCount = 0;
+    console.log('[LLM] Circuit breaker reset');
+  }
+  return true;
+}
+
+function recordLLMFailure() {
+  llmCircuitBreaker.failureCount++;
+  if (llmCircuitBreaker.failureCount >= llmCircuitBreaker.FAILURE_THRESHOLD) {
+    llmCircuitBreaker.isOpen = true;
+    llmCircuitBreaker.openUntil = Date.now() + llmCircuitBreaker.RESET_MS;
+    console.error('[LLM] Circuit breaker opened due to repeated failures');
+  }
+}
+
+function recordLLMSuccess() {
+  llmCircuitBreaker.failureCount = 0;
+}
+
 let sharedLLMClient = null;
 function getLLMClient() {
   if (sharedLLMClient) return sharedLLMClient;
@@ -225,6 +258,10 @@ function buildEnhancedAnalysisPrompt(marketData, analysis, orderBook, news = [])
   const orderBookJson = JSON.stringify(orderBook, null, 2);
   const newsText = news.length > 0 ? news.map(n => `- ${n.title}: ${n.snippet}`).join('\n') : 'No recent news available.';
 
+  // Calculate base rate prior for context
+  const baseRatePrior = calculateBaseRatePrior(marketData);
+  const historicalContext = getHistoricalContext(marketData, baseRatePrior);
+
   return `You are a professional Polymarket analyst. You must return STRICT JSON ONLY (no markdown) that matches this schema:
 {
   "delta": number between -0.20 and 0.20 (adjustment to the current market YES price based on news, fundamentals, and biases; positive for more likely YES, negative for less likely),
@@ -238,6 +275,10 @@ MARKET DATA:
 ${marketJson}
 
 Current YES market price (base for delta adjustment): ${marketData.yesPrice}
+Historical base rate prior: ${baseRatePrior} (This is the expected probability based on historical data, state political leanings, or competitor count)
+
+HISTORICAL CONTEXT:
+${historicalContext}
 
 ANALYSIS METRICS:
 ${analysisJson}
@@ -252,12 +293,163 @@ Instructions:
 - First, provide the strongest argument for YES outcome.
 - Second, provide the strongest argument for NO outcome.
 - Then, considering both arguments, estimate the delta adjustment (between -0.20 and 0.20) to the current market price.
-- Penalize consensus outcomes: if the market price is very high or low (>0.9 or <0.1), reduce confidence unless strong counter-evidence.
+- Compare the market price (${marketData.yesPrice}) to the historical base rate (${baseRatePrior}). If they differ significantly, explain why in your narrative.
+- Consider historical base rates, state-specific political leanings, and incumbent advantages if applicable.
 - Provide confidence score based on evidence strength (e.g., high for credible news, low for speculative).
 - Confidence: integer 1-100; explain why.
 - Keep narrative concise (<100 words), citing specific news or data points.
 
 Return ONLY the JSON object—no prose or extra text.`;
+}
+
+// Calculate base rate prior for LLM context
+function calculateBaseRatePrior(marketData) {
+  const question = marketData.question || '';
+  const q = question.toLowerCase();
+
+  // Detect NFL teams (32 teams = 3.1% base rate)
+  if (/win the (super bowl|afc championship|nfc championship)/i.test(q)) {
+    return 0.031;
+  }
+
+  // Detect NBA teams (30 teams = 3.3% base rate)
+  if (/win the nba championship/i.test(q)) {
+    return 0.033;
+  }
+
+  // Detect MLB teams (30 teams = 3.3% base rate)
+  if (/win the (world series|mlb championship)/i.test(q)) {
+    return 0.033;
+  }
+
+  // Detect NHL teams (32 teams = 3.1% base rate)
+  if (/win the (stanley cup|nhl championship)/i.test(q)) {
+    return 0.031;
+  }
+
+  // Detect Premier League teams (20 teams = 5% base rate)
+  if (/win the (premier league|epl)/i.test(q)) {
+    return 0.05;
+  }
+
+  // Detect binary elections (2 main candidates = 50% base rate)
+  if (/win the (2024|2025|2026|2028) (presidential|election)/i.test(q)) {
+    return 0.5;
+  }
+
+  // Detect state governor races - use state-specific priors
+  if (/win the (governor|governorship) in (2024|2025|2026|2028)/i.test(q)) {
+    const stateMatch = q.match(/(?:in|for) ([a-z]+) (?:governor|governorship)/i);
+    if (stateMatch) {
+      const state = stateMatch[1].toLowerCase();
+      const STATE_POLITICAL_PRIORS = {
+        'idaho': 0.99,
+        'south dakota': 0.99,
+        'wyoming': 0.99,
+        'north dakota': 0.98,
+        'utah': 0.95,
+        'oklahoma': 0.95,
+        'arkansas': 0.95,
+        'kansas': 0.93,
+        'nebraska': 0.93,
+        'alabama': 0.92,
+        'mississippi': 0.92,
+        'tennessee': 0.92,
+        'kentucky': 0.90,
+        'louisiana': 0.90,
+        'rhode island': 0.80,
+        'massachusetts': 0.85,
+        'maryland': 0.80,
+        'hawaii': 0.90,
+        'vermont': 0.85,
+        'new york': 0.75,
+        'california': 0.70,
+        'illinois': 0.70,
+        'washington': 0.70,
+        'oregon': 0.70,
+        'connecticut': 0.75,
+        'delaware': 0.75,
+        'pennsylvania': 0.55,
+        'michigan': 0.55,
+        'wisconsin': 0.55,
+        'arizona': 0.52,
+        'georgia': 0.52,
+        'nevada': 0.52,
+        'north carolina': 0.50,
+        'florida': 0.48,
+        'texas': 0.45,
+        'ohio': 0.48,
+      };
+      if (STATE_POLITICAL_PRIORS[state]) {
+        return STATE_POLITICAL_PRIORS[state];
+      }
+    }
+  }
+
+  // Detect multi-candidate events
+  const teamMatch = q.match(/(\d{1,2}) (teams|candidates|options)/i);
+  if (teamMatch) {
+    const count = parseInt(teamMatch[1]);
+    if (count > 0 && count <= 100) {
+      return 1 / count;
+    }
+  }
+
+  // Default category priors
+  if (/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) {
+    return 0.55;
+  }
+  if (/recession|inflation|fed|fed rate|gdp|unemployment|economy/i.test(q)) {
+    return 0.50;
+  }
+  if (/election|president|trump|biden|senate|congress|political|government/i.test(q)) {
+    return 0.42;
+  }
+  if (/grammy|oscar|emmy|award|nomination/i.test(q)) {
+    return 0.48;
+  }
+
+  return 0.50; // Default 50% for unknown markets
+}
+
+// Get historical context for LLM
+function getHistoricalContext(marketData, baseRatePrior) {
+  const question = marketData.question || '';
+  const q = question.toLowerCase();
+  let context = [];
+
+  // Political context
+  if (/governor|governorship/i.test(q)) {
+    const stateMatch = q.match(/(?:in|for) ([a-z]+) (?:governor|governorship)/i);
+    if (stateMatch) {
+      const state = stateMatch[1].toLowerCase();
+      context.push(`State: ${state.toUpperCase()} - Historical win rate for majority party: ${(baseRatePrior * 100).toFixed(0)}%`);
+      
+      if (baseRatePrior > 0.90) {
+        context.push(`This is a solid ${state.toUpperCase()} state - the majority party has won >90% of recent elections`);
+      } else if (baseRatePrior > 0.70) {
+        context.push(`This is a leaning ${state.toUpperCase()} state - the majority party typically wins`);
+      } else {
+        context.push(`This is a competitive ${state.toUpperCase()} state - elections are often close`);
+      }
+
+      if (/incumbent|re-election|running for re-election/i.test(q)) {
+        context.push(`Incumbent advantage: Governors running for re-election typically have a 10-15% boost in win rate`);
+      }
+    }
+  }
+
+  // Sports context
+  if (/win the (super bowl|nba championship|world series|stanley cup)/i.test(q)) {
+    context.push(`Championship markets are highly competitive - even favorites often lose due to single-elimination format`);
+  }
+
+  // Entertainment context
+  if (/grammy|oscar|emmy/i.test(q)) {
+    context.push(`Award markets depend on critical reception and industry trends - early favorites can be upset`);
+  }
+
+  return context.join('. ');
 }
 
 async function generateDecrees(markets) {
@@ -387,11 +579,27 @@ async function generateEnhancedAnalysis(marketData) {
   llmMetrics.total += 1;
   let llmOk = false;
   try {
+    if (!checkCircuitBreaker()) {
+      console.warn(`[LLM] Circuit breaker is open, using fallback for ${marketData.id}`);
+      return {
+        marketId: marketData.id,
+        question: marketData.question,
+        confidence: 50,
+        action: 'HOLD',
+        probability: 0.5,
+        reasoning: 'LLM circuit breaker open - using fallback',
+        generatedAt: Date.now(),
+        fallback: true
+      };
+    }
+
     console.log(`[LLM] Starting API call for ${marketData.id}`);
     response = await llmCall();
     llmOk = true;
+    recordLLMSuccess();
     console.log(`[LLM] API call completed for ${marketData.id}`);
   } catch (error) {
+    recordLLMFailure();
     llmMetrics.errors += 1;
     emitLLMMetrics({
       ok: false,
@@ -402,7 +610,6 @@ async function generateEnhancedAnalysis(marketData) {
       error: error.message
     });
     console.error(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
-    // Fallback handling...
     return {
       marketId: marketData.id,
       question: marketData.question,
@@ -475,30 +682,6 @@ async function generateEnhancedAnalysis(marketData) {
     const revised_prior = clamp(base_prior + combinedDelta, 0.01, 0.99);
     result.revised_prior = ensureNumber(result.revised_prior, revised_prior);
 
-    // Contradiction penalty (Change 2)
-    const narrative = result.narrative || '';
-    const oddsMatch = narrative.match(/odds suggest(?:ing)?\s*([0-9.]+)%/i);
-    if (oddsMatch) {
-      const suggestedOdds = parseFloat(oddsMatch[1]) / 100;
-      if (Math.abs(suggestedOdds - revised_prior) > 0.20) {
-        result.confidence = Math.round(result.confidence * 0.3);
-        result.narrative = `${narrative} [PENALTY: Contradictory odds statement reduced confidence]`;
-      }
-    }
-
-    // Confidence normalization (Change 6)
-    const baseConfidence = clamp(ensureNumber(result.confidence, 60), 1, 100);
-    result.confidence = baseConfidence;
-
-    if (Math.abs(delta) < 0.05) {
-      result.confidence = Math.round(result.confidence * 0.7);
-      result.narrative = `${result.narrative || narrative} [NORMALIZATION: Small delta reduced confidence]`;
-    }
-    result.confidence = clamp(result.confidence, 1, 100); // Ensure bounds
-
-  // Disagreement penalty: reduce confidence if LLM agrees too closely with market
-  // Removed to prevent confidence zeroing
-
     const pMarket = clamp(typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5, 0.01, 0.99);
     const basePriorForAvg = clamp(
       typeof marketData.basePrior === 'number' && Number.isFinite(marketData.basePrior)
@@ -507,7 +690,8 @@ async function generateEnhancedAnalysis(marketData) {
       0.01,
       0.99
     );
-    const winProb = clamp((result.revised_prior + basePriorForAvg) / 2, 0.02, 0.98);
+    // Use LLM's revised_prior directly - NO averaging to preserve edge
+    const winProb = clamp(result.revised_prior, 0.02, 0.98);
 
     const daysLeft = marketData.endDateIso
       ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
@@ -587,11 +771,8 @@ async function generateEnhancedAnalysis(marketData) {
 
     // Conviction boost: Adjust based on edge/volatility
     const volatilityFactor = marketData.priceVolatility || 0.05; // from metrics
-    let confidenceScore = clamp(
-      0.72 + (absExpectedEdge * 4.2) - (volatilityFactor * 1.8),
-      0.72,
-      0.96
-    );
+    // Use LLM's confidence directly - don't overwrite it with formula
+    let confidenceScore = clamp(normalizedConfidence, 0.01, 1);
 
     // Apply adaptive learning
     const adaptiveLearning = applyAdaptiveLearning(category, action, absEdge, confidenceScore * 100);
@@ -605,8 +786,9 @@ async function generateEnhancedAnalysis(marketData) {
     });
     const finalConfidence = calibratedSignal.confidence;
 
-    // Apply entropy discount to edge
-    const entropyDiscountedEdge = applyEntropyDiscount(entropy, adjustedEdge);
+    // Entropy discount REMOVED - trust LLM's edge
+    // const entropyDiscountedEdge = applyEntropyDiscount(entropy, adjustedEdge);
+    const entropyDiscountedEdge = adjustedEdge;
 
     let reasoning = result.narrative || 'No detailed reasoning from LLM.';
     reasoning += ` | Conviction Tier: ${tier} | Revised Prior: ${winProb.toFixed(3)} (${category}) | Suggested Exposure: ${(exposure * 100).toFixed(0)}% bankroll.`;
@@ -638,41 +820,7 @@ async function generateEnhancedAnalysis(marketData) {
     structuredAnalysis.effectiveEdge = baseEffectiveEdge;
     structuredAnalysis.reasoning += ` Recommended Position: ${(exposure * 100).toFixed(1)}% of bankroll.`;
 
-    // v1.5.2 – Enforce min edge for real trades (adjusted for better signal detection)
-    const MIN_EDGE_TRADE = 1.5; // 1.5% min for BUY/SELL (lowered from 5% to capture more edges)
-
-    if (baseEffectiveEdge < MIN_EDGE_TRADE) {
-      structuredAnalysis.action = 'HOLD';
-      structuredAnalysis.reasoning += ` | v1.5.2 VETO: Edge < ${MIN_EDGE_TRADE}% – insufficient edge`;
-      structuredAnalysis.kellyFraction = 0;
-    } else if (structuredAnalysis.action.includes('BUY') && exposure <= 0) {
-      structuredAnalysis.action = 'HOLD';
-      structuredAnalysis.reasoning += ` | v1.5.2 FIX: BUY with 0% exposure → converted to HOLD`;
-    }
-
-    // CRYPTO divergence cap: force PROBE tier for outsized raw edges
-    if (category === 'CRYPTO' && Math.abs(rawEdge) > 0.18) {
-      structuredAnalysis.tradeTier = 'PROBE';
-      tier = 'PROBE';
-      exposure = Math.min(exposure, 0.01);
-      structuredAnalysis.reasoning += ' | Safety: Crypto divergence >18% forcing PROBE tier';
-    }
-
-    return {
-      marketId: marketData.id,
-      question: marketData.question,
-      confidence: structuredAnalysis.confidence, 
-      action: structuredAnalysis.action,
-      probability: structuredAnalysis.probability,
-      reasoning: structuredAnalysis.reasoning,
-      llmAnalysis: structuredAnalysis,
-      effectiveEdge: baseEffectiveEdge,
-      generatedAt: Date.now(),
-      revised_prior: result.revised_prior,
-      llm_confidence: result.confidence,
-      narrative: result.narrative
-    };
-
+    return structuredAnalysis;
 }
 
 /**

@@ -56,16 +56,6 @@ const rateLimiter = (req, res, next) => {
   next();
 };
 
-// Clean up expired rate limit entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, record] of rateLimitStore.entries()) {
-    if (now > record.resetTime) {
-      rateLimitStore.delete(ip);
-    }
-  }
-}, 300000);
-
 // Apply rate limiting to all API routes
 app.use(rateLimiter);
 
@@ -195,7 +185,43 @@ function updateHealthMetrics(metrics) {
 }
 
 // Health check endpoint
-app.get('/status', (req, res) => {
+app.get('/status', async (req, res) => {
+  const checks = {
+    database: false,
+    polymarketApi: false,
+    llmApi: false
+  };
+
+  // Check database connectivity
+  try {
+    const { initDb } = require('./src/db');
+    const db = initDb();
+    db.prepare('SELECT 1').get();
+    checks.database = true;
+  } catch (e) {
+    checks.database = false;
+  }
+
+  // Check Polymarket API connectivity
+  try {
+    const response = await fetch('https://gamma-api.polymarket.com/markets?limit=1', {
+      signal: AbortSignal.timeout(5000)
+    });
+    checks.polymarketApi = response.ok;
+  } catch (e) {
+    checks.polymarketApi = false;
+  }
+
+  // Check LLM API connectivity (basic check - just verify config exists)
+  try {
+    const hasApiKey = process.env.OPENAI_API_KEY || process.env.XAI_API_KEY;
+    checks.llmApi = !!hasApiKey;
+  } catch (e) {
+    checks.llmApi = false;
+  }
+
+  const healthy = Object.values(checks).every(v => v);
+
   const generateServiceHistory = () => {
     const history = [];
     for (let i = 0; i < 6; i++) {
@@ -231,8 +257,9 @@ app.get('/status', (req, res) => {
     });
   };
 
-  res.json({
-    status: systemHealth.status,
+  res.status(healthy ? 200 : 503).json({
+    status: healthy ? 'healthy' : 'unhealthy',
+    checks,
     uptime: systemHealth.uptime,
     lastRun: systemHealth.lastRun,
     posts: systemHealth.posts,
@@ -242,7 +269,7 @@ app.get('/status', (req, res) => {
     version: '1.1-beta',
     history: generateServiceHistory(),
     recentEvents: generateRecentEvents(),
-    noRecentIssues: true
+    noRecentIssues: healthy
   });
 });
 

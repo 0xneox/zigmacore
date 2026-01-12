@@ -3,6 +3,8 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 
+const { classifyMarket } = require('./classifier');
+
 const GAMMA = process.env.GAMMA_API_URL || 'https://gamma-api.polymarket.com';
 const CACHE_FILE = path.join(__dirname, '..', 'cache', 'last_snapshot.json');
 // v1.5.1 – Data-driven priors (from web_search – politics ~42% YES, crypto ~55%, etc)
@@ -71,25 +73,6 @@ function isDeadMarket(market) {
   return outcomePrices.some(p => p >= 0.99 || p <= 0.01);
 }
 
-function classifyMarket(question) {
-  const q = question.toLowerCase();
-
-  if (/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) {
-    return "CRYPTO";
-  }
-  if (/recession|inflation|fed|fed rate|gdp|unemployment|economy/i.test(q)) {
-    return "MACRO";
-  }
-  if (/election|president|trump|biden|senate|congress|political|government/i.test(q)) {
-    return "POLITICAL";
-  }
-  if (/gold|silver|oil|commodity|stock|company|market cap|nvidia|apple|microsoft|tesla/i.test(q)) {
-    return "FINANCIAL";
-  }
-
-  return "EVENT";
-}
-
 function loadCache() {
   try {
     return JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
@@ -140,11 +123,37 @@ async function computeMetrics(markets, cache) {
       return false;
     }
 
-    if (m.endDateIso) {
-      const end = new Date(m.endDateIso);
-      if (end <= new Date()) {
-        countExpired++;
-        return false;
+    // Check for resolved markets (markets with an outcome are resolved)
+    if (m.outcome || m.outcomeType) {
+      countClosed++;
+      return false;
+    }
+
+    // Check multiple date fields for expiration
+    const endDateFields = ['endDateIso', 'endDate', 'end_date', 'expirationDate', 'expiration_date'];
+    let hasExpired = false;
+    for (const field of endDateFields) {
+      if (m[field]) {
+        const end = new Date(m[field]);
+        // Add 1 hour buffer to account for timezone differences
+        if (end <= new Date(Date.now() - 3600000)) {
+          countExpired++;
+          hasExpired = true;
+          break;
+        }
+      }
+    }
+    if (hasExpired) return false;
+
+    // Also check start date - if start date is in the future, market hasn't started yet
+    const startDateFields = ['startDateIso', 'startDate', 'start_date'];
+    for (const field of startDateFields) {
+      if (m[field]) {
+        const start = new Date(m[field]);
+        if (start > new Date(Date.now() + 86400000)) {
+          countDeadMarkets++;
+          return false;
+        }
       }
     }
 

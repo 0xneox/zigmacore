@@ -128,9 +128,11 @@ function getCalibrationAdjustment(confidence, category = null) {
       };
     }
 
-    // Calculate adjustment
-    const adjustment = (bin.actualAccuracy - bin.predictedAccuracy) * 100;
-    const adjustedConfidence = Math.max(0, Math.min(100, confidence + adjustment));
+    // Calculate adjustment - DISABLED to trust LLM
+    // const adjustment = (bin.actualAccuracy - bin.predictedAccuracy) * 100;
+    // const adjustedConfidence = Math.max(0, Math.min(100, confidence + adjustment));
+    const adjustment = 0;
+    const adjustedConfidence = confidence;
 
     return {
       adjustedConfidence: Number(adjustedConfidence.toFixed(2)),

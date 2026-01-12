@@ -14,6 +14,7 @@ ALTER TABLE cycle_snapshots ENABLE ROW LEVEL SECURITY;
 -- Drop existing policies if they exist (safe for re-running)
 DROP POLICY IF EXISTS "Allow public read access" ON cycle_snapshots;
 DROP POLICY IF EXISTS "Allow service role insert" ON cycle_snapshots;
+DROP POLICY IF EXISTS "Allow anon insert" ON cycle_snapshots;
 
 -- Allow public read access (for UI frontend)
 CREATE POLICY "Allow public read access" ON cycle_snapshots
@@ -21,7 +22,13 @@ CREATE POLICY "Allow public read access" ON cycle_snapshots
   TO public
   USING (true);
 
--- Allow service role to insert (for backend)
+-- Allow anon to insert (for backend API)
+CREATE POLICY "Allow anon insert" ON cycle_snapshots
+  FOR INSERT
+  TO anon
+  WITH CHECK (true);
+
+-- Allow service role to insert (for backend with service role key)
 CREATE POLICY "Allow service role insert" ON cycle_snapshots
   FOR INSERT
   TO service_role

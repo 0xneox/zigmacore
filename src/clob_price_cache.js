@@ -130,9 +130,16 @@ function stopPolling() {
  */
 function getClobPrice(marketId, gammaPrice = null) {
   const cached = clobPriceCache.get(marketId);
-  if (cached && (Date.now() - cached.ts) < 10000) { // Max 10s stale
+  const age = cached ? (Date.now() - cached.ts) : Infinity;
+
+  if (cached && age < 5000) { // Reduced to 5 seconds
     return cached.mid;
   }
+
+  if (age >= 5000 && cached) {
+    console.warn(`Stale CLOB price for ${marketId}: ${age}ms old`);
+  }
+
   return gammaPrice;
 }
 

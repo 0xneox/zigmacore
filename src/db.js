@@ -4,23 +4,25 @@ const path = require('path');
 
 let db = null;
 
-// Initialize database connection
-function initDb() {
+// Initialize database connection with retry logic
+function initDb(maxRetries = 3) {
   if (db) return db;
 
-  try {
-    const dbPath = path.join(__dirname, '..', 'data', 'cache.sqlite');
-    // Ensure directory exists
-    const fs = require('fs');
-    const dir = path.dirname(dbPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+  let lastError = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const dbPath = path.join(__dirname, '..', 'data', 'cache.sqlite');
+      const fs = require('fs');
+      const dir = path.dirname(dbPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
 
-    db = new Database(dbPath);
+      db = new Database(dbPath);
+      db.pragma('journal_mode = WAL');
 
-    // Create tables
-    db.exec(`
+      // Create tables
+      db.exec(`
       CREATE TABLE IF NOT EXISTS price_cache (
         id TEXT PRIMARY KEY,
         price REAL NOT NULL,
@@ -149,10 +151,16 @@ function initDb() {
 
     console.log('Database initialized successfully');
     return db;
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
-    throw error;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxRetries - 1) {
+        console.error(`DB connection attempt ${attempt + 1} failed, retrying...`);
+      }
+    }
   }
+
+  console.error('Failed to initialize database after retries:', lastError);
+  throw lastError;
 }
 
 // Migration function to add new columns to existing tables
