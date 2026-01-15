@@ -1713,7 +1713,7 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
       ...signal,
       market: market.question || 'Unknown',
       timestamp: signalTimestamp,
-      probZigma: normalizedConfidence * 100,
+      probZigma: winProb * 100,
       probMarket: yesPrice * 100,
       effectiveEdge: rawEdge,
       rawEdge: rawEdge * 100,
