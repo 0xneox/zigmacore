@@ -1,8 +1,57 @@
 // SQLite database for persistent storage
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
 let db = null;
+
+// Check database integrity
+function checkDatabaseIntegrity(db) {
+  try {
+    const result = db.pragma('integrity_check');
+    if (Array.isArray(result) && result.length > 0) {
+      const check = result[0];
+      if (typeof check === 'object' && 'integrity_check' in check) {
+        return check.integrity_check === 'ok';
+      }
+      return result[0] === 'ok';
+    }
+    return true;
+  } catch (error) {
+    console.error('[DB] Integrity check failed:', error.message);
+    return false;
+  }
+}
+
+// Repair corrupted database
+function repairDatabase(dbPath) {
+  try {
+    console.log('[DB] Attempting to repair corrupted database...');
+    const backupPath = `${dbPath}.corrupted.${Date.now()}`;
+    
+    // Backup corrupted database
+    if (fs.existsSync(dbPath)) {
+      fs.copyFileSync(dbPath, backupPath);
+      console.log('[DB] Corrupted database backed up to:', backupPath);
+    }
+    
+    // Delete corrupted database
+    fs.unlinkSync(dbPath);
+    console.log('[DB] Corrupted database deleted');
+    
+    // Delete WAL files if they exist
+    const walPath = `${dbPath}-wal`;
+    const shmPath = `${dbPath}-shm`;
+    if (fs.existsSync(walPath)) fs.unlinkSync(walPath);
+    if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath);
+    
+    console.log('[DB] Database repaired successfully');
+    return true;
+  } catch (error) {
+    console.error('[DB] Database repair failed:', error.message);
+    return false;
+  }
+}
 
 // Initialize database connection with retry logic
 function initDb(maxRetries = 3) {
@@ -12,7 +61,6 @@ function initDb(maxRetries = 3) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const dbPath = path.join(__dirname, '..', 'data', 'cache.sqlite');
-      const fs = require('fs');
       const dir = path.dirname(dbPath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -20,6 +68,20 @@ function initDb(maxRetries = 3) {
 
       db = new Database(dbPath);
       db.pragma('journal_mode = WAL');
+
+      // Check database integrity
+      if (!checkDatabaseIntegrity(db)) {
+        console.error('[DB] Database integrity check failed, attempting repair...');
+        db.close();
+        db = null;
+        
+        if (repairDatabase(dbPath)) {
+          // Retry after repair
+          continue;
+        } else {
+          throw new Error('Database repair failed');
+        }
+      }
 
       // Create tables
       db.exec(`
@@ -323,14 +385,23 @@ function getDbStats() {
 
 // Analysis cache operations
 function saveAnalysisCache(marketId, lastPrice, reasoning, confidence) {
-  const db = initDb();
-  const insert = db.prepare('INSERT OR REPLACE INTO analysis_cache (market_id, last_price, reasoning, confidence) VALUES (?, ?, ?, ?)');
-  insert.run(marketId, lastPrice, reasoning, confidence);
+  try {
+    const db = initDb();
+    const insert = db.prepare('INSERT OR REPLACE INTO analysis_cache (market_id, last_price, reasoning, confidence) VALUES (?, ?, ?, ?)');
+    insert.run(marketId, lastPrice, reasoning, confidence);
+  } catch (error) {
+    console.error('[DB] Failed to save analysis cache:', error.message);
+  }
 }
 
 function getAnalysisCache(marketId) {
-  const db = initDb();
-  return db.prepare('SELECT * FROM analysis_cache WHERE market_id = ?').get(marketId);
+  try {
+    const db = initDb();
+    return db.prepare('SELECT * FROM analysis_cache WHERE market_id = ?').get(marketId);
+  } catch (error) {
+    console.error('[DB] Failed to get analysis cache:', error.message);
+    return null;
+  }
 }
 
 // Trade signals operations

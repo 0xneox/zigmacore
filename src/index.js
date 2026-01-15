@@ -1913,7 +1913,7 @@ async function main() {
     startServer?.();
     await queuedRunCycle();
 
-    const cronExpression = process.env.CRON_SCHEDULE || '0 * * * *';
+    const cronExpression = process.env.CRON_SCHEDULE || '0 */6 * * *';
     cron.schedule(cronExpression, queuedRunCycle);
     log(`Agent Zigma scheduled cadence: ${cronExpression}`);
   } catch (err) {
