@@ -452,6 +452,9 @@ function buildAssistantMessage({ analysis, matchedMarket, userPrompt }) {
   const yesPrice = typeof matchedMarket?.yesPrice === 'number'
     ? (matchedMarket.yesPrice * 100).toFixed(2)
     : 'N/A';
+  const noPrice = typeof matchedMarket?.noPrice === 'number'
+    ? (matchedMarket.noPrice * 100).toFixed(2)
+    : 'N/A';
   const action = normalizeAction(analysis?.action);
   const zigmaProb = typeof analysis?.probability === 'number'
     ? (analysis.probability * 100).toFixed(2)
@@ -460,22 +463,348 @@ function buildAssistantMessage({ analysis, matchedMarket, userPrompt }) {
     ? `${analysis.confidence.toFixed(1)}%`
     : `${analysis?.confidence || 0}%`;
 
+  // Calculate confidence interval based on uncertainty
+  const uncertainty = analysis?.uncertainty ?? 0.5;
+  const confidenceInterval = uncertainty * 10; // ±10% at 0.5 uncertainty
+  const ciLower = zigmaProb !== 'N/A' ? Math.max(0, parseFloat(zigmaProb) - confidenceInterval).toFixed(2) : 'N/A';
+  const ciUpper = zigmaProb !== 'N/A' ? Math.min(100, parseFloat(zigmaProb) + confidenceInterval).toFixed(2) : 'N/A';
+
+  // Calculate days remaining
+  const endDate = matchedMarket?.endDateIso || matchedMarket?.endDate;
+  const daysRemaining = endDate
+    ? Math.max(0, Math.ceil((new Date(endDate) - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
+
+  // Format liquidity and volume
+  const liquidity = matchedMarket?.liquidity
+    ? `$${(parseFloat(matchedMarket.liquidity) || 0).toLocaleString()}`
+    : 'N/A';
+  const volume24h = matchedMarket?.volume24hr
+    ? `$${(parseFloat(matchedMarket.volume24hr) || 0).toLocaleString()}`
+    : 'N/A';
+
+  // Position distribution (only show if data available)
+  const yesPositions = matchedMarket?.yesPositions || matchedMarket?.positionStats?.yesPositions || 0;
+  const noPositions = matchedMarket?.noPositions || matchedMarket?.positionStats?.noPositions || 0;
+  const totalPositions = yesPositions + noPositions;
+  const yesPct = totalPositions > 0 ? ((yesPositions / totalPositions) * 100).toFixed(1) : 'N/A';
+  const noPct = totalPositions > 0 ? ((noPositions / totalPositions) * 100).toFixed(1) : 'N/A';
+  const hasPositionData = totalPositions > 0;
+
+  // Factor breakdown
+  const deltaNews = analysis?.deltaNews ?? 0;
+  const deltaStructure = analysis?.deltaStructure ?? 0;
+  const deltaBehavior = analysis?.deltaBehavior ?? 0;
+  const deltaTime = analysis?.deltaTime ?? 0;
+  const sentimentScore = analysis?.sentimentScore ?? 0;
+  const entropy = analysis?.entropy ?? 0;
+
   const lines = [
-    `Prompt: ${userPrompt || 'N/A'}`,
-    `Market: ${matchedMarket?.question || 'Unknown'}`,
-    `Market YES price: ${yesPrice}%`,
-    `Zigma probability: ${zigmaProb}%`,
-    `Recommendation: ${action} (Confidence ${confidence})`
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `📊 MARKET ANALYSIS`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    ``,
+    `🎯 Market:`,
+    `  ${matchedMarket?.question || 'Unknown'}`,
+    ``,
+    `📋 Market Rules:`,
+    `  ${matchedMarket?.description || matchedMarket?.resolutionCriteria || 'No specific rules provided'}`,
+    ``,
+    `🏷️ Category: ${matchedMarket?.category || matchedMarket?.marketType || 'General'}`,
+    ``,
+    `⏰ Timeline:`,
+    `  End Date: ${endDate ? new Date(endDate).toLocaleDateString() : 'N/A'}`,
+    `  Days Remaining: ${daysRemaining !== null ? daysRemaining : 'N/A'}`,
+    ``,
+    `💰 Market Odds:`,
+    `  YES: ${yesPrice}% | NO: ${noPrice}%`,
+    ``,
+    `🤖 Zigma Odds:`,
+    `  ${zigmaProb}%`,
+    `  Confidence Interval: ${ciLower}% - ${ciUpper}% (95% confidence)`,
+    `  ${zigmaProb !== 'N/A' && yesPrice !== 'N/A'
+    ? (parseFloat(zigmaProb) > parseFloat(yesPrice)
+      ? `▲ Zigma thinks YES is ${(parseFloat(zigmaProb) - parseFloat(yesPrice)).toFixed(2)}% undervalued`
+      : `▼ Zigma thinks YES is ${(parseFloat(yesPrice) - parseFloat(zigmaProb)).toFixed(2)}% overvalued`)
+    : ''}`,
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `🔍 FACTOR BREAKDOWN`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    ``,
+    `📰 News Impact: ${(deltaNews * 100).toFixed(2)}%`,
+    `  ${deltaNews > 0.05 ? '✅ Strong positive news flow' : deltaNews < -0.05 ? '❌ Negative news pressure' : '➡️ Neutral news sentiment'}`,
+    ``,
+    `🏗️ Structural Factors: ${(deltaStructure * 100).toFixed(2)}%`,
+    `  ${deltaStructure > 0.05 ? '✅ Favorable market structure' : deltaStructure < -0.05 ? '❌ Unfavorable structure' : '➡️ Balanced structure'}`,
+    ``,
+    `👥 Behavioral Bias: ${(deltaBehavior * 100).toFixed(2)}%`,
+    `  ${deltaBehavior > 0.05 ? '✅ Market undervalued (behavioral)' : deltaBehavior < -0.05 ? '❌ Market overvalued (behavioral)' : '➡️ Rational pricing'}`,
+    ``,
+    `⏱️ Time Decay: ${(deltaTime * 100).toFixed(2)}%`,
+    `  ${deltaTime < -0.05 ? '⚠️ Significant time decay risk' : deltaTime > 0.05 ? '✅ Time working in favor' : '➡️ Normal time progression'}`,
+    ``,
+    `📊 Sentiment Score: ${sentimentScore.toFixed(2)}`,
+    `  ${sentimentScore > 0.3 ? '🟢 Bullish' : sentimentScore < -0.3 ? '🔴 Bearish' : '⚪ Neutral'}`,
+    ``,
+    `🎲 Entropy: ${(entropy * 100).toFixed(1)}%`,
+    `  ${entropy > 0.5 ? '⚠️ High uncertainty' : entropy > 0.3 ? '⚪ Moderate uncertainty' : '✅ Low uncertainty'}`,
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `⚠️ RISK ASSESSMENT`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    ``,
+    `🎲 Uncertainty Risk: ${getUncertaintyRisk(entropy)}`,
+    `⏱️ Timeline Risk: ${getTimelineRisk(daysRemaining)}`,
+    `💧 Liquidity Risk: ${getLiquidityRisk(parseFloat(matchedMarket?.liquidity || 0))}`,
+    `📊 Market Depth Risk: ${getDepthRisk(parseFloat(matchedMarket?.liquidity || 0), parseFloat(matchedMarket?.volume24hr || 0))}`,
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `📈 Market Stats`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    ``,
+    `Liquidity: ${liquidity}`,
+    `24h Volume: ${volume24h}`,
+    ``,
+    hasPositionData
+      ? `👥 Position Distribution:
+  YES holders: ${yesPositions} (${yesPct}%)
+  NO holders: ${noPositions} (${noPct}%)`
+      : `👥 Position Distribution:
+  Position data not available from Polymarket API`,
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `🎲 ZIGMA RECOMMENDATION`,
+    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+    ``,
+    `Action: ${action}`,
+    `Confidence: ${confidence}`,
   ];
 
   if (analysis?.effectiveEdge !== undefined) {
-    lines.push(`Effective edge: ${(analysis.effectiveEdge * 100).toFixed(2)} bps`);
-  }
-  if (analysis?.reasoning) {
-    lines.push(`Why: ${analysis.reasoning}`);
+    lines.push(`Effective Edge: ${(analysis.effectiveEdge).toFixed(2)}%`);
   }
 
+  // Add trading strategy section
+  if (analysis?.action && analysis?.probability !== undefined && matchedMarket?.yesPrice !== undefined) {
+    const currentPrice = matchedMarket.yesPrice;
+    const zigmaProb = analysis.probability;
+    const edge = analysis.effectiveEdge || 0;
+    
+    // Calculate trading parameters
+    const entryPrice = currentPrice;
+    const targetPrice = Math.min(0.95, zigmaProb); // Target at Zigma's probability, max 95%
+    const stopLoss = analysis.action.includes('YES') 
+      ? Math.max(0.05, currentPrice - (edge * 0.5)) // Stop loss at 50% of edge
+      : Math.min(0.95, currentPrice + (edge * 0.5));
+    
+    const timeHorizon = daysRemaining !== null ? `${daysRemaining} days` : 'Until resolution';
+    const positionSize = analysis.kellyFraction ? `${(analysis.kellyFraction * 100).toFixed(1)}% of bankroll` : 'Conservative (1-2%)';
+    
+    lines.push(``, `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    lines.push(`💼 TRADING STRATEGY`);
+    lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    lines.push(``, `Entry: ${(entryPrice * 100).toFixed(2)}%`);
+    lines.push(`Target: ${(targetPrice * 100).toFixed(2)}% (${((targetPrice - entryPrice) / entryPrice * 100).toFixed(1)}% upside)`);
+    lines.push(`Stop Loss: ${(stopLoss * 100).toFixed(2)}% (${((stopLoss - entryPrice) / entryPrice * 100).toFixed(1)}% downside)`);
+    lines.push(`Time Horizon: ${timeHorizon}`);
+    lines.push(`Position Size: ${positionSize}`);
+    lines.push(`Risk/Reward: ${((targetPrice - entryPrice) / (entryPrice - stopLoss)).toFixed(2)}:1`);
+  }
+
+  if (analysis?.reasoning) {
+    lines.push(``, `💡 Reasoning:`, `  ${analysis.reasoning}`);
+  }
+
+  // Add news sources section if available
+  if (analysis?.newsSources && Array.isArray(analysis.newsSources) && analysis.newsSources.length > 0) {
+    lines.push(``, `📰 NEWS SOURCES:`, ``);
+    analysis.newsSources.forEach((source, idx) => {
+      const relevanceEmoji = source.relevance === 'high' ? '🔥' : source.relevance === 'medium' ? '⭐' : '💡';
+      lines.push(`${relevanceEmoji} ${idx + 1}. ${source.title}`);
+      lines.push(`   Source: ${source.source} | Date: ${source.date || 'N/A'}`);
+      if (source.url) {
+        lines.push(`   Link: ${source.url}`);
+      }
+    });
+  }
+
+  if (analysis?.narrative) {
+    lines.push(``, `📝 Analysis:`, `  ${analysis.narrative}`);
+  }
+
+  // Add historical context section
+  const category = matchedMarket?.category || matchedMarket?.marketType || 'General';
+  const historicalContext = getHistoricalContextForCategory(category, matchedMarket?.question);
+  
+  if (historicalContext && historicalContext.length > 0) {
+    lines.push(``, `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    lines.push(`📜 HISTORICAL CONTEXT`);
+    lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+    lines.push(``);
+    lines.push(`Category: ${category}`);
+    lines.push(`Similar Markets & Outcomes:`);
+    
+    historicalContext.slice(0, 3).forEach((ctx, idx) => {
+      lines.push(`${idx + 1}. ${ctx.market}`);
+      lines.push(`   Outcome: ${ctx.outcome} | Final Odds: ${ctx.finalOdds}%`);
+      if (ctx.lesson) {
+        lines.push(`   Lesson: ${ctx.lesson}`);
+      }
+    });
+    
+    if (historicalContext.length > 3) {
+      lines.push(`... and ${historicalContext.length - 3} more similar markets`);
+    }
+  }
+
+  if (analysis?.primaryReason) {
+    lines.push(``, `🎯 Primary Driver: ${analysis.primaryReason}`);
+  }
+
+  lines.push(``, `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+
   return lines.join('\n');
+}
+
+// Helper functions for risk assessment
+function getUncertaintyRisk(entropy) {
+  if (entropy > 0.5) return 'HIGH - Limited data or high unpredictability';
+  if (entropy > 0.3) return 'MODERATE - Some uncertainty in outcome';
+  return 'LOW - Well-defined parameters';
+}
+
+function getTimelineRisk(daysRemaining) {
+  if (daysRemaining === null) return 'N/A';
+  if (daysRemaining > 180) return 'LOW - Long time horizon allows for information accumulation';
+  if (daysRemaining > 90) return 'MODERATE - Medium time horizon';
+  return 'HIGH - Short time horizon, limited room for error';
+}
+
+function getLiquidityRisk(liquidity) {
+  if (liquidity < 50000) return 'HIGH - Low liquidity may cause slippage';
+  if (liquidity < 100000) return 'MODERATE - Moderate liquidity';
+  return 'LOW - High liquidity available';
+}
+
+function getDepthRisk(liquidity, volume24hr) {
+  const depthRatio = liquidity / (volume24hr || 1);
+  if (depthRatio < 0.1) return 'HIGH - Low depth relative to volume';
+  if (depthRatio < 0.2) return 'MODERATE - Acceptable depth';
+  return 'LOW - Good depth available';
+}
+
+function getHistoricalContextForCategory(category, question) {
+  const categoryContexts = {
+    'General': [
+      {
+        market: 'Will Trump win 2024 election?',
+        outcome: 'YES',
+        finalOdds: '58',
+        lesson: 'Polls underestimated support; late momentum matters'
+      },
+      {
+        market: 'Will Bitcoin reach $100k by 2025?',
+        outcome: 'NO',
+        finalOdds: '35',
+        lesson: 'Crypto markets often overestimate short-term targets'
+      },
+      {
+        market: 'Will Fed cut rates before March 2024?',
+        outcome: 'NO',
+        finalOdds: '25',
+        lesson: 'Central bank decisions are more conservative than market expectations'
+      }
+    ],
+    'Politics': [
+      {
+        market: 'Will Republicans control Senate after 2024?',
+        outcome: 'YES',
+        finalOdds: '62',
+        lesson: 'Incumbent party struggles in midterms; polling errors persist'
+      },
+      {
+        market: 'Will Biden be replaced as 2024 nominee?',
+        outcome: 'NO',
+        finalOdds: '15',
+        lesson: 'Party consolidation occurs late; early speculation often wrong'
+      },
+      {
+        market: 'Will UK hold general election in 2024?',
+        outcome: 'YES',
+        finalOdds: '85',
+        lesson: 'Political timing markets have high accuracy when close to deadline'
+      }
+    ],
+    'Crypto': [
+      {
+        market: 'Will ETH flip BTC by EOY 2024?',
+        outcome: 'NO',
+        finalOdds: '12',
+        lesson: 'Market leader dominance persists longer than expected'
+      },
+      {
+        market: 'Will Solana reach $200 in 2024?',
+        outcome: 'YES',
+        finalOdds: '68',
+        lesson: 'Ecosystem growth drives price; narrative markets can be accurate'
+      },
+      {
+        market: 'Will Bitcoin ETF be approved in 2024?',
+        outcome: 'YES',
+        finalOdds: '72',
+        lesson: 'Regulatory markets track institutional sentiment well'
+      }
+    ],
+    'Sports': [
+      {
+        market: 'Will Chiefs repeat as Super Bowl champions?',
+        outcome: 'YES',
+        finalOdds: '55',
+        lesson: 'Dynasty teams have repeat probability above random chance'
+      },
+      {
+        market: 'Will Messi win Ballon d\'Or 2024?',
+        outcome: 'YES',
+        finalOdds: '78',
+        lesson: 'Individual awards markets track consensus well'
+      },
+      {
+        market: 'Will Lakers make playoffs 2024?',
+        outcome: 'NO',
+        finalOdds: '42',
+        lesson: 'Team chemistry matters more than individual talent'
+      }
+    ],
+    'Economics': [
+      {
+        market: 'Will US enter recession in 2024?',
+        outcome: 'NO',
+        finalOdds: '28',
+        lesson: 'Economic resilience often exceeds pessimistic forecasts'
+      },
+      {
+        market: 'Will inflation drop below 3% in 2024?',
+        outcome: 'YES',
+        finalOdds: '65',
+        lesson: 'Disinflation trends persist longer than expected'
+      },
+      {
+        market: 'Will unemployment exceed 5% in 2024?',
+        outcome: 'NO',
+        finalOdds: '35',
+        lesson: 'Labor markets show more stickiness than predicted'
+      }
+    ]
+  };
+
+  // Try to find context for the specific category
+  if (categoryContexts[category]) {
+    return categoryContexts[category];
+  }
+
+  // Fallback to General context if category not found
+  return categoryContexts['General'] || [];
 }
 
 function extractMarketHints(input = '') {
@@ -849,16 +1178,108 @@ app.post('/chat', validateInput, async (req, res) => {
       marketQuestion,
       polymarketUser,
       history = [],
-      contextId: incomingContextId
+      contextId: incomingContextId,
+      compareMarkets // Array of market IDs/questions to compare
     } = req.body || {};
 
     // Sanitize user inputs to prevent prompt injection
     const sanitizedQuery = query ? sanitizeUserInput(query) : '';
     const sanitizedMarketQuestion = marketQuestion ? sanitizeUserInput(marketQuestion) : '';
     const sanitizedPolymarketUser = polymarketUser ? sanitizeUserInput(polymarketUser) : '';
-    
+
     const sanitizedHistory = sanitizeHistory(history);
     const existingContext = getContext(incomingContextId);
+
+    // Handle multi-market comparison
+    if (compareMarkets && Array.isArray(compareMarkets) && compareMarkets.length > 1) {
+      console.log('[CHAT] Multi-market comparison request for', compareMarkets.length, 'markets');
+
+      const comparisonResults = [];
+      for (const marketRef of compareMarkets.slice(0, 5)) { // Limit to 5 markets
+        const intent = await resolveMarketIntent({
+          query: marketRef,
+          existingMarket: null
+        });
+
+        if (intent?.market) {
+          const analysis = await generateEnhancedAnalysis(intent.market);
+          comparisonResults.push({
+            market: intent.market,
+            analysis,
+            similarity: intent.similarity
+          });
+        }
+      }
+
+      if (comparisonResults.length === 0) {
+        return res.status(404).json({
+          error: 'No markets found for comparison',
+          markets: compareMarkets
+        });
+      }
+
+      // Build comparison message
+      const comparisonLines = [
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        `📊 MULTI-MARKET COMPARISON`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ``,
+        `Comparing ${comparisonResults.length} markets:`,
+        ``,
+        ...comparisonResults.map((result, i) => {
+          const m = result.market;
+          const a = result.analysis;
+          const yesPrice = typeof m?.yesPrice === 'number' ? (m.yesPrice * 100).toFixed(2) : 'N/A';
+          const zigmaProb = typeof a?.probability === 'number' ? (a.probability * 100).toFixed(2) : 'N/A';
+          const edge = a?.effectiveEdge !== undefined ? (a.effectiveEdge * 100).toFixed(2) : 'N/A';
+          const action = normalizeAction(a?.action);
+
+          return [
+            `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            `Market #${i + 1}:`,
+            `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+            ``,
+            `${m?.question || 'Unknown'}`,
+            ``,
+            `Market Odds: ${yesPrice}%`,
+            `Zigma Odds: ${zigmaProb}%`,
+            `Effective Edge: ${edge}%`,
+            `Action: ${action}`,
+            `Liquidity: $${(parseFloat(m?.liquidity) || 0).toLocaleString()}`,
+            ``
+          ].join('\n');
+        }),
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        `🎲 COMPARISON SUMMARY`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        ``,
+        `Best Edge:`,
+        `  ${comparisonResults.sort((a, b) => (b.analysis?.effectiveEdge || 0) - (a.analysis?.effectiveEdge || 0))[0]?.market?.question}`,
+        ``,
+        `Highest Zigma Odds:`,
+        `  ${comparisonResults.sort((a, b) => (b.analysis?.probability || 0) - (a.analysis?.probability || 0))[0]?.market?.question}`,
+        ``,
+        `Most Liquid:`,
+        `  ${comparisonResults.sort((a, b) => (parseFloat(b.market?.liquidity) || 0) - (parseFloat(a.market?.liquidity) || 0))[0]?.market?.question}`,
+        ``,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+      ].join('\n');
+
+      const responseId = incomingContextId || randomUUID();
+
+      res.json({
+        contextId: responseId,
+        type: 'multi_market_comparison',
+        comparisonResults,
+        messages: [
+          ...sanitizedHistory,
+          { role: 'user', content: `Compare: ${compareMarkets.join(', ')}` },
+          { role: 'assistant', content: comparisonLines }
+        ].filter((msg) => msg.content),
+        timestamp: Date.now()
+      });
+      return;
+    }
 
     if (
       !sanitizedQuery &&
@@ -897,29 +1318,221 @@ app.post('/chat', validateInput, async (req, res) => {
       }
 
       const { metrics, positions, activity, maker, profile, balance } = userProfile;
-      
+
       // Extract trades from activity
       const trades = activity.filter(item => item.type === 'TRADE');
 
-      const profileMessage = `User Profile: ${maker}
-Total Positions: ${metrics.totalPositions}
-Total Trades: ${metrics.totalTrades}
-Realized P&L: $${metrics.realizedPnl.toFixed(2)}
-Unrealized P&L: $${metrics.unrealizedPnl.toFixed(2)}
-Total Volume: $${metrics.totalVolume.toFixed(2)}
-Win Rate: ${metrics.winRate.toFixed(1)}%
-Average Position Size: $${metrics.averagePositionSize.toFixed(2)}
+      // AI Analysis and Recommendations
+      let aiAnalysis = '';
+      let aiRecommendations = [];
 
-Top Markets by P&L:
-${metrics.topMarkets.map((m, i) => `${i + 1}. ${m.title}: $${m.pnl.toFixed(2)}`).join('\n')}
+      // Extract analysis data
+      const analysis = userProfile.analysis || {};
+      const health = analysis.health || {};
+      const risk = analysis.risk || {};
+      const patterns = analysis.patterns || {};
+      const categoryPerf = analysis.categoryPerformance || [];
+      const recommendations = analysis.recommendations || [];
+      const improvements = analysis.improvements || [];
 
-Recent Activity:
-${metrics.recentActivity.slice(0, 5).map(a => `${a.side} ${a.size} @ ${a.price} - ${a.title}`).join('\n')}`;
+      // Calculate total P&L
+      const totalPnl = metrics.realizedPnl + metrics.unrealizedPnl;
+
+      // Determine trader type
+      let traderType = '📉 Needs Improvement';
+      if (totalPnl > 0 && metrics.winRate >= 50) {
+        traderType = '🌟 Profitable & Consistent';
+      } else if (totalPnl > 0) {
+        traderType = '📈 Profitable';
+      } else if (metrics.winRate >= 50) {
+        traderType = '🎯 Skilled but Risky';
+      }
+
+      // Determine risk profile
+      let riskProfile = '🟢 Conservative';
+      if (metrics.averagePositionSize > 500) {
+        riskProfile = '🔴 Aggressive';
+      } else if (metrics.averagePositionSize > 200) {
+        riskProfile = '🟡 Moderate';
+      }
+
+      // Build strengths list
+      const strengths = [];
+      if (totalPnl > 0) strengths.push('Positive P&L generation');
+      if (metrics.winRate >= 50) strengths.push('Above average win rate');
+      if (metrics.totalVolume > 10000) strengths.push('Active trading volume');
+      if (risk.diversificationScore > 60) strengths.push('Well-diversified portfolio');
+
+      // Build areas for improvement list
+      const areasForImprovement = [];
+      if (improvements.length > 0) {
+        improvements.forEach(imp => areasForImprovement.push(`  • ${imp}`));
+      } else {
+        // Fallback improvements if analysis doesn't provide them
+        if (metrics.winRate < 50) areasForImprovement.push('  • Improve win rate through better market selection');
+        if (totalPnl < 0) areasForImprovement.push('  • Focus on risk management and position sizing');
+        if (positions.length > 15) areasForImprovement.push('  • Consider reducing position concentration');
+        if (risk.topPositionExposure > 30) areasForImprovement.push(`  • Reduce top position from ${risk.topPositionExposure.toFixed(1)}% to <25%`);
+        if (risk.diversificationScore < 40) areasForImprovement.push(`  • Improve diversification from ${risk.diversificationScore.toFixed(0)}% to >60%`);
+      }
+
+      // Analyze win rate
+      if (metrics.winRate >= 60) {
+        aiRecommendations.push('✅ Strong win rate - continue current strategy');
+      } else if (metrics.winRate >= 45) {
+        aiRecommendations.push('⚠️ Moderate win rate - consider tightening entry criteria');
+      } else {
+        aiRecommendations.push('🔴 Low win rate - review position sizing and market selection');
+      }
+
+      // Analyze P&L
+      if (totalPnl > 0) {
+        aiRecommendations.push(`💰 Profitable trader - total P&L: $${totalPnl.toFixed(2)}`);
+      } else if (totalPnl < -1000) {
+        aiRecommendations.push('⚠️ Significant losses - consider reducing position sizes');
+      }
+
+      // Analyze position concentration
+      if (positions.length > 10) {
+        aiRecommendations.push('📊 High position count - consider portfolio diversification');
+      }
+
+      // Analyze average position size
+      if (metrics.averagePositionSize > 1000) {
+        aiRecommendations.push('💵 Large average positions - ensure proper risk management');
+      } else if (metrics.averagePositionSize < 100) {
+        aiRecommendations.push('💵 Small positions - consider scaling up on high conviction trades');
+      }
+
+      // Analyze recent activity
+      const recentTrades = metrics.recentActivity.slice(0, 10);
+      if (recentTrades.length > 0) {
+        const buyYesCount = recentTrades.filter(t => t.side === 'BUY' && t.side.includes('YES')).length;
+        const buyNoCount = recentTrades.filter(t => t.side === 'BUY' && t.side.includes('NO')).length;
+        if (buyYesCount > buyNoCount * 2) {
+          aiRecommendations.push('🎯 Bullish bias - consider balancing with NO positions');
+        } else if (buyNoCount > buyYesCount * 2) {
+          aiRecommendations.push('🎯 Bearish bias - consider balancing with YES positions');
+        }
+      }
+
+      // Build AI recommendations list
+      const finalAiRecommendations = [];
+      if (recommendations.length > 0) {
+        recommendations.slice(0, 5).forEach(rec => {
+          const icon = rec.priority === 'high' ? '🔴' : rec.priority === 'medium' ? '⚠️' : '💡';
+          finalAiRecommendations.push(`${icon} ${rec.title}: ${rec.description}`);
+        });
+      } else {
+        // Fallback recommendations
+        if (metrics.winRate >= 60) finalAiRecommendations.push('✅ Strong win rate - continue current strategy');
+        else if (metrics.winRate >= 45) finalAiRecommendations.push('⚠️ Moderate win rate - consider tightening entry criteria');
+        else finalAiRecommendations.push('🔴 Low win rate - review position sizing and market selection');
+        
+        if (totalPnl > 0) finalAiRecommendations.push(`💰 Profitable trader - total P&L: $${totalPnl.toFixed(2)}`);
+        else if (totalPnl < -1000) finalAiRecommendations.push('⚠️ Significant losses - consider reducing position sizes');
+        
+        if (risk.topPositionExposure > 30) finalAiRecommendations.push(`📊 Reduce concentration - ${risk.topPositionExposure.toFixed(1)}% in top position`);
+        if (risk.diversificationScore < 40) finalAiRecommendations.push(`📊 Improve diversification - ${risk.diversificationScore.toFixed(0)}% diversification score`);
+      }
+
+      aiAnalysis = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 ZIGMA AI ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trader Type: ${traderType}
+
+Risk Profile: ${riskProfile}
+
+Strengths:
+${strengths.length > 0 ? strengths.map(s => `  • ${s}`).join('\n') : '  • No significant strengths identified'}
+
+Areas for Improvement:
+${areasForImprovement.length > 0 ? areasForImprovement.join('\n') : '  • No critical issues identified'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 AI RECOMMENDATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${finalAiRecommendations.join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 PORTFOLIO HEALTH SCORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Grade: ${health.grade || 'N/A'}
+Score: ${health.score?.toFixed(0) || 'N/A'} / 100
+
+${health.factors && health.factors.length > 0 ? health.factors.map(f => `• ${f.name}: ${f.impact > 0 ? '+' : ''}${f.impact.toFixed(1)} (current: ${f.value.toFixed(1)})`).join('\n') : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ RISK ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Diversification: ${risk.diversificationScore?.toFixed(0) || 'N/A'}%
+${risk.diversificationScore < 40 ? '⚠️ LOW - Need to diversify across more markets' : risk.diversificationScore > 70 ? '✅ GOOD - Well-diversified' : '⚪ MODERATE - Acceptable diversification'}
+
+Top Position Exposure: ${risk.topPositionExposure?.toFixed(1) || 'N/A'}%
+${risk.topPositionExposure > 30 ? '⚠️ HIGH - Maximum 25% recommended' : risk.topPositionExposure > 20 ? '⚪ MODERATE - Consider reducing' : '✅ GOOD - Well-balanced'}
+
+Concentration Score: ${risk.concentrationScore?.toFixed(0) || 'N/A'}
+${risk.concentrationScore > 50 ? '⚠️ HIGH - Too concentrated' : risk.concentrationScore > 30 ? '⚪ MODERATE - Acceptable' : '✅ GOOD - Well-distributed'}
+
+Drawdown Risk: ${risk.maxDrawdownRisk?.toFixed(1) || 'N/A'}%
+${risk.maxDrawdownRisk > 30 ? '⚠️ HIGH - Cut losing positions' : risk.maxDrawdownRisk > 15 ? '⚪ MODERATE - Monitor closely' : '✅ LOW - Healthy'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📈 TRADING PATTERNS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Average Hold Time: ${patterns.avgHoldTime?.toFixed(1) || 'N/A'} hours
+${patterns.avgHoldTime < 1 ? '⚠️ SHORT - Consider longer timeframes' : patterns.avgHoldTime > 24 ? '✅ LONG - Good for swing trading' : '✅ MODERATE - Balanced approach'}
+
+Trade Frequency: ${patterns.tradeFrequency?.toFixed(1) || 'N/A'} trades/day
+${patterns.tradeFrequency > 10 ? '⚠️ HIGH - Reduce frequency, focus on quality' : patterns.tradeFrequency > 5 ? '⚪ MODERATE - Acceptable level' : '✅ LOW - Good discipline'}
+
+Buy/Sell Ratio: ${patterns.buySellRatio?.toFixed(2) || 'N/A'}
+${patterns.buySellRatio > 2 ? '⚠️ BULLISH BIAS - Consider balancing with NO positions' : patterns.buySellRatio < 0.5 ? '⚠️ BEARISH BIAS - Consider balancing with YES positions' : '✅ BALANCED'}
+
+Average Position Size: $${patterns.avgPositionSize?.toFixed(2) || 'N/A'}
+${patterns.avgPositionSize > 1000 ? '⚠️ LARGE - High risk per trade' : patterns.avgPositionSize < 100 ? '⚠️ SMALL - Consider scaling up' : '✅ APPROPRIATE'}
+
+Trading Style: ${patterns.scalpingTendency > 0.5 ? '🏎️ Scalper' : patterns.hodlTendency > 0.5 ? '📊 Position Trader' : '📈 Swing Trader'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 CATEGORY PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${categoryPerf.length > 0 ? categoryPerf.slice(0, 4).map((cat, idx) => `${idx + 1}. ${cat.category || 'Unknown'}: $${(cat.pnl || 0).toFixed(2)} | ${cat.trades || 0} trades | ${cat.winRate?.toFixed(1) || 0}% win`).join('\n') : 'No category data available'}
+`;
+
+      const profileMessage = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 USER PROFILE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Wallet: ${maker}
+Balance: $${balance?.toFixed(2) || 'N/A'}
+
+📊 Performance Metrics:
+  Total Positions: ${metrics.totalPositions}
+  Total Trades: ${metrics.totalTrades}
+  Realized P&L: $${metrics.realizedPnl.toFixed(2)}
+  Unrealized P&L: $${metrics.unrealizedPnl.toFixed(2)}
+  Total Volume: $${metrics.totalVolume.toFixed(2)}
+  Win Rate: ${metrics.winRate.toFixed(1)}%
+  Average Position Size: $${metrics.averagePositionSize.toFixed(2)}
+
+🏆 Top Markets by P&L:
+${metrics.topMarkets.map((m, i) => `  ${i + 1}. ${m.title}: $${m.pnl.toFixed(2)}`).join('\n')}
+
+📜 Recent Activity:
+${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price} - ${a.title}`).join('\n')}
+${aiAnalysis}`;
 
       const updatedMessages = [
         ...sanitizedHistory,
         { role: 'user', content: polymarketUser.trim() },
-        { role: 'assistant', content: profileMessage, userProfile }
+        { role: 'assistant', content: profileMessage, userProfile, aiRecommendations }
       ].filter((msg) => msg.content);
 
       const responseId = incomingContextId || randomUUID();
@@ -936,7 +1549,8 @@ ${metrics.recentActivity.slice(0, 5).map(a => `${a.side} ${a.size} @ ${a.price} 
           activity,
           balance,
           positionsCount: positions.length,
-          tradesCount: trades.length
+          tradesCount: trades.length,
+          aiRecommendations
         },
         messages: updatedMessages,
         timestamp: Date.now()

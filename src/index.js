@@ -529,9 +529,18 @@ function settlementRisk(question) {
   return 'MEDIUM';
 }
 
-function buildPolymarketUrl(question) {
-  const slug = (question || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return `${POLYMARKET_BASE_URL}/market/${slug}`;
+function buildPolymarketUrl(marketSlug, marketQuestion) {
+  const POLYMARKET_BASE_URL = 'https://polymarket.com';
+  // Use actual market slug for direct link
+  if (marketSlug && marketSlug.length > 0) {
+    return `${POLYMARKET_BASE_URL}/event/${marketSlug}`;
+  }
+  // Fallback to search if no slug
+  if (marketQuestion) {
+    const searchQuery = encodeURIComponent(marketQuestion);
+    return `${POLYMARKET_BASE_URL}/search?q=${searchQuery}`;
+  }
+  return `${POLYMARKET_BASE_URL}`;
 }
 
 function getBaseRate(question, market = null) {
@@ -1645,6 +1654,8 @@ async function generateSignals(selectedMarkets) {
     // Use raw edge for signal object (not adjusted)
     const signal = {
       marketId: market.id,
+      marketSlug: market.slug, // Add slug for direct Polymarket links
+      marketQuestion: market.question, // Add question for display
       action,
       price: yesPrice,
       confidence: Number(normalizedConfidence.toFixed(1)),
@@ -1706,7 +1717,7 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
       probMarket: yesPrice * 100,
       effectiveEdge: rawEdge,
       rawEdge: rawEdge * 100,
-      link: buildPolymarketUrl(market.question),
+      link: buildPolymarketUrl(market.slug, market.question),
       cluster: getClusterForCategory(market.category)
     };
 

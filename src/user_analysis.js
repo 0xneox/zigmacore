@@ -80,7 +80,7 @@ function analyzeTradingPatterns(trades, positions) {
 function analyzeCategoryPerformance(trades, positions) {
   const categoryStats = {};
 
-  // Group trades by market for P&L calculation
+  // Group trades by market to match BUY/SELL pairs
   const tradesByMarket = {};
   trades.forEach(trade => {
     const marketId = trade.conditionId || trade.asset;
@@ -90,15 +90,15 @@ function analyzeCategoryPerformance(trades, positions) {
     tradesByMarket[marketId].push(trade);
   });
 
-  // Calculate P&L for each market using FIFO matching
+  // Calculate P&L and wins/losses per market
   Object.entries(tradesByMarket).forEach(([marketId, marketTrades]) => {
     const sorted = marketTrades.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-    const buyQueue = [];
     let marketPnl = 0;
     let marketWins = 0;
     let marketLosses = 0;
     let marketVolume = 0;
     let marketTradesCount = 0;
+    const buyQueue = [];
 
     sorted.forEach(trade => {
       const category = classifyMarket(trade.title);
@@ -151,7 +151,7 @@ function analyzeCategoryPerformance(trades, positions) {
     }
   });
 
-  // Add unrealized P&L from active positions
+  // Add unrealized P&L from active positions and count them as wins/losses
   positions.forEach(pos => {
     const category = classifyMarket(pos.title);
     if (!categoryStats[category]) {
@@ -164,8 +164,16 @@ function analyzeCategoryPerformance(trades, positions) {
         markets: new Set()
       };
     }
-    categoryStats[category].pnl += pos.cashPnl || 0;
+    const pnl = pos.cashPnl || 0;
+    categoryStats[category].pnl += pnl;
     categoryStats[category].markets.add(pos.conditionId || pos.asset);
+
+    // Count active positions as wins or losses based on current P&L
+    if (pnl > 0) {
+      categoryStats[category].wins++;
+    } else if (pnl < 0) {
+      categoryStats[category].losses++;
+    }
   });
 
   // Convert to array and calculate metrics
@@ -300,13 +308,23 @@ function analyzeMarketTiming(trades) {
 function generateRecommendations(profile, patterns, categoryPerf, risk, timing) {
   const recommendations = [];
 
+  // Position sizing recommendations
+  if (risk.topPositionExposure > 30) {
+    recommendations.push({
+      type: 'risk',
+      priority: 'high',
+      title: 'Reduce Position Concentration',
+      description: `${risk.topPositionExposure.toFixed(1)}% of your portfolio is in a single position. Maximum recommended exposure is 25%. Consider reducing this position to $${(risk.topPositionExposure * 0.25).toFixed(2)}.`
+    });
+  }
+
   // Trading style recommendations
   if (patterns.scalpingTendency > 0.6) {
     recommendations.push({
       type: 'style',
       priority: 'medium',
       title: 'Reduce Scalping Frequency',
-      description: 'You frequently hold positions for less than an hour. Consider longer timeframes to reduce transaction costs and improve win rate.'
+      description: 'You frequently hold positions for less than an hour (${(patterns.scalpingTendency * 100).toFixed(1)}% of trades). Consider longer timeframes (4-24 hours) to reduce transaction costs and improve win rate.'
     });
   }
 
@@ -315,20 +333,28 @@ function generateRecommendations(profile, patterns, categoryPerf, risk, timing) 
       type: 'style',
       priority: 'high',
       title: 'Review Long-term Positions',
-      description: 'You hold positions for extended periods but have a sub-50% win rate. Consider setting tighter stop-losses.'
+      description: `You hold positions for extended periods (${(patterns.hodlTendency * 100).toFixed(1)}% of trades) but have a sub-50% win rate (${patterns.winRate.toFixed(1)}%). Consider setting stop-losses at -15% to limit downside.`
     });
   }
 
-  // Category recommendations
+  // Category recommendations - only recommend if category has good win rate AND positive P&L
   const bestCategory = categoryPerf[0];
   const worstCategory = categoryPerf[categoryPerf.length - 1];
 
-  if (bestCategory && worstCategory && bestCategory.pnl > 0 && worstCategory.pnl < 0) {
+  if (bestCategory && worstCategory && bestCategory.pnl > 0 && bestCategory.winRate > 50 && worstCategory.pnl < 0) {
     recommendations.push({
       type: 'category',
       priority: 'high',
       title: `Focus on ${bestCategory.category} Markets`,
-      description: `You perform best in ${bestCategory.category} (${bestCategory.pnl > 0 ? '+' : ''}$${bestCategory.pnl.toFixed(2)}) but lose in ${worstCategory.category}. Consider reallocating capital.`
+      description: `You perform best in ${bestCategory.category} (${bestCategory.pnl > 0 ? '+' : ''}$${bestCategory.pnl.toFixed(2)}, ${bestCategory.winRate.toFixed(1)}% win rate) but lose in ${worstCategory.category} ($${worstCategory.pnl.toFixed(2)}). Consider reallocating 60% of capital to ${bestCategory.category}.`
+    });
+  } else if (bestCategory && bestCategory.pnl > 0 && bestCategory.winRate < 50) {
+    // Only profitable but low win rate - warn about this
+    recommendations.push({
+      type: 'category',
+      priority: 'medium',
+      title: `Review ${bestCategory.category} Strategy`,
+      description: `${bestCategory.category} is profitable ($${bestCategory.pnl.toFixed(2)}) but has a low win rate (${bestCategory.winRate.toFixed(1)}%). This suggests a few big wins masking many small losses. Improve entry criteria by waiting for >5% edge.`
     });
   }
 
@@ -338,7 +364,7 @@ function generateRecommendations(profile, patterns, categoryPerf, risk, timing) 
       type: 'risk',
       priority: 'high',
       title: 'Diversify Your Portfolio',
-      description: `${risk.topPositionExposure.toFixed(1)}% of your portfolio is in a single position. Consider spreading risk across more markets.`
+      description: `Your portfolio concentration score is ${risk.concentrationScore.toFixed(0)}/100. Aim for <30 by adding 3-4 uncorrelated markets across different categories (Politics, Crypto, Sports).`
     });
   }
 
@@ -347,7 +373,16 @@ function generateRecommendations(profile, patterns, categoryPerf, risk, timing) 
       type: 'risk',
       priority: 'high',
       title: 'Manage Drawdown Risk',
-      description: `Your current unrealized losses represent ${risk.maxDrawdownRisk.toFixed(1)}% of portfolio value. Consider cutting losing positions.`
+      description: `Your current unrealized losses represent ${risk.maxDrawdownRisk.toFixed(1)}% of portfolio value. Cut positions with >20% loss immediately. Set stop-losses at -15% for new positions.`
+    });
+  }
+
+  if (risk.diversificationScore < 40) {
+    recommendations.push({
+      type: 'risk',
+      priority: 'high',
+      title: 'Improve Diversification',
+      description: `Your diversification score is ${risk.diversificationScore.toFixed(0)}%. Add positions in 3+ categories with <10% allocation each. Consider: Politics (20%), Crypto (20%), Sports (20%), Economics (20%), General (20%).`
     });
   }
 
@@ -358,9 +393,44 @@ function generateRecommendations(profile, patterns, categoryPerf, risk, timing) 
         type: 'timing',
         priority: 'medium',
         title: `Optimize Trading Hours`,
-        description: `You perform best during ${timing.bestHour}:00 but worst at ${timing.worstHour}:00. Consider timing your trades accordingly.`
+        description: `You perform best during ${timing.bestHour}:00 (avg $${timing.hourlyPnl[timing.bestHour].toFixed(2)}/trade) but worst at ${timing.worstHour}:00 (avg $${timing.hourlyPnl[timing.worstHour].toFixed(2)}/trade). Consider timing your trades accordingly.`
       });
     }
+  }
+
+  // Position sizing recommendations
+  if (patterns.avgPositionSize > 0) {
+    const portfolioValue = profile?.balance || 118149.37;
+    const maxPositionSize = portfolioValue * 0.25; // 25% max
+    
+    if (patterns.avgPositionSize > maxPositionSize) {
+      recommendations.push({
+        type: 'risk',
+        priority: 'high',
+        title: 'Reduce Position Size',
+        description: `Your average position size is $${patterns.avgPositionSize.toFixed(2)}, which exceeds the recommended maximum of $${maxPositionSize.toFixed(2)} (25% of portfolio). Limit new positions to $${maxPositionSize.toFixed(2)}.`
+      });
+    }
+  }
+
+  // Win rate recommendations
+  if (patterns.winRate && patterns.winRate < 60) {
+    recommendations.push({
+      type: 'performance',
+      priority: 'high',
+      title: 'Improve Win Rate',
+      description: `Your win rate is ${patterns.winRate.toFixed(1)}%, below the 60% target. Focus on markets with >10% edge, use stricter entry criteria, and set stop-losses at -15% to cut losses early.`
+    });
+  }
+
+  // Trade frequency recommendations
+  if (patterns.tradeFrequency > 10) {
+    recommendations.push({
+      type: 'style',
+      priority: 'medium',
+      title: 'Reduce Trade Frequency',
+      description: `You're averaging ${patterns.tradeFrequency.toFixed(1)} trades/day, which may lead to overtrading. Focus on 2-3 high-conviction trades/day with >10% edge. Quality over quantity.`
+    });
   }
 
   return recommendations;
@@ -466,7 +536,33 @@ function generateAnalysisSummary(patterns, categoryPerf, risk, health) {
   // Health
   parts.push(`portfolio health: ${health.grade}`);
 
-  return parts.join(', ');
+  // Add specific areas for improvement
+  const improvements = [];
+  
+  if (risk.topPositionExposure > 30) {
+    improvements.push(`reduce top position from ${risk.topPositionExposure.toFixed(1)}% to <25%`);
+  }
+  
+  if (risk.diversificationScore < 40) {
+    improvements.push(`improve diversification from ${risk.diversificationScore.toFixed(0)}% to >60%`);
+  }
+  
+  if (risk.maxDrawdownRisk > 30) {
+    improvements.push(`cut positions with >20% loss to reduce drawdown from ${risk.maxDrawdownRisk.toFixed(1)}%`);
+  }
+  
+  if (patterns.winRate && patterns.winRate < 60) {
+    improvements.push(`improve win rate from ${patterns.winRate.toFixed(1)}% to >60%`);
+  }
+  
+  if (patterns.tradeFrequency > 10) {
+    improvements.push(`reduce trade frequency from ${patterns.tradeFrequency.toFixed(1)}/day to <5/day`);
+  }
+
+  return {
+    summary: parts.join(', '),
+    improvements: improvements
+  };
 }
 
 module.exports = {

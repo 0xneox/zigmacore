@@ -129,16 +129,34 @@ function safeParseLLM(output) {
   const priorMatch = output.match(/revised_prior["']?\s*[:=]?\s*([0-9.]+)/i);
   const narrative = output.replace(/{.*}/s, '').trim() || 'Fallback narrative from parse error';
 
+  // Try to extract sentimentScore from output
+  const sentimentMatch = output.match(/sentimentScore["']?\s*[:=]?\s*([-0-9.]+)/i);
+  const sentimentScore = sentimentMatch ? parseFloat(sentimentMatch[1]) : 0;
+
+  // Try to extract newsSources from output
+  let newsSources = [];
+  const newsSourcesMatch = output.match(/newsSources["']?\s*[:=]\s*\[(.*?)\]/is);
+  if (newsSourcesMatch) {
+    try {
+      newsSources = JSON.parse(`[${newsSourcesMatch[1]}]`);
+      if (!Array.isArray(newsSources)) newsSources = [];
+    } catch (e) {
+      console.error('[PARSE] Failed to parse newsSources:', e.message);
+    }
+  }
+
   const parsed = {
     revised_prior: priorMatch ? parseFloat(priorMatch[1]) : 0.5,
     confidence: confMatch ? parseInt(confMatch[1]) : 60, // Default mid if missing
-    narrative
+    narrative,
+    sentimentScore,
+    newsSources
   };
 
   // Ensure confidence is positive and above minimum floor
   parsed.confidence = Math.max(1, parsed.confidence);
 
-  console.log(`[PARSE] Fallback used: confidence=${parsed.confidence}`);
+  console.log(`[PARSE] Fallback used: confidence=${parsed.confidence}, sentimentScore=${parsed.sentimentScore}, newsSources=${parsed.newsSources.length}`);
   return parsed;
 }
 
@@ -185,10 +203,16 @@ MANDATORY OUTPUT: Return a valid JSON object with exactly these keys:
   "reasoning": string explaining your analysis,
   "uncertainty": number between 0 and 1 (quantified uncertainty in the analysis),
   "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive),
-  "confidence": number between 1 and 100 (your confidence in this analysis as an integer)
+  "confidence": number between 1 and 100 (your confidence in this analysis as an integer),
+  "newsSources": array of objects with "title", "source", "date", "url" (if available), and "relevance" (high/medium/low)
 }
 
+CRITICAL: You MUST analyze the provided news headlines and return:
+1. sentimentScore: Calculate based on news sentiment (-1 to 1)
+2. newsSources: Extract 3-5 most relevant news items with title, source, date, and relevance
+
 Always include "confidence": 1-100 integer in JSON; explain why in reasoning.
+IMPORTANT: For each news item mentioned in reasoning, include it in newsSources array with title, source, date, and relevance level.
 
 RESPONSE MUST BE STRICT JSON ONLY. NO PROSE. NO MARKDOWN BLOCKS. NO ADDITIONAL TEXT. ONLY THE JSON OBJECT AS SHOWN ABOVE.
 
@@ -205,6 +229,8 @@ INSTRUCTIONS:
 - Base deltas on market question, current price, news, fundamentals, and sentiment.
 - Output deltas that adjust the market price to the true probability.
 - NEVER output probabilities, confidence, or actions. Only deltas and reasoning.
+- NEWS SOURCES: Extract 3-5 most relevant news items with title, source, date, and relevance (high/medium/low)
+- SENTIMENT: Calculate sentiment score (-1 to 1) based on news headlines
 `;
 
 function buildEnhancedSystemPrompt(context = {}) {
@@ -266,9 +292,15 @@ function buildEnhancedAnalysisPrompt(marketData, analysis, orderBook, news = [])
 {
   "delta": number between -0.20 and 0.20 (adjustment to the current market YES price based on news, fundamentals, and biases; positive for more likely YES, negative for less likely),
   "confidence": number between 1 and 100 (your confidence in this delta as an integer),
-  "narrative": string (brief explanation of your reasoning, including how news influenced the delta)
+  "narrative": string (brief explanation of your reasoning, including how news influenced the delta),
+  "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive),
+  "newsSources": array of objects with "title", "source", "date", "url" (if available), and "relevance" (high/medium/low)
 }
 Always include "confidence": 1-100 integer in JSON. Do NOT output absolute probabilities—only the delta adjustment to the market price.
+
+CRITICAL: You MUST analyze the provided news headlines and return:
+1. sentimentScore: Calculate based on news sentiment (-1 to 1)
+2. newsSources: Extract 3-5 most relevant news items with title, source, date, and relevance
 
 Context for your assessment:
 MARKET DATA:
@@ -298,6 +330,7 @@ Instructions:
 - Provide confidence score based on evidence strength (e.g., high for credible news, low for speculative).
 - Confidence: integer 1-100; explain why.
 - Keep narrative concise (<100 words), citing specific news or data points.
+- Extract 3-5 most relevant news sources with titles, sources, dates, and relevance levels.
 
 Return ONLY the JSON object—no prose or extra text.`;
 }
@@ -610,13 +643,68 @@ async function generateEnhancedAnalysis(marketData) {
       error: error.message
     });
     console.error(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
+
+    // Enhanced fallback analysis using available data
+    const basePrior = typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5;
+    let fallbackProbability = basePrior;
+    let fallbackReasoning = 'LLM call failed - using enhanced fallback analysis';
+
+    // Use news sentiment if available
+    if (news && news.length > 0) {
+      try {
+        const sentimentAnalysis = calculateAggregateSentiment(news);
+        const sentimentScore = sentimentAnalysis.score;
+
+        // Adjust probability based on sentiment
+        // Positive sentiment = more likely YES, Negative = more likely NO
+        const sentimentAdjustment = sentimentScore * 0.1; // Max ±10% adjustment
+        fallbackProbability = Math.max(0.05, Math.min(0.95, basePrior + sentimentAdjustment));
+
+        fallbackReasoning += `. News sentiment: ${sentimentScore > 0.3 ? 'bullish' : sentimentScore < -0.3 ? 'bearish' : 'neutral'} (${sentimentScore.toFixed(2)})`;
+      } catch (e) {
+        console.error('Sentiment analysis failed in fallback:', e);
+      }
+    }
+
+    // Use market structure for additional insights
+    const liquidityUsd = Number(marketData.liquidity) || 0;
+    const spread = orderBook ? (parseFloat(orderBook.asks[0]?.price || 0) - parseFloat(orderBook.bids[0]?.price || 0)) * 100 : 0;
+
+    let liquidityAssessment = 'moderate';
+    if (liquidityUsd < 20000) liquidityAssessment = 'low';
+    else if (liquidityUsd > 100000) liquidityAssessment = 'high';
+
+    fallbackReasoning += `. Liquidity: ${liquidityAssessment} ($${(liquidityUsd/1000).toFixed(0)}k)`;
+
+    // Calculate action based on fallback probability
+    const daysLeft = marketData.endDateIso
+      ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
+      : 365;
+
+    const threshold = Math.max(0.03, 0.05 - (liquidityUsd >= 50000 ? 0.01 : 0));
+    let fallbackAction = 'HOLD';
+    if (fallbackProbability > basePrior + threshold) fallbackAction = 'BUY YES';
+    else if (fallbackProbability < basePrior - threshold) fallbackAction = 'BUY NO';
+
+    // Calculate confidence based on data quality
+    let fallbackConfidence = 50;
+    if (news && news.length > 0) fallbackConfidence += 10;
+    if (liquidityUsd > 50000) fallbackConfidence += 5;
+    if (spread < 0.02) fallbackConfidence += 5;
+
     return {
       marketId: marketData.id,
       question: marketData.question,
-      confidence: 50,
-      action: 'HOLD',
-      probability: 0.5,
-      reasoning: 'LLM call failed - fallback analysis',
+      confidence: fallbackConfidence,
+      action: fallbackAction,
+      probability: fallbackProbability,
+      reasoning: fallbackReasoning,
+      deltaNews: news && news.length > 0 ? (fallbackProbability - basePrior) : 0,
+      deltaStructure: 0,
+      deltaBehavior: 0,
+      deltaTime: 0,
+      sentimentScore: news && news.length > 0 ? (fallbackProbability - basePrior) * 10 : 0,
+      uncertainty: 0.5,
       generatedAt: Date.now(),
       fallback: true
     };
@@ -711,6 +799,34 @@ async function generateEnhancedAnalysis(marketData) {
     if (news && news.length > 0) {
       const sentimentAnalysis = calculateAggregateSentiment(news);
       sentimentScore = sentimentAnalysis.score;
+    }
+    
+    // Ensure sentimentScore is not zero if there's news
+    if (news && news.length > 0 && sentimentScore === 0) {
+      // Calculate sentiment from news headlines as fallback
+      const positiveKeywords = ['rise', 'increase', 'growth', 'bullish', 'positive', 'up', 'gain', 'surge', 'rally', 'strong', 'good', 'excellent'];
+      const negativeKeywords = ['fall', 'decrease', 'decline', 'bearish', 'negative', 'down', 'loss', 'drop', 'crash', 'weak', 'bad', 'poor'];
+      
+      let positiveCount = 0;
+      let negativeCount = 0;
+      
+      news.forEach(item => {
+        const title = (item.title || '').toLowerCase();
+        const snippet = (item.snippet || '').toLowerCase();
+        const text = title + ' ' + snippet;
+        
+        positiveKeywords.forEach(keyword => {
+          if (text.includes(keyword)) positiveCount++;
+        });
+        
+        negativeKeywords.forEach(keyword => {
+          if (text.includes(keyword)) negativeCount++;
+        });
+      });
+      
+      const totalSentiment = positiveCount - negativeCount;
+      const totalItems = news.length || 1;
+      sentimentScore = Math.max(-1, Math.min(1, totalSentiment / totalItems));
     }
 
     const liquidityUsd = Number(marketData.liquidity) || 0;
@@ -812,15 +928,76 @@ async function generateEnhancedAnalysis(marketData) {
       baseEffectiveEdge,
       effectiveEdge: baseEffectiveEdge,
       entropy: entropy,
-      sentimentScore: sentimentScore,
+      sentimentScore: sentimentScore !== 0 ? sentimentScore : extractSentimentFromNews(news),
       adaptiveLearning: adaptiveLearning,
-      calibration: calibratedSignal
+      calibration: calibratedSignal,
+      // Include factor breakdown deltas from LLM
+      deltaNews: ensureNumber(result.deltaNews, newsDelta),
+      deltaStructure: ensureNumber(result.deltaStructure, 0),
+      deltaBehavior: ensureNumber(result.deltaBehavior, 0),
+      deltaTime: ensureNumber(result.deltaTime, 0),
+      primaryReason: result.primaryReason || 'ANALYSIS',
+      uncertainty: ensureNumber(result.uncertainty, entropy),
+      // Include news sources with citations - use LLM result or extract from news
+      newsSources: Array.isArray(result.newsSources) && result.newsSources.length > 0 
+        ? result.newsSources 
+        : extractNewsSourcesFromNews(news)
     };
     structuredAnalysis.baseEffectiveEdge = baseEffectiveEdge;
     structuredAnalysis.effectiveEdge = baseEffectiveEdge;
     structuredAnalysis.reasoning += ` Recommended Position: ${(exposure * 100).toFixed(1)}% of bankroll.`;
 
     return structuredAnalysis;
+}
+
+function extractNewsSourcesFromNews(news = []) {
+  if (!Array.isArray(news) || news.length === 0) return [];
+  
+  return news.slice(0, 5).map((item, idx) => ({
+    title: item.title || 'Unknown title',
+    source: item.source || extractSourceFromUrl(item.url) || 'Unknown source',
+    date: item.publishedDate || item.date || new Date().toISOString().split('T')[0],
+    url: item.url || null,
+    relevance: idx < 2 ? 'high' : idx < 4 ? 'medium' : 'low'
+  }));
+}
+
+function extractSentimentFromNews(news = []) {
+  if (!Array.isArray(news) || news.length === 0) return 0;
+  
+  const positiveKeywords = ['rise', 'increase', 'growth', 'bullish', 'positive', 'up', 'gain', 'surge', 'rally', 'strong', 'good', 'excellent', 'success', 'win', 'beat', 'outperform'];
+  const negativeKeywords = ['fall', 'decrease', 'decline', 'bearish', 'negative', 'down', 'loss', 'drop', 'crash', 'weak', 'bad', 'poor', 'fail', 'miss', 'underperform'];
+  
+  let positiveCount = 0;
+  let negativeCount = 0;
+  
+  news.forEach(item => {
+    const title = (item.title || '').toLowerCase();
+    const snippet = (item.snippet || '').toLowerCase();
+    const text = title + ' ' + snippet;
+    
+    positiveKeywords.forEach(keyword => {
+      if (text.includes(keyword)) positiveCount++;
+    });
+    
+    negativeKeywords.forEach(keyword => {
+      if (text.includes(keyword)) negativeCount++;
+    });
+  });
+  
+  const totalSentiment = positiveCount - negativeCount;
+  const totalItems = news.length || 1;
+  return Math.max(-1, Math.min(1, totalSentiment / totalItems));
+}
+
+function extractSourceFromUrl(url) {
+  if (!url) return null;
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname.replace('www.', '');
+  } catch {
+    return null;
+  }
 }
 
 /**

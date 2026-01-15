@@ -447,12 +447,13 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
     totalTrades: 0,
     uniqueMarkets: 0,
     realizedPnl: 0,
-    unrealizedPnl: balance,
+    unrealizedPnl: 0,
     totalVolume: 0,
     winRate: 0,
     averagePositionSize: 0,
     topMarkets: [],
-    recentActivity: []
+    recentActivity: [],
+    balance: balance // Add balance to metrics for risk calculations
   };
 
   // Count unique markets from ALL activity types, not just trades
@@ -472,13 +473,31 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
 
   console.log(`[USER PROFILE] Activity breakdown: ${activity.length} total, ${trades.length} trades, ${redemptions.length} redemptions`);
   console.log(`[USER PROFILE] Activity types:`, [...new Set(activity.map(a => a.type))]);
-  if (redemptions.length > 0) {
-    console.log(`[USER PROFILE] Sample redemption:`, JSON.stringify(redemptions[0], null, 2));
+
+  // Calculate unrealized P&L from open positions
+  // Unrealized P&L = (current value - cost basis) for all open positions
+  if (positions.length > 0) {
+    metrics.unrealizedPnl = positions.reduce((sum, pos) => {
+      const currentValue = pos.size * pos.curPrice;
+      const costBasis = pos.size * pos.avgPrice;
+      const pnl = currentValue - costBasis;
+      console.log(`[USER PROFILE] Position P&L: ${pos.title} | Current: $${currentValue.toFixed(2)} | Cost: $${costBasis.toFixed(2)} | P&L: $${pnl.toFixed(2)}`);
+      return sum + pnl;
+    }, 0);
+    
+    console.log(`[USER PROFILE] Total Unrealized P&L: $${metrics.unrealizedPnl.toFixed(2)}`);
+  }
+
+  // Use average trade size from BUY trades only (entry positions) for consistency with trading patterns
+  if (trades.length > 0) {
+    const buyTrades = trades.filter(t => t.side === 'BUY');
+    if (buyTrades.length > 0) {
+      const totalBuyVolume = buyTrades.reduce((sum, t) => sum + (t.size * t.price || 0), 0);
+      metrics.averagePositionSize = totalBuyVolume / buyTrades.length;
+    }
   }
 
   if (positions.length > 0) {
-    metrics.averagePositionSize = positions.reduce((sum, pos) => sum + (pos.initialValue || 0), 0) / positions.length;
-
     const marketPnl = {};
     positions.forEach(pos => {
       const marketId = pos.conditionId || 'unknown';
@@ -592,7 +611,7 @@ async function fetchUserProfile(maker) {
     console.log(`[USER PROFILE] Calculating metrics with redemptions...`);
 
     // Calculate metrics using all activity (trades + redemptions)
-    const metrics = await calculateUserMetricsWithRedemptions(positions, activity, balance);
+    const metrics = calculateUserMetricsWithRedemptions(positions, activity, balance);
 
     console.log(`[USER PROFILE] Metrics calculated:`, {
       totalPositions: metrics.totalPositions,
@@ -601,7 +620,8 @@ async function fetchUserProfile(maker) {
       realizedPnl: metrics.realizedPnl,
       unrealizedPnl: metrics.unrealizedPnl,
       totalVolume: metrics.totalVolume,
-      winRate: metrics.winRate
+      winRate: metrics.winRate,
+      balance: metrics.balance
     });
 
     // Generate intelligent analysis
