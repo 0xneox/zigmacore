@@ -11,6 +11,11 @@ const VALIDATION_INTERVAL_MS = 60000; // Check every minute
 const PRICE_TOLERANCE = 0.02; // 2% price movement tolerance
 const VOLUME_TOLERANCE = 0.1; // 10% volume movement tolerance
 const MAX_VALIDATION_AGE_MS = 300000; // 5 minutes max validation window
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // Cleanup every 24 hours
+const MAX_VALIDATION_AGE_DAYS = 30; // Keep validations for 30 days
+
+// Simple mutex for cleanup operations
+let cleanupInProgress = false;
 
 /**
  * Validate a signal against current market conditions
@@ -223,6 +228,7 @@ function saveValidationResult(validation) {
     const db = initDb();
     
     // Create signal_validations table if not exists
+    // Note: DDL is safe here as it's hardcoded with no user input
     db.exec(`
       CREATE TABLE IF NOT EXISTS signal_validations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -235,8 +241,20 @@ function saveValidationResult(validation) {
       )
     `);
 
+    // Create indexes for performance
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_signal_validations_valid_timestamp 
+      ON signal_validations(valid, timestamp DESC)
+    `);
+    
+    db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_signal_validations_signal_id 
+      ON signal_validations(signal_id, timestamp DESC)
+    `);
+
+    // Use INSERT OR REPLACE to prevent duplicates from concurrent validations
     const insert = db.prepare(`
-      INSERT INTO signal_validations (signal_id, valid, status, validations_json, timestamp, signal_age)
+      INSERT OR REPLACE INTO signal_validations (signal_id, valid, status, validations_json, timestamp, signal_age)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
 
@@ -255,6 +273,38 @@ function saveValidationResult(validation) {
   } catch (error) {
     console.error('Save validation error:', error.message);
     return false;
+  }
+}
+
+/**
+ * Cleanup old validation records to prevent unbounded table growth
+ * @returns {number} - Number of records deleted
+ */
+function cleanupOldValidations() {
+  try {
+    if (cleanupInProgress) {
+      console.log('[VALIDATION] Cleanup already in progress, skipping');
+      return 0;
+    }
+    
+    cleanupInProgress = true;
+    const db = initDb();
+    
+    const cutoffTimestamp = Date.now() - (MAX_VALIDATION_AGE_DAYS * 24 * 60 * 60 * 1000);
+    
+    const result = db.prepare(`
+      DELETE FROM signal_validations 
+      WHERE timestamp < ?
+    `).run(cutoffTimestamp);
+    
+    console.log(`[VALIDATION] Cleaned up ${result.changes} old validation records`);
+    return result.changes;
+    
+  } catch (error) {
+    console.error('[VALIDATION] Cleanup error:', error.message);
+    return 0;
+  } finally {
+    cleanupInProgress = false;
   }
 }
 
@@ -316,5 +366,16 @@ module.exports = {
   getValidationStats,
   saveValidationResult,
   getRecentValidationFailures,
-  shouldInvalidateSignal
+  shouldInvalidateSignal,
+  cleanupOldValidations
 };
+
+// Start periodic cleanup job
+setInterval(() => {
+  cleanupOldValidations();
+}, CLEANUP_INTERVAL_MS);
+
+// Run initial cleanup on module load
+setTimeout(() => {
+  cleanupOldValidations();
+}, 5000); // Wait 5 seconds for DB to initialize

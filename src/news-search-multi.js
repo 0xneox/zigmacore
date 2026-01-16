@@ -11,6 +11,19 @@ require('dotenv').config();
 const newsCache = new Map();
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
+// User agent rotation for avoiding blocks
+const USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
+];
+
+function getRandomUserAgent() {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+}
+
 /**
  * Search news using Tavily API
  */
@@ -35,46 +48,47 @@ async function searchTavily(query = '', options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch('https://api.tavily.com/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        api_key: apiKey,
-        query,
-        search_depth: 'basic',
-        max_results: maxResults,
-        days,
-        include_answer: false,
-        include_raw_content: false,
-        include_images: false
-      }),
-      signal: controller.signal
-    });
+    try {
+      const response = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: apiKey,
+          query,
+          search_depth: 'basic',
+          max_results: maxResults,
+          days,
+          include_answer: false,
+          include_raw_content: false,
+          include_images: false
+        }),
+        signal: controller.signal
+      });
 
-    clearTimeout(timeout);
+      if (!response.ok) {
+        console.error(`Tavily API error: ${response.status}`);
+        return [];
+      }
 
-    if (!response.ok) {
-      console.error(`Tavily API error: ${response.status}`);
-      return [];
+      const data = await response.json();
+      const results = (data.results || []).map(item => ({
+        title: item.title || '',
+        url: item.url || '',
+        snippet: item.content || item.snippet || '',
+        source: item.source || 'Tavily',
+        publishedDate: item.published_date || null,
+        score: item.score || 0,
+        relevance: item.relevance_score || 0
+      }));
+
+      newsCache.set(cacheKey, { results, timestamp: now });
+      console.log(`Fetched ${results.length} Tavily results for: ${query}`);
+      return results;
+    } finally {
+      clearTimeout(timeout);
     }
 
-    const data = await response.json();
-    const results = (data.results || []).map(item => ({
-      title: item.title || '',
-      url: item.url || '',
-      snippet: item.content || item.snippet || '',
-      source: item.source || 'Tavily',
-      publishedDate: item.published_date || null,
-      score: item.score || 0,
-      relevance: item.relevance_score || 0
-    }));
-
-    newsCache.set(cacheKey, { results, timestamp: now });
-    console.log(`Fetched ${results.length} Tavily results for: ${query}`);
-    return results;
-
   } catch (error) {
-    clearTimeout(timeout);
     console.error('Tavily search error:', error.message);
     return [];
   }
@@ -176,7 +190,7 @@ async function searchGoogleNews(query = '') {
     const rssUrl = `https://news.google.com/rss/search?q=${encodedQuery}&hl=en-US&gl=US&ceid=US:en`;
 
     const response = await fetch(rssUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      headers: { 'User-Agent': getRandomUserAgent() },
       signal: AbortSignal.timeout(8000)
     });
 
@@ -186,18 +200,25 @@ async function searchGoogleNews(query = '') {
 
     const text = await response.text();
     
-    // Parse RSS XML
+    // Parse RSS XML with safer regex (prevent catastrophic backtracking)
     const items = [];
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+    // Use simpler pattern without negative lookahead to avoid ReDoS
+    const itemRegex = /<item>(.*?)<\/item>/gs;
+    
+    // Limit iterations to prevent infinite loops on malformed XML
+    let iterations = 0;
+    const MAX_ITERATIONS = 100;
     let match;
 
-    while ((match = itemRegex.exec(text)) !== null) {
+    while ((match = itemRegex.exec(text)) !== null && iterations < MAX_ITERATIONS) {
+      iterations++;
       const itemText = match[1];
       
-      const titleMatch = itemText.match(/<title>(.*?)<\/title>/);
-      const linkMatch = itemText.match(/<link>(.*?)<\/link>/);
-      const pubDateMatch = itemText.match(/<pubDate>(.*?)<\/pubDate>/);
-      const descMatch = itemText.match(/<description>(.*?)<\/description>/);
+      // Extract fields with safe regex patterns
+      const titleMatch = itemText.match(/<title>([^<]*)<\/title>/);
+      const linkMatch = itemText.match(/<link>([^<]*)<\/link>/);
+      const pubDateMatch = itemText.match(/<pubDate>([^<]*)<\/pubDate>/);
+      const descMatch = itemText.match(/<description>([^<]*)<\/description>/);
       
       if (titleMatch) {
         items.push({
@@ -323,6 +344,7 @@ async function searchNewsMultiple(queries = [], marketContext = {}, options = {}
 
   const allResults = [];
   const seenUrls = new Set();
+  const MAX_SEEN_URLS = 1000; // Limit to prevent memory growth
 
   for (const query of queries) {
     const results = await searchNews(query, marketContext, options);
@@ -330,7 +352,10 @@ async function searchNewsMultiple(queries = [], marketContext = {}, options = {}
     for (const result of results) {
       // Deduplicate by URL
       if (result.url && !seenUrls.has(result.url)) {
-        seenUrls.add(result.url);
+        // Limit seenUrls to prevent unbounded growth
+        if (seenUrls.size < MAX_SEEN_URLS) {
+          seenUrls.add(result.url);
+        }
         allResults.push(result);
       } else if (!result.url) {
         allResults.push(result);

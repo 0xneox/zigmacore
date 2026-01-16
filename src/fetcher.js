@@ -37,6 +37,10 @@ axiosRetry(http, {
 
 const GAMMA = process.env.GAMMA_API_URL || 'https://gamma-api.polymarket.com';
 const DATA_API = process.env.DATA_API_URL || 'https://data-api.polymarket.com';
+const POLYMARKET_FEE = parseFloat(process.env.POLYMARKET_FEE) || 0.02;
+const TIMESTAMP_SECONDS_THRESHOLD = 10000000000;
+const MAX_ACTIVITY_ITEMS = 20000;
+const MAX_EMPTY_RESPONSES = 5;
 
 /**
  * Fetch active Polymarket markets from Gamma API
@@ -355,7 +359,9 @@ async function fetchUserActivity(maker, limit = 100) {
   try {
     let allActivity = [];
     let offset = 0;
-    const maxItems = 20000; // Increased cap to 20,000 items to get more complete history
+    const maxItems = MAX_ACTIVITY_ITEMS;
+    let emptyResponseCount = 0;
+    const seenActivityIds = new Set();
     
     while (allActivity.length < maxItems) {
       const url = `${DATA_API}/activity?user=${maker}&limit=${limit}&offset=${offset}`;
@@ -366,10 +372,31 @@ async function fetchUserActivity(maker, limit = 100) {
       
       console.log(`[USER PROFILE] Activity API returned ${activityBatch.length} items (total so far: ${allActivity.length})`);
       
-      if (activityBatch.length === 0) break;
+      // Circuit breaker: if we get empty responses multiple times, stop
+      if (activityBatch.length === 0) {
+        emptyResponseCount++;
+        if (emptyResponseCount >= MAX_EMPTY_RESPONSES) {
+          console.warn(`[USER PROFILE] Stopping after ${MAX_EMPTY_RESPONSES} empty responses`);
+          break;
+        }
+        break;
+      }
       
-      allActivity.push(...activityBatch);
+      // Filter out duplicates using activity ID if available
+      const newActivity = activityBatch.filter(item => {
+        const activityId = item.id || `${item.timestamp}-${item.type}-${item.side}`;
+        if (seenActivityIds.has(activityId)) {
+          return false;
+        }
+        seenActivityIds.add(activityId);
+        return true;
+      });
+      
+      allActivity.push(...newActivity);
       offset += limit;
+      
+      // Reset empty response counter on successful fetch
+      emptyResponseCount = 0;
       
       // Rate limiting
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -394,8 +421,8 @@ function processActivity(activity) {
     // Try multiple timestamp field names
     let timestamp = item.timestamp || item.created_at || item.block_time || item.created_time || item.time || 0;
     
-    // Convert to milliseconds if timestamp is in seconds (less than 10000000000)
-    if (timestamp > 0 && timestamp < 10000000000) {
+    // Convert to milliseconds if timestamp is in seconds (less than threshold)
+    if (timestamp > 0 && timestamp < TIMESTAMP_SECONDS_THRESHOLD) {
       timestamp = timestamp * 1000;
     }
     
@@ -449,11 +476,14 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
     realizedPnl: 0,
     unrealizedPnl: 0,
     totalVolume: 0,
+    totalInvested: 0,
     winRate: 0,
     averagePositionSize: 0,
+    roi: 0,
+    sharpeRatio: 0,
     topMarkets: [],
     recentActivity: [],
-    balance: balance // Add balance to metrics for risk calculations
+    balance: balance
   };
 
   // Count unique markets from ALL activity types, not just trades
@@ -515,6 +545,8 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
 
   // Calculate realized P&L from trade history (matching BUY/SELL pairs)
   // This captures P&L from closed positions that are no longer in positions API
+  // Polymarket fee is configurable (default 2% on trades)
+  
   if (trades.length > 0) {
     const tradesByMarket = {};
     trades.forEach(trade => {
@@ -534,7 +566,7 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
     let closedPositions = 0;
 
     Object.entries(tradesByMarket).forEach(([marketId, data]) => {
-      const { buys, sells, title } = data;
+      const { buys, sells } = data;
 
       // Sort by timestamp
       buys.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
@@ -547,10 +579,24 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
       while (buyIndex < buys.length && sellIndex < sells.length) {
         const buy = buys[buyIndex];
         const sell = sells[sellIndex];
+        
+        // Validate prices exist before calculating P&L
+        if (!buy.price || !sell.price) {
+          console.warn(`[USER PROFILE] Skipping trade with missing prices - buy: ${buy.price}, sell: ${sell.price}`);
+          buyIndex++;
+          continue;
+        }
+        
         const matchedSize = Math.min(buy.size, sell.size);
 
-        // P&L = (sellPrice - buyPrice) * matchedSize
-        const pnl = (sell.price - buy.price) * matchedSize;
+        // P&L = (sellPrice - buyPrice) * matchedSize - fees
+        // Fee is 2% of total trade value (buy + sell)
+        const buyValue = buy.price * matchedSize;
+        const sellValue = sell.price * matchedSize;
+        const tradeValue = buyValue + sellValue;
+        const fee = tradeValue * POLYMARKET_FEE;
+        const pnl = (sell.price - buy.price) * matchedSize - fee;
+        
         totalRealizedPnl += pnl;
         closedPositions++;
         if (pnl > 0) profitablePositions++;
@@ -573,6 +619,63 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
 
     // Calculate total volume from trades
     metrics.totalVolume = trades.reduce((sum, trade) => sum + (trade.size * trade.price || 0), 0);
+
+    // Calculate total invested (sum of all BUY trades)
+    metrics.totalInvested = trades
+      .filter(t => t.side === 'BUY')
+      .reduce((sum, t) => sum + (t.size * t.price || 0), 0);
+
+    // Calculate ROI (Return on Investment)
+    // ROI = (Realized P&L + Unrealized P&L) / Total Invested * 100
+    const totalPnl = metrics.realizedPnl + metrics.unrealizedPnl;
+    metrics.roi = metrics.totalInvested > 0 ? (totalPnl / metrics.totalInvested) * 100 : 0;
+
+    // Calculate Sharpe Ratio (risk-adjusted returns)
+    // Sharpe = (ROI - RiskFreeRate) / StdDev
+    // Using 2% as risk-free rate (approximate treasury yield)
+    const riskFreeRate = 2.0;
+    if (closedPositions > 1) {
+      // Calculate individual position returns
+      const positionReturns = [];
+      Object.entries(tradesByMarket).forEach(([marketId, data]) => {
+        const { buys, sells } = data;
+
+        // Sort by timestamp
+        buys.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        sells.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+        let buyIndex = 0;
+        let sellIndex = 0;
+
+        // Match buys and sells using FIFO
+        while (buyIndex < buys.length && sellIndex < sells.length) {
+          const buy = buys[buyIndex];
+          const sell = sells[sellIndex];
+          const matchedSize = Math.min(buy.size, sell.size);
+
+          const buyValue = buy.price * matchedSize;
+          const sellValue = sell.price * matchedSize;
+          const positionReturn = ((sellValue - buyValue) / buyValue) * 100;
+
+          positionReturns.push(positionReturn);
+
+          buy.size -= matchedSize;
+          sell.size -= matchedSize;
+
+          if (buy.size < 0.0001) buyIndex++;
+          if (sell.size < 0.0001) sellIndex++;
+        }
+      });
+
+      if (positionReturns.length > 0) {
+        const avgReturn = positionReturns.reduce((sum, r) => sum + r, 0) / positionReturns.length;
+        const variance = positionReturns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / positionReturns.length;
+        const stdDev = Math.sqrt(variance);
+        metrics.sharpeRatio = stdDev > 0 ? (avgReturn - riskFreeRate) / stdDev : 0;
+      }
+    }
+
+    console.log(`[USER PROFILE] ROI: ${metrics.roi.toFixed(2)}%, Sharpe Ratio: ${metrics.sharpeRatio.toFixed(2)}`);
 
     // Recent activity from all types
     metrics.recentActivity = activity
@@ -626,6 +729,25 @@ async function fetchUserProfile(maker) {
 
     // Generate intelligent analysis
     console.log(`[USER PROFILE] Generating intelligent analysis...`);
+    
+    // Validate inputs before analysis
+    if (!positions || !activity || !metrics) {
+      console.error('[USER PROFILE] Invalid inputs for analysis:', { positions: !!positions, activity: !!activity, metrics: !!metrics });
+      return {
+        maker,
+        profile,
+        positions: positions || [],
+        activity: activity || [],
+        balance,
+        metrics: metrics || {},
+        analysis: null,
+        trend: null,
+        benchmark: null,
+        fetchedAt: new Date().toISOString(),
+        error: 'Invalid inputs for analysis'
+      };
+    }
+    
     const analysis = analyzeUserProfile(profile, positions, activity, metrics);
     console.log(`[USER PROFILE] Analysis generated:`, analysis.summary);
 

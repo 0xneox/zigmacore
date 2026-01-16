@@ -9,7 +9,17 @@
  * @returns {string} - The category (CRYPTO, POLITICS, MACRO, TECH, TECH_ADOPTION, ETF_APPROVAL, ENTERTAINMENT, CELEBRITY, SPORTS_FUTURES, WAR_OUTCOMES, EVENT)
  */
 function classifyMarket(question) {
-  const q = (question || '').toLowerCase();
+  // Handle missing or invalid input
+  if (!question || typeof question !== 'string') {
+    return 'EVENT';
+  }
+
+  const q = question.toLowerCase().trim();
+  
+  // Handle empty string
+  if (q.length === 0) {
+    return 'EVENT';
+  }
 
   // CRYPTO - Check first to avoid false positives
   if (/^(bitcoin|ethereum|btc|eth|solana|bnb|ada|doge|avax|matic|link|uni|aave|comp|crv|snx)\b/i.test(q)) return 'CRYPTO';
@@ -55,7 +65,7 @@ function classifyMarket(question) {
   if (/\b(war|ceasefire|conflict|invasion|occupation|military strike|missile|troops|deployment)\b/i.test(q)) return 'WAR_OUTCOMES';
   if (/\b(ukraine|gaza|israel|palestine|russia|putin|zelenskyy|hamas|hezbollah|iran)\b/i.test(q)) return 'WAR_OUTCOMES';
 
-  // Default
+  // Default for unknown or general markets
   return 'EVENT';
 }
 

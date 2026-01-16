@@ -167,7 +167,10 @@ class MarketAnalyzer {
         txHash: trade.txHash
       }));
     } catch (error) {
-      console.error('Error fetching trade history:', error);
+      console.error('[CRITICAL] Trade history fetch failed for market', marketId, ':', error.message);
+      if (error.response) {
+        console.error('[CRITICAL] API Response:', error.response.status, error.response.data);
+      }
       return [];
     }
   }
@@ -668,10 +671,20 @@ class MarketAnalyzer {
 
 // Kelly Criterion calculation for optimal bet sizing
 function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
-  // Ensure all inputs are numbers
-  const p = Number(winProb);
-  const priceNum = Number(price);
-  const liqNum = Number(liquidity);
+  // Validate inputs before type coercion
+  if (typeof winProb !== 'number' || typeof price !== 'number' || typeof liquidity !== 'number') {
+    console.warn('[calculateKelly] Invalid input types:', { winProb, price, liquidity });
+    return 0;
+  }
+  
+  if (!Number.isFinite(winProb) || !Number.isFinite(price) || !Number.isFinite(liquidity)) {
+    console.warn('[calculateKelly] Non-finite inputs:', { winProb, price, liquidity });
+    return 0;
+  }
+  
+  const p = winProb;
+  const priceNum = price;
+  const liqNum = liquidity;
 
   // 1. Safety check: No edge or invalid price
   if (p <= (priceNum + edgeBuffer) || priceNum <= 0 || priceNum >= 1) {
@@ -702,9 +715,9 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
   return Math.max(0, finalKelly); // Return 0 if no valid edge
 }
 
-// Simple in-memory cache for Tavily searches (expires after 1 hour)
+// Simple in-memory cache for Tavily searches (expires after configured TTL)
 const tavilyCache = new Map();
-const TAVILY_TTL_MS = 60 * 60 * 1000;
+const TAVILY_TTL_MS = parseInt(process.env.TAVILY_CACHE_TTL) || (15 * 60 * 1000); // Default 15 minutes, configurable
 const TAVILY_MAX_RETRIES = 3;
 const TAVILY_BACKOFF_MS = 1000;
 
@@ -732,15 +745,15 @@ async function searchTavily(query = '') {
         }),
         signal: controller.signal
       });
-      clearTimeout(timeoutId);
       if (!response.ok) {
         throw new Error(`Tavily HTTP ${response.status}`);
       }
       const data = await response.json();
       return data.results || [];
     } catch (error) {
-      clearTimeout(timeoutId);
       throw error;
+    } finally {
+      clearTimeout(timeoutId); // CRITICAL: Always clear timeout
     }
   };
 
@@ -751,7 +764,7 @@ async function searchTavily(query = '') {
         tavilyCache.set(cacheKey, { results, timestamp: now });
       }
       console.log('Fetched new Tavily results for query:', query);
-      return results;
+      return results; // Return immediately on success
     } catch (error) {
       const isLastAttempt = attempt === TAVILY_MAX_RETRIES;
       if (error.name === 'AbortError') {

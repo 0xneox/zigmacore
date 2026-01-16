@@ -3,6 +3,29 @@
  * Tracks critical operations metrics for performance monitoring and alerting
  */
 
+const fs = require('fs');
+const path = require('path');
+
+// Constants for monitoring
+const MAX_METRICS_HISTORY = 100; // Keep only last N items
+const MAX_CATEGORIES = 50; // Limit to top N categories
+const PERSISTENCE_INTERVAL_MS = 60000; // Save every 60 seconds
+const PERSISTENCE_FILE = path.join(__dirname, '../data/metrics.json');
+
+// Simple mutex for atomic operations
+let metricsLock = false;
+function withMetricsLock(fn) {
+  while (metricsLock) {
+    // Wait for lock to release
+  }
+  metricsLock = true;
+  try {
+    return fn();
+  } finally {
+    metricsLock = false;
+  }
+}
+
 const metrics = {
   // Cycle metrics
   cycleDuration: [],
@@ -40,6 +63,10 @@ const metrics = {
     'HOLD': 0
   },
   signalsByCategory: {},
+  signalsByCategoryOther: 0, // Count for categories beyond top N
+
+  // Persistence
+  lastPersistTime: Date.now(),
 
   // Market metrics
   marketsAnalyzed: 0,
@@ -69,8 +96,13 @@ function recordCycle(durationMs, success = true) {
   metrics.lastCycleTime = Date.now();
 
   // Keep only last 100 cycles
-  if (metrics.cycleDuration.length > 100) {
+  if (metrics.cycleDuration.length > MAX_METRICS_HISTORY) {
     metrics.cycleDuration.shift();
+  }
+
+  // Periodically persist metrics
+  if (Date.now() - metrics.lastPersistTime > PERSISTENCE_INTERVAL_MS) {
+    persistMetrics();
   }
 }
 
@@ -87,7 +119,7 @@ function recordLLMCall(latencyMs, success = true) {
   }
 
   // Keep only last 100 calls
-  if (metrics.llmLatency.length > 100) {
+  if (metrics.llmLatency.length > MAX_METRICS_HISTORY) {
     metrics.llmLatency.shift();
   }
 }
@@ -119,7 +151,7 @@ function recordApiCall(api, latencyMs, success = true) {
   }
 
   // Keep only last 100 calls per API
-  if (metrics.apiLatency[api].length > 100) {
+  if (metrics.apiLatency[api].length > MAX_METRICS_HISTORY) {
     metrics.apiLatency[api].shift();
   }
 }
@@ -130,19 +162,30 @@ function recordApiCall(api, latencyMs, success = true) {
  * @param {string} category - Market category
  */
 function recordSignal(action, category) {
-  metrics.signalsGenerated++;
-  if (metrics.signalsByAction[action]) {
-    metrics.signalsByAction[action]++;
-  } else {
-    metrics.signalsByAction[action] = 1;
-  }
-
-  if (category) {
-    if (!metrics.signalsByCategory[category]) {
-      metrics.signalsByCategory[category] = 0;
+  withMetricsLock(() => {
+    metrics.signalsGenerated++;
+    
+    // Atomic increment for action counter
+    if (metrics.signalsByAction[action]) {
+      metrics.signalsByAction[action]++;
+    } else {
+      metrics.signalsByAction[action] = 1;
     }
-    metrics.signalsByCategory[category]++;
-  }
+
+    if (category) {
+      // Limit categories to prevent unbounded growth
+      const categories = Object.keys(metrics.signalsByCategory);
+      if (categories.length >= MAX_CATEGORIES && !metrics.signalsByCategory[category]) {
+        // New category beyond limit, count as "OTHER"
+        metrics.signalsByCategoryOther++;
+      } else {
+        if (!metrics.signalsByCategory[category]) {
+          metrics.signalsByCategory[category] = 0;
+        }
+        metrics.signalsByCategory[category]++;
+      }
+    }
+  });
 }
 
 /**
@@ -160,24 +203,28 @@ function recordMarketAnalysis(filtered = false) {
  * Record error
  * @param {string} type - Error type
  * @param {string} message - Error message
+ * @param {Error} errorObj - Optional Error object for stack trace
  */
-function recordError(type, message) {
-  const error = {
-    type,
-    message,
-    timestamp: Date.now()
-  };
-  metrics.errors.push(error);
+function recordError(type, message, errorObj = null) {
+  withMetricsLock(() => {
+    const error = {
+      type,
+      message,
+      timestamp: Date.now(),
+      stack: errorObj?.stack || new Error().stack
+    };
+    metrics.errors.push(error);
 
-  // Keep only last 100 errors
-  if (metrics.errors.length > 100) {
-    metrics.errors.shift();
-  }
+    // Keep only last 100 errors
+    if (metrics.errors.length > MAX_METRICS_HISTORY) {
+      metrics.errors.shift();
+    }
 
-  if (!metrics.errorCounts[type]) {
-    metrics.errorCounts[type] = 0;
-  }
-  metrics.errorCounts[type]++;
+    if (!metrics.errorCounts[type]) {
+      metrics.errorCounts[type] = 0;
+    }
+    metrics.errorCounts[type]++;
+  });
 }
 
 /**
@@ -275,7 +322,8 @@ function getMetricsSummary() {
     signals: {
       total: metrics.signalsGenerated,
       byAction: metrics.signalsByAction,
-      byCategory: metrics.signalsByCategory
+      byCategory: metrics.signalsByCategory,
+      otherCategories: metrics.signalsByCategoryOther
     },
 
     markets: {
@@ -321,6 +369,55 @@ function resetMetrics() {
   metrics.lastCycleTime = Date.now();
 }
 
+/**
+ * Persist metrics to file
+ */
+function persistMetrics() {
+  try {
+    const dataDir = path.dirname(PERSISTENCE_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    
+    const metricsToSave = {
+      ...metrics,
+      persistedAt: Date.now()
+    };
+    
+    fs.writeFileSync(PERSISTENCE_FILE, JSON.stringify(metricsToSave, null, 2));
+    metrics.lastPersistTime = Date.now();
+    console.log('[MONITORING] Metrics persisted to file');
+  } catch (error) {
+    console.error('[MONITORING] Failed to persist metrics:', error.message);
+  }
+}
+
+/**
+ * Load metrics from file
+ */
+function loadMetrics() {
+  try {
+    if (fs.existsSync(PERSISTENCE_FILE)) {
+      const data = fs.readFileSync(PERSISTENCE_FILE, 'utf8');
+      const loadedMetrics = JSON.parse(data);
+      
+      // Merge loaded metrics with current structure
+      Object.assign(metrics, loadedMetrics);
+      console.log('[MONITORING] Metrics loaded from file');
+    }
+  } catch (error) {
+    console.error('[MONITORING] Failed to load metrics:', error.message);
+  }
+}
+
+// Load persisted metrics on module load
+loadMetrics();
+
+// Set up periodic persistence
+setInterval(() => {
+  persistMetrics();
+}, PERSISTENCE_INTERVAL_MS);
+
 module.exports = {
   recordCycle,
   recordLLMCall,
@@ -331,5 +428,7 @@ module.exports = {
   recordError,
   getMetricsSummary,
   resetMetrics,
+  persistMetrics,
+  loadMetrics,
   metrics
 };

@@ -10,6 +10,40 @@ const LEARNING_WINDOW_DAYS = 30;
 const MIN_SIGNALS_FOR_LEARNING = 20;
 const LEARNING_RATE = 0.1;
 
+// Learning adjustment constants
+const OVERCONFIDENCE_THRESHOLD = -0.1; // Accuracy error threshold for overconfidence
+const UNDERCONFIDENCE_THRESHOLD = 0.1; // Accuracy error threshold for underconfidence
+const OVERCONFIDENCE_CONFIDENCE_ADJUSTMENT = 0.3; // Confidence adjustment factor for overconfidence
+const OVERCONFIDENCE_EDGE_ADJUSTMENT = 0.05; // Edge adjustment factor for overconfidence
+const UNDERCONFIDENCE_CONFIDENCE_ADJUSTMENT = 0.2; // Confidence adjustment factor for underconfidence
+const UNDERCONFIDENCE_EDGE_ADJUSTMENT = 0.03; // Edge adjustment factor for underconfidence
+
+// Initialize database indexes for performance
+function initializeIndexes() {
+  try {
+    const db = initDb();
+    
+    // Create composite index for learning queries
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_trade_signals_learning 
+      ON trade_signals(category, action, outcome, timestamp DESC)
+    `).run();
+    
+    // Create index for category performance queries
+    db.prepare(`
+      CREATE INDEX IF NOT EXISTS idx_trade_signals_category_outcome 
+      ON trade_signals(category, outcome, timestamp DESC)
+    `).run();
+    
+    console.log('[LEARNING] Database indexes initialized');
+  } catch (error) {
+    console.error('[LEARNING] Failed to initialize indexes:', error.message);
+  }
+}
+
+// Initialize indexes on module load
+initializeIndexes();
+
 /**
  * Calculate adaptive edge adjustment based on historical performance
  * @param {string} category - Market category
@@ -22,6 +56,9 @@ function applyAdaptiveLearning(category, actionType, baseEdge, baseConfidence) {
   try {
     const db = initDb();
     
+    // Calculate timestamp threshold in JavaScript to avoid SQL injection
+    const timestampThreshold = new Date(Date.now() - (LEARNING_WINDOW_DAYS * 24 * 60 * 60 * 1000)).toISOString();
+    
     // Fetch recent signals for this category and action type
     const recentSignals = db.prepare(`
       SELECT 
@@ -33,10 +70,10 @@ function applyAdaptiveLearning(category, actionType, baseEdge, baseConfidence) {
       FROM trade_signals
       WHERE category = ? AND action = ?
       AND outcome IS NOT NULL
-      AND timestamp > datetime('now', '-${LEARNING_WINDOW_DAYS} days')
+      AND timestamp > ?
       ORDER BY timestamp DESC
       LIMIT 100
-    `).all(category, actionType);
+    `).all(category, actionType, timestampThreshold);
 
     if (recentSignals.length < MIN_SIGNALS_FOR_LEARNING) {
       return {
@@ -48,9 +85,10 @@ function applyAdaptiveLearning(category, actionType, baseEdge, baseConfidence) {
       };
     }
 
-    // Calculate actual accuracy
+    // Calculate actual accuracy based on action type, not edge direction
     const correctSignals = recentSignals.filter(s => {
-      const predictedYes = s.edge > 0;
+      // Determine prediction based on action type
+      const predictedYes = s.action === 'BUY YES' || s.action === 'SELL NO';
       const actualYes = s.outcome === 'YES';
       return predictedYes === actualYes;
     }).length;
@@ -68,14 +106,14 @@ function applyAdaptiveLearning(category, actionType, baseEdge, baseConfidence) {
     let confidenceAdjustment = 0;
 
     // If model is overconfident, reduce confidence
-    if (accuracyError < -0.1) {
-      confidenceAdjustment = accuracyError * 0.3; // Reduced from 0.5
-      edgeAdjustment = -Math.abs(baseEdge) * 0.05; // Reduced from 0.1
+    if (accuracyError < OVERCONFIDENCE_THRESHOLD) {
+      confidenceAdjustment = accuracyError * OVERCONFIDENCE_CONFIDENCE_ADJUSTMENT;
+      edgeAdjustment = -Math.abs(baseEdge) * OVERCONFIDENCE_EDGE_ADJUSTMENT;
     }
     // If model is underconfident, increase confidence
-    else if (accuracyError > 0.1) {
-      confidenceAdjustment = accuracyError * 0.2; // Reduced from 0.3
-      edgeAdjustment = Math.abs(baseEdge) * 0.03; // Reduced from 0.05
+    else if (accuracyError > UNDERCONFIDENCE_THRESHOLD) {
+      confidenceAdjustment = accuracyError * UNDERCONFIDENCE_CONFIDENCE_ADJUSTMENT;
+      edgeAdjustment = Math.abs(baseEdge) * UNDERCONFIDENCE_EDGE_ADJUSTMENT;
     }
 
     // Apply learning rate
@@ -189,6 +227,9 @@ function getCategoryPerformanceInsights() {
 
     const insights = {};
     
+    // Calculate timestamp threshold for recent signals
+    const recentTimestamp = new Date(Date.now() - (7 * 24 * 60 * 60 * 1000)).toISOString();
+    
     for (const { category } of categories) {
       const stats = getLearningStats(category);
       const recentSignals = db.prepare(`
@@ -197,8 +238,8 @@ function getCategoryPerformanceInsights() {
           COUNT(*) as total
         FROM trade_signals
         WHERE category = ? AND outcome IS NOT NULL
-        AND timestamp > datetime('now', '-7 days')
-      `).get(category);
+        AND timestamp > ?
+      `).get(category, recentTimestamp);
 
       insights[category] = {
         stats,

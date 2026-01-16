@@ -3,6 +3,21 @@ const fsSync = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+// Create write streams for logging to prevent file descriptor leaks
+const CONSOLE_LOG_FILE = path.join(__dirname, '..', 'console_output.log');
+const consoleLogStream = fsSync.createWriteStream(CONSOLE_LOG_FILE, { flags: 'a' });
+
+// Ensure streams are closed on process exit
+process.on('exit', () => {
+  consoleLogStream.end();
+});
+process.on('SIGINT', () => {
+  consoleLogStream.end();
+});
+process.on('SIGTERM', () => {
+  consoleLogStream.end();
+});
+
 // Simple console override - write directly to avoid logger circular dependency
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
@@ -11,8 +26,8 @@ const originalConsoleWarn = console.warn;
 console.log = function(...args) {
   const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
   originalConsoleLog(msg);
-  // Also write to file async without blocking
-  fs.appendFile(path.join(__dirname, '..', 'console_output.log'), `[${new Date().toISOString()}] ${msg}\n`).catch(() => {});
+  // Write to stream instead of appendFile to prevent file descriptor leaks
+  consoleLogStream.write(`[${new Date().toISOString()}] ${msg}\n`);
 };
 
 console.error = function(...args) {
@@ -29,7 +44,6 @@ const { BoundedMap } = require('./utils/bounded-map');
 
 const CACHE_DIR = path.join(__dirname, '..', 'cache');
 const INSIGHTS_FILE = path.join(__dirname, '..', 'oracle_insights.txt');
-const CONSOLE_LOG_FILE = path.join(__dirname, '..', 'console_output.log');
 const PERSONAL_TRADES_FILE = path.join(__dirname, '..', 'personal_trades.txt');
 const TRACK_LOG_FILE = path.join(__dirname, '..', 'trades.log');
 const AUDIT_LOG_FILE = path.join(__dirname, '..', 'audit_trails.log');
@@ -43,10 +57,8 @@ const LOG_TO_CONSOLE = LOG_LEVEL === 'DEBUG' || process.env.NODE_ENV === 'develo
 
 const log = (msg) => {
   const timestamped = `[${new Date().toISOString()}] ${msg}`;
-  // Write async but don't block
-  fs.appendFile(CONSOLE_LOG_FILE, timestamped + '\n').catch(err => {
-    console.error('Failed to write log:', err.message);
-  });
+  // Write to stream instead of appendFile to prevent file descriptor leaks
+  consoleLogStream.write(timestamped + '\n');
   // Always output to console immediately for visibility
   console.log(timestamped);
 };
@@ -144,6 +156,31 @@ function computeHorizonDiscount(daysToResolution) {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PROBABILITY_FLOOR = 0.0001;
 const POLYMARKET_BASE_URL = 'https://polymarket.com';
+
+const EDGE_THRESHOLD = 0.05; // Minimum edge to trigger a trade
+const UNCERTAINTY_MARGIN = 0.15; // Margin for confidence intervals
+const LOW_LIQUIDITY_THRESHOLD = 50000; // Below this is considered low liquidity
+const HIGH_LIQUIDITY_THRESHOLD = 100000; // Above this is considered high liquidity
+const MAX_EXPOSURE_LOW_LIQUIDITY = 0.03; // 3% max exposure for low liquidity
+const MAX_EXPOSURE_HIGH_LIQUIDITY = 0.05; // 5% max exposure for high liquidity
+const PROBE_EDGE_THRESHOLD = 0.02; // Minimum edge for probe trades
+const STRONG_TRADE_EXPOSURE = 0.02; // Minimum exposure for strong trades
+const SMALL_TRADE_EXPOSURE = 0.005; // Minimum exposure for small trades
+const PROBE_EXPOSURE = 0.0001; // Minimum exposure for probe trades
+const CONVICTION_MULTIPLIER_MIN = 0.8; // Minimum conviction multiplier
+const HIGH_EDGE_THRESHOLD = 0.10; // Edge above which conviction doesn't matter
+const MEDIUM_EDGE_THRESHOLD = 0.05; // Edge above which conviction penalty is reduced
+const DATA_RICH_CATEGORIES = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
+const CONVICTION_BOOST_HIGH = 1.15; // 15% boost for high liquidity
+const CONVICTION_BOOST_MEDIUM = 1.10; // 10% boost for medium liquidity
+const CONVICTION_BOOST_LOW = 1.05; // 5% boost for low liquidity
+const EDGE_THRESHOLD_HIGH = 0.10; // Very high edge threshold
+const EDGE_THRESHOLD_MEDIUM_HIGH = 0.07; // High edge threshold
+const EDGE_THRESHOLD_MEDIUM = 0.05; // Medium-high edge threshold
+const DEFAULT_EDGE_THRESHOLD = 50; // Default confidence threshold percentage
+const TAIL_MARKET_ODDS_THRESHOLD = 3; // Below 3% is tail market
+const TAIL_MARKET_ODDS_HIGH = 97; // Above 97% is tail market
+const TAIL_MARKET_CONFIDENCE = 90; // Confidence required for tail markets
 
 const CORRELATION_CLUSTERS = {
   politics: ['POLITICS', 'WAR_OUTCOMES'],
@@ -918,7 +955,8 @@ function applyTimeDecay(probability, market, analysis) {
     analysis.deltas = analysis.deltas || {};
     analysis.deltas.time = -(penalty * 100);
   }
-  return probability - penalty;
+
+  return probability;
 }
 
 function validateLLMAnalysis(analysis, market) {
@@ -927,11 +965,15 @@ function validateLLMAnalysis(analysis, market) {
   const llmData = analysis.llmAnalysis || analysis;
   const confidence = llmData.confidence || 0;
 
+  // Count evidence from multiple sources
+  const evidenceCount = (llmData.evidence?.length || 0) +
+                       (llmData.dataPoints?.length || 0) +
+                       (llmData.newsSources?.length || 0) +
+                       (llmData.newsCount || 0);
+
   // Reject extreme confidence without strong evidence
   if (confidence > 95) {
-    const hasStrongEvidence = llmData.evidence?.length > 3 ||
-                              llmData.dataPoints?.length > 5 ||
-                              llmData.newsCount > 5;
+    const hasStrongEvidence = evidenceCount > 3;
     if (!hasStrongEvidence) {
       return { valid: false, reason: `Extreme confidence (${confidence}%) without sufficient evidence` };
     }
@@ -958,8 +1000,7 @@ function validateLLMAnalysis(analysis, market) {
   const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
   if (yesPrice > 0.95 && probability > 0.9) {
     // Predicting >90% on a market already at >95% requires extraordinary evidence
-    const hasExtraordinaryEvidence = llmData.evidence?.length > 5 ||
-                                     llmData.dataPoints?.length > 10;
+    const hasExtraordinaryEvidence = evidenceCount > 5;
     if (!hasExtraordinaryEvidence) {
       return { valid: false, reason: 'Tail market prediction lacks extraordinary evidence' };
     }
@@ -967,8 +1008,7 @@ function validateLLMAnalysis(analysis, market) {
 
   if (yesPrice < 0.05 && probability < 0.1) {
     // Predicting <10% on a market already at <5% requires extraordinary evidence
-    const hasExtraordinaryEvidence = llmData.evidence?.length > 5 ||
-                                     llmData.dataPoints?.length > 10;
+    const hasExtraordinaryEvidence = evidenceCount > 5;
     if (!hasExtraordinaryEvidence) {
       return { valid: false, reason: 'Tail market prediction lacks extraordinary evidence' };
     }
@@ -1002,19 +1042,41 @@ function ensureProbability(analysis, market) {
 
 function computeEdgeScore(market) {
   if (!market) return 0;
+  
+  // Validate required fields
+  if (!market.question || typeof market.question !== 'string') {
+    console.warn('[computeEdgeScore] Invalid market: missing question');
+    return 0;
+  }
+  
   const yesPrice = getYesNoPrices(market)?.yes || 0.5;
+  
+  if (typeof yesPrice !== 'number' || yesPrice < 0 || yesPrice > 1) {
+    console.warn('[computeEdgeScore] Invalid yesPrice:', yesPrice);
+    return 0;
+  }
+  
   const prior = getBaseRate(market.question, market);
+  
+  if (typeof prior !== 'number' || prior < 0 || prior > 1) {
+    console.warn('[computeEdgeScore] Invalid prior:', prior);
+    return 0;
+  }
+  
   return Math.abs(yesPrice - prior);
 }
 
-function parseAnalysis(llmOutput) {
+function parseAnalysis(llmOutput, market) {
   if (!llmOutput) return null;
 
   if (typeof llmOutput === 'string') {
     try {
       return JSON.parse(llmOutput);
     } catch (e) {
-      return { probability: 0.5, confidence: 50, reasoning: llmOutput };
+      // Use market price instead of defaulting to 0.5 to avoid incorrect bets
+      const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
+      console.warn(`[PARSE] JSON parse failed for ${market?.id}, using market price ${yesPrice}: ${e.message}`);
+      return { probability: yesPrice, confidence: 50, reasoning: llmOutput };
     }
   }
 
@@ -1023,7 +1085,9 @@ function parseAnalysis(llmOutput) {
 
 function computeProbabilitiesAndEdge(parsed, market) {
   if (!parsed || !market) {
-    return { probZigma: 0.5, probMarket: 0.5, effectiveEdge: 0 };
+    const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
+    console.warn(`[COMPUTE] Missing parsed or market data, using market price ${yesPrice}`);
+    return { probZigma: yesPrice, probMarket: yesPrice, effectiveEdge: 0 };
   }
 
   const probZigma = parsed.probability ?? parsed.llmAnalysis?.probability ?? 0.5;
@@ -1486,27 +1550,11 @@ async function generateSignals(selectedMarkets) {
     const analysis = data.analysis;
     const probability = ensureProbability(analysis, market);
     const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
-    const confidence = analysis.confidenceScore || analysis.llmAnalysis?.confidence || 50;
+    const confidence = analysis.confidence || analysis.llmAnalysis?.confidence || analysis.confidenceScore || 50;
     let normalizedConfidence = confidence > 1 ? confidence / 100 : confidence;
 
     // Category caps REMOVED - trust LLM confidence entirely
     const categoryKey = getCategoryKey(market.question, market);
-    // let categoryCap = PROBABILITY_CAPS[categoryKey] || PROBABILITY_CAPS.OTHER || 0.70;
-    //
-    // // Apply individual player sub-cap for sports markets
-    // if (categoryKey === 'SPORTS_FUTURES') {
-    //   const playerPatterns = [
-    //     /be the \d{4}-\d{4} NFL (Offensive|Defensive) Rookie of the Year/i,
-    //     /win the (MVP|Heisman|Cy Young)/i,
-    //     /be drafted (first|1st|second|2nd|third|3rd) overall/i
-    //   ];
-    //   const isPlayerMarket = playerPatterns.some(pattern => pattern.test(market.question || ''));
-    //   if (isPlayerMarket) {
-    //     categoryCap = Math.min(categoryCap, 0.70); // Increased from 0.05 to 0.70
-    //   }
-    // }
-    //
-    // normalizedConfidence = Math.min(normalizedConfidence, categoryCap);
 
     // Store raw LLM confidence for edge calculation (no blending)
     const rawLLMConfidence = normalizedConfidence;
@@ -1516,39 +1564,11 @@ async function generateSignals(selectedMarkets) {
     const marketProb = yesPrice;
     const blendedConfidence = blendProbabilities(normalizedConfidence, marketProb, priorProb, market.liquidity || 10000);
 
-    // Apply uncertainty dampening for high-uncertainty categories
-    // Macro, geopolitical, and political events are non-IID processes with fundamental uncertainty
-    const highUncertaintyCategories = ['MACRO', 'WAR_OUTCOMES', 'POLITICS', 'CELEBRITY', 'TECH'];
-    let uncertaintyMultiplier = 1.0;
-
-    // Uncertainty dampening DISABLED to trust LLM confidence
-    // if (highUncertaintyCategories.includes(categoryKey)) {
-    //   const daysToResolution = market.endDateIso
-    //     ? Math.max(0, (new Date(market.endDateIso) - Date.now()) / DAY_MS)
-    //     : market.endDate
-    //       ? Math.max(0, (new Date(market.endDate) - Date.now()) / DAY_MS)
-    //       : 365;
-    //
-    //   // Longer horizon = more uncertainty
-    //   const horizonUncertainty = Math.min(0.4, daysToResolution / 365);
-    //
-    //   // Tail risk penalty for extreme market odds (overconfidence signal)
-    //   const tailRiskPenalty = (yesPrice > 0.9 || yesPrice < 0.1) ? 0.15 : 0;
-    //
-    //   // Narrative volatility: macro/geopolitical events are regime-driven
-    //   const narrativeVolatility = (categoryKey === 'MACRO' || categoryKey === 'WAR_OUTCOMES') ? 0.1 : 0;
-    //
-    //   uncertaintyMultiplier = 1 - (horizonUncertainty + tailRiskPenalty + narrativeVolatility);
-    //   uncertaintyMultiplier = Math.max(0.6, uncertaintyMultiplier); // Minimum 60% of original confidence
-    //
-    //   normalizedConfidence *= uncertaintyMultiplier;
-    // }
-
     // Determine action using RAW LLM confidence (not blended) to preserve edges
     let action = 'SKIP_NO_TRADE';
-    if (rawLLMConfidence > yesPrice + 0.05) {
+    if (rawLLMConfidence > yesPrice + EDGE_THRESHOLD) {
       action = 'BUY YES';
-    } else if (rawLLMConfidence < yesPrice - 0.05) {
+    } else if (rawLLMConfidence < yesPrice - EDGE_THRESHOLD) {
       action = 'BUY NO';
     }
 
@@ -1572,9 +1592,9 @@ async function generateSignals(selectedMarkets) {
     const absEdge = Math.abs(rawEdge);
 
     const daysToResolution = market.endDateIso
-      ? Math.max(0, (new Date(market.endDateIso) - Date.now()) / DAY_MS)
+      ? Math.max(0, (new Date(market.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24))
       : market.endDate
-        ? Math.max(0, (new Date(market.endDate) - Date.now()) / DAY_MS)
+        ? Math.max(0, (new Date(market.endDate) - Date.now()) / (1000 * 60 * 60 * 24))
         : 365;
     const horizonDiscount = computeHorizonDiscount(daysToResolution);
 
@@ -1582,7 +1602,7 @@ async function generateSignals(selectedMarkets) {
     const confidencePercent = Math.round(normalizedConfidence * 100);
 
     // Calculate uncertainty bands (confidence intervals)
-    const uncertaintyMargin = (1 - normalizedConfidence) * 0.15; // 15% margin at lowest confidence
+    const uncertaintyMargin = (1 - normalizedConfidence) * UNCERTAINTY_MARGIN;
     const lowerBound = Math.max(0.01, normalizedConfidence - uncertaintyMargin);
     const upperBound = Math.min(0.99, normalizedConfidence + uncertaintyMargin);
     const uncertaintyBand = {
@@ -1593,14 +1613,14 @@ async function generateSignals(selectedMarkets) {
 
     const marketOdds = yesPrice * 100;
     // Tail market warning (not hard rejection)
-    let isTailMarket = (marketOdds < 3 || marketOdds > 97) && confidencePercent < 90;
+    let isTailMarket = (marketOdds < TAIL_MARKET_ODDS_THRESHOLD || marketOdds > TAIL_MARKET_ODDS_HIGH) && confidencePercent < TAIL_MARKET_CONFIDENCE;
     if (isTailMarket) {
       log(`[WARNING] Tail market with low confidence: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%)`);
     }
 
     let kellyFraction = calculateKelly(winProb, betPrice, 0, market.liquidity || 10000);
     // $50k bankroll: 5% max per trade for high liquidity, 3% for low liquidity
-    const maxExposure = (market.liquidity || 0) < 50000 ? 0.03 : 0.05;
+    const maxExposure = (market.liquidity || 0) < LOW_LIQUIDITY_THRESHOLD ? MAX_EXPOSURE_LOW_LIQUIDITY : MAX_EXPOSURE_HIGH_LIQUIDITY;
     let intentExposure = Math.min(maxExposure, kellyFraction);
 
     const entropyScore = typeof analysis.llmAnalysis?.entropy === 'number'
@@ -1619,10 +1639,10 @@ async function generateSignals(selectedMarkets) {
     // Apply conviction penalty to position sizing ONLY (not to edge for threshold checks)
     // Low conviction = reduce position size, not reject the trade
     // For high edge (>10%), conviction matters less - trust the edge
-    let convictionMultiplier = Math.max(0.8, Math.min(1, confidencePercent / 100));
-    if (absEdge > 0.10) {
+    let convictionMultiplier = Math.max(CONVICTION_MULTIPLIER_MIN, Math.min(1, confidencePercent / 100));
+    if (absEdge > HIGH_EDGE_THRESHOLD) {
       convictionMultiplier = 1.0; // No penalty for massive edges
-    } else if (absEdge > 0.05) {
+    } else if (absEdge > MEDIUM_EDGE_THRESHOLD) {
       convictionMultiplier = Math.max(0.9, convictionMultiplier); // Reduced penalty for high edges
     }
     intentExposure *= convictionMultiplier;
@@ -1630,15 +1650,14 @@ async function generateSignals(selectedMarkets) {
     log(`[DEBUG POST-CONVICTION] intentExposure=${intentExposure.toFixed(4)}`);
 
     // CONVICTION BOOST: Increase conviction for high-liquidity sports/crypto markets
-    const dataRichCategories = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
     const liquidity = market.liquidity || 0;
     let convictionBoost = 1.0;
 
-    if (dataRichCategories.includes(categoryKey)) {
+    if (DATA_RICH_CATEGORIES.includes(categoryKey)) {
       // High liquidity = more reliable market = higher conviction
-      if (liquidity > 100000) convictionBoost = 1.15; // 15% boost
-      else if (liquidity > 50000) convictionBoost = 1.10; // 10% boost
-      else if (liquidity > 25000) convictionBoost = 1.05; // 5% boost
+      if (liquidity > HIGH_LIQUIDITY_THRESHOLD) convictionBoost = CONVICTION_BOOST_HIGH;
+      else if (liquidity > LOW_LIQUIDITY_THRESHOLD) convictionBoost = CONVICTION_BOOST_MEDIUM;
+      else if (liquidity > LOW_LIQUIDITY_THRESHOLD / 2) convictionBoost = CONVICTION_BOOST_LOW;
     }
 
     const boostedConfidenceScore = Math.min(100, confidencePercent * convictionBoost);
@@ -1647,9 +1666,9 @@ async function generateSignals(selectedMarkets) {
 
     // Calculate trade tier based on exposure
     let tradeTier = 'NO_TRADE';
-    if (intentExposure > 0.02) tradeTier = 'STRONG_TRADE';
-    else if (intentExposure > 0.005) tradeTier = 'SMALL_TRADE';
-    else if (intentExposure >= 0.0001) tradeTier = 'PROBE';
+    if (intentExposure > STRONG_TRADE_EXPOSURE) tradeTier = 'STRONG_TRADE';
+    else if (intentExposure > SMALL_TRADE_EXPOSURE) tradeTier = 'SMALL_TRADE';
+    else if (intentExposure >= PROBE_EXPOSURE) tradeTier = 'PROBE';
 
     // Use raw edge for signal object (not adjusted)
     const signal = {
@@ -1674,20 +1693,20 @@ async function generateSignals(selectedMarkets) {
 
     const signalTimestamp = new Date().toISOString();
     // Dynamic confidence threshold based on category and RAW edge (not adjusted)
-    let edgeThreshold = 50; // Lowered from 70 to 50
+    let edgeThreshold = DEFAULT_EDGE_THRESHOLD;
 
-    if (dataRichCategories.includes(categoryKey)) {
+    if (DATA_RICH_CATEGORIES.includes(categoryKey)) {
       // For data-rich categories, reduce threshold based on edge strength
       // High edge (>5%) allows lower conviction threshold
       const edge = absEdge; // Use the already-calculated absolute edge
-      if (edge > 0.10) edgeThreshold = 35; // Very high edge = 35% threshold
-      else if (edge > 0.07) edgeThreshold = 40; // High edge = 40% threshold
-      else if (edge > 0.05) edgeThreshold = 45; // Medium-high edge = 45% threshold
-      else edgeThreshold = 50; // Still need 50% for low edge
+      if (edge > EDGE_THRESHOLD_HIGH) edgeThreshold = 35; // Very high edge = 35% threshold
+      else if (edge > EDGE_THRESHOLD_MEDIUM_HIGH) edgeThreshold = 40; // High edge = 40% threshold
+      else if (edge > MEDIUM_EDGE_THRESHOLD) edgeThreshold = 45; // Medium-high edge = 45% threshold
+      else edgeThreshold = DEFAULT_EDGE_THRESHOLD; // Still need 50% for low edge
     }
 
     // Use OR logic for execution - accept if edge is high OR (confidence is decent AND exposure is good)
-    const debugDecision = (Math.abs(rawEdge) >= 0.05) || 
+    const debugDecision = (Math.abs(rawEdge) >= EDGE_THRESHOLD) || 
                           (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdge) >= 0.01) 
                           ? 'EXECUTABLE' : 'DROPPED';
     log(`[DEBUG] Signal ${(market.question || '').slice(0, 50)} | Edge ${(signal.effectiveEdge * 100).toFixed(2)}% | Exposure ${(signal.intentExposure * 100).toFixed(2)}% | Conf ${signal.confidenceScore.toFixed(1)} (${boostedConfidenceScore.toFixed(1)} boosted) | Tier ${signal.tradeTier} → ${debugDecision}`);
@@ -1722,8 +1741,8 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
     };
 
     // Edge veto REMOVED - use OR logic for execution
-    if ((Math.abs(rawEdge) >= 0.05) || (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdge) >= 0.01)) {
-      if (signal.tradeTier === 'PROBE' && rawEdge > 0.02) {
+    if ((Math.abs(rawEdge) >= EDGE_THRESHOLD) || (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdge) >= 0.01)) {
+      if (signal.tradeTier === 'PROBE' && rawEdge > PROBE_EDGE_THRESHOLD) {
         signal.tradeTier = 'MEDIUM_TRADE';
       }
       executableTrades.push(signalWithMarket);

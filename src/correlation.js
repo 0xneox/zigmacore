@@ -3,6 +3,18 @@
  * Analyzes correlations between markets for risk assessment
  */
 
+// Constants for correlation calculations
+const CORRELATION_THRESHOLD = 0.7; // Threshold for high correlation
+const MIN_PRICE_HISTORY = 2; // Minimum data points for correlation
+const MAX_MARKETS_FOR_FULL_MATRIX = 100; // Limit to prevent performance issues
+
+// Cache for correlation calculations to avoid redundant computations
+const correlationCache = new Map();
+
+function getCacheKey(idA, idB) {
+  return [idA, idB].sort().join('|');
+}
+
 /**
  * Calculate price correlation between two markets
  * @param {Array} pricesA - Price history for market A
@@ -10,14 +22,23 @@
  * @returns {number} - Correlation coefficient (-1 to 1)
  */
 function calculateCorrelation(pricesA, pricesB) {
-  if (!pricesA || !pricesB || pricesA.length < 2 || pricesB.length < 2) {
+  if (!pricesA || !pricesB || pricesA.length < MIN_PRICE_HISTORY || pricesB.length < MIN_PRICE_HISTORY) {
     return 0;
   }
 
-  // Align prices by timestamp
+  // Align prices by timestamp and filter invalid values
   const minLen = Math.min(pricesA.length, pricesB.length);
-  const alignedA = pricesA.slice(0, minLen).map(p => p.price);
-  const alignedB = pricesB.slice(0, minLen).map(p => p.price);
+  const alignedA = pricesA.slice(0, minLen)
+    .map(p => p.price)
+    .filter(p => typeof p === 'number' && Number.isFinite(p));
+  const alignedB = pricesB.slice(0, minLen)
+    .map(p => p.price)
+    .filter(p => typeof p === 'number' && Number.isFinite(p));
+
+  // Check if we have enough valid data points
+  if (alignedA.length < MIN_PRICE_HISTORY || alignedB.length < MIN_PRICE_HISTORY) {
+    return 0;
+  }
 
   // Calculate means
   const meanA = alignedA.reduce((sum, p) => sum + p, 0) / alignedA.length;
@@ -65,20 +86,33 @@ async function buildCorrelationMatrix(markets) {
     };
   }
 
+  // Limit markets to prevent performance issues
+  const limitedMarkets = markets.slice(0, MAX_MARKETS_FOR_FULL_MATRIX);
   const matrix = {};
-  const n = markets.length;
+  const n = limitedMarkets.length;
 
-  // Calculate pairwise correlations
+  // Clear cache for new calculation
+  correlationCache.clear();
+
+  // Calculate pairwise correlations with caching
   for (let i = 0; i < n; i++) {
-    const marketA = markets[i];
+    const marketA = limitedMarkets[i];
     matrix[marketA.id] = {};
 
     for (let j = i + 1; j < n; j++) {
-      const marketB = markets[j];
-      const correlation = calculateCorrelation(
-        marketA.priceHistory || [],
-        marketB.priceHistory || []
-      );
+      const marketB = limitedMarkets[j];
+      
+      // Check cache first
+      const cacheKey = getCacheKey(marketA.id, marketB.id);
+      let correlation = correlationCache.get(cacheKey);
+      
+      if (correlation === undefined) {
+        correlation = calculateCorrelation(
+          marketA.priceHistory || [],
+          marketB.priceHistory || []
+        );
+        correlationCache.set(cacheKey, correlation);
+      }
       
       matrix[marketA.id][marketB.id] = correlation;
       if (!matrix[marketB.id]) {
@@ -88,7 +122,7 @@ async function buildCorrelationMatrix(markets) {
     }
   }
 
-  // Find high correlations (|correlation| > 0.7)
+  // Find high correlations (|correlation| > CORRELATION_THRESHOLD)
   const highCorrelations = [];
   const seen = new Set();
 
@@ -98,7 +132,7 @@ async function buildCorrelationMatrix(markets) {
       if (seen.has(key)) return;
       seen.add(key);
 
-      if (Math.abs(corr) > 0.7) {
+      if (Math.abs(corr) > CORRELATION_THRESHOLD) {
         highCorrelations.push({
           marketA: idA,
           marketB: idB,
@@ -109,8 +143,8 @@ async function buildCorrelationMatrix(markets) {
     });
   });
 
-  // Cluster markets by correlation
-  const clusters = findCorrelationClusters(markets, matrix);
+  // Cluster markets by correlation using BFS
+  const clusters = findCorrelationClusters(limitedMarkets, matrix);
 
   return {
     matrix,
@@ -130,24 +164,28 @@ function findCorrelationClusters(markets, matrix) {
   const clusters = [];
   const visited = new Set();
 
+  // Use BFS to find transitive correlation clusters
   for (const market of markets) {
     if (visited.has(market.id)) continue;
 
-    const cluster = [market.id];
+    const cluster = [];
+    const queue = [market.id];
     visited.add(market.id);
 
-    // Find all markets highly correlated with this one
-    market.priceHistory?.forEach((priceA, idxA) => {
-      markets.forEach(otherMarket => {
-        if (visited.has(otherMarket.id)) return;
+    // BFS to find all transitively correlated markets
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      cluster.push(currentId);
 
-        const corr = matrix[market.id]?.[otherMarket.id] || 0;
-        if (Math.abs(corr) > 0.7) {
-          cluster.push(otherMarket.id);
-          visited.add(otherMarket.id);
+      // Find all markets highly correlated with current market
+      const correlations = matrix[currentId] || {};
+      for (const [otherId, corr] of Object.entries(correlations)) {
+        if (!visited.has(otherId) && Math.abs(corr) > CORRELATION_THRESHOLD) {
+          visited.add(otherId);
+          queue.push(otherId);
         }
-      });
-    });
+      }
+    }
 
     if (cluster.length > 1) {
       clusters.push({

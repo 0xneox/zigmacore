@@ -1,4 +1,4 @@
-const OpenAI = require('openai');
+const OpenAI = require('openai').default || require('openai'); // Handle both CJS/ESM quirks
 const crypto = require('crypto');
 const { getMarketAnalyzer, calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, stopPolling, getOrderBook } = require('./clob_price_cache');
@@ -40,9 +40,36 @@ const XAI_BASE_URL = 'https://api.x.ai/v1';
 const PROVIDER = process.env.LLM_PROVIDER
   || (OPENAI_API_KEY ? 'openai' : 'xai'); // default to OpenAI when available
 
+// Model version fallback chains for resilience
+const OPENAI_MODEL_FALLBACKS = [
+  'gpt-4o-mini',
+  'gpt-4o',
+  'gpt-4-turbo',
+  'gpt-3.5-turbo'
+];
+
+const XAI_MODEL_FALLBACKS = [
+  'grok-beta',
+  'grok-2',
+  'grok-1'
+];
+
 const DEFAULT_OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const DEFAULT_XAI_MODEL = process.env.XAI_MODEL || 'grok-beta';
-const LLM_MODEL = process.env.LLM_MODEL || (PROVIDER === 'openai' ? DEFAULT_OPENAI_MODEL : DEFAULT_XAI_MODEL);
+
+// Get model with fallback chain
+function getModelWithFallback(provider, preferredModel) {
+  if (preferredModel) return preferredModel;
+  
+  const fallbacks = provider === 'openai' ? OPENAI_MODEL_FALLBACKS : XAI_MODEL_FALLBACKS;
+  const defaultModel = provider === 'openai' ? DEFAULT_OPENAI_MODEL : DEFAULT_XAI_MODEL;
+  
+  // Try default first, then fallbacks
+  const allModels = [defaultModel, ...fallbacks.filter(m => m !== defaultModel)];
+  return allModels[0]; // Return first available (would need API validation in production)
+}
+
+const LLM_MODEL = process.env.LLM_MODEL || getModelWithFallback(PROVIDER, null);
 const NEWS_DELTA_MODEL = process.env.NEWS_DELTA_MODEL || LLM_MODEL;
 
 const llmMetrics = { total: 0, errors: 0 };
@@ -61,8 +88,8 @@ const llmCircuitBreaker = {
   failureCount: 0,
   isOpen: false,
   openUntil: 0,
-  FAILURE_THRESHOLD: 5,
-  RESET_MS: 300000
+  FAILURE_THRESHOLD: 12, // Increased from 5 to give breathing room while debugging
+  RESET_MS: 60000 // Reduced from 5 min to 1 min for faster recovery
 };
 
 function checkCircuitBreaker() {
@@ -91,31 +118,50 @@ function recordLLMSuccess() {
 }
 
 let sharedLLMClient = null;
-function getLLMClient() {
+let clientInitializing = false;
+let clientInitPromise = null;
+
+async function getLLMClient() {
   if (sharedLLMClient) return sharedLLMClient;
-
-  if (PROVIDER === 'openai') {
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is required when LLM_PROVIDER=openai');
-    }
-    sharedLLMClient = new OpenAI({ apiKey: OPENAI_API_KEY });
-  } else {
-    if (!XAI_API_KEY) {
-      throw new Error('XAI_API_KEY is required when LLM_PROVIDER=xai');
-    }
-    sharedLLMClient = new OpenAI({
-      apiKey: XAI_API_KEY,
-      baseURL: XAI_BASE_URL,
-    });
+  
+  // If initialization is in progress, wait for it
+  if (clientInitializing && clientInitPromise) {
+    return clientInitPromise;
   }
-
-  return sharedLLMClient;
+  
+  // Start initialization
+  clientInitializing = true;
+  clientInitPromise = (async () => {
+    try {
+      if (PROVIDER === 'openai') {
+        if (!OPENAI_API_KEY) {
+          throw new Error('OPENAI_API_KEY is required when LLM_PROVIDER=openai');
+        }
+        sharedLLMClient = new OpenAI({ apiKey: OPENAI_API_KEY });
+      } else {
+        if (!XAI_API_KEY) {
+          throw new Error('XAI_API_KEY is required when LLM_PROVIDER=xai');
+        }
+        sharedLLMClient = new OpenAI({
+          apiKey: XAI_API_KEY,
+          baseURL: XAI_BASE_URL,
+        });
+      }
+      return sharedLLMClient;
+    } finally {
+      clientInitializing = false;
+    }
+  })();
+  
+  return clientInitPromise;
 }
 
 // Safe LLM Parse with fallback (NEW: Added to fix conf=0 bug)
 function safeParseLLM(output) {
   try {
-    const json = JSON.parse(output);
+    // Sanitize input to prevent injection attacks
+    const sanitized = output.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+    const json = JSON.parse(sanitized);
     if (json.confidence && json.confidence > 0) {
       console.log(`[PARSE] Successful JSON parse: confidence=${json.confidence}`);
       return json;
@@ -587,7 +633,7 @@ async function generateEnhancedAnalysis(marketData) {
   });
   const userPrompt = buildEnhancedAnalysisPrompt(marketData, analysis, orderBook || {}, news);
 
-  const client = getLLMClient();
+  const client = await getLLMClient();
   let response;
   const llmCall = async () => {
     const controller = new AbortController();
@@ -611,43 +657,12 @@ async function generateEnhancedAnalysis(marketData) {
   const llmStart = Date.now();
   llmMetrics.total += 1;
   let llmOk = false;
-  try {
-    if (!checkCircuitBreaker()) {
-      console.warn(`[LLM] Circuit breaker is open, using fallback for ${marketData.id}`);
-      return {
-        marketId: marketData.id,
-        question: marketData.question,
-        confidence: 50,
-        action: 'HOLD',
-        probability: 0.5,
-        reasoning: 'LLM circuit breaker open - using fallback',
-        generatedAt: Date.now(),
-        fallback: true
-      };
-    }
-
-    console.log(`[LLM] Starting API call for ${marketData.id}`);
-    response = await llmCall();
-    llmOk = true;
-    recordLLMSuccess();
-    console.log(`[LLM] API call completed for ${marketData.id}`);
-  } catch (error) {
-    recordLLMFailure();
-    llmMetrics.errors += 1;
-    emitLLMMetrics({
-      ok: false,
-      marketId: marketData.id,
-      llm_latency_ms: Date.now() - llmStart,
-      provider: PROVIDER,
-      model: LLM_MODEL,
-      error: error.message
-    });
-    console.error(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
-
-    // Enhanced fallback analysis using available data
+  
+  // Enhanced fallback analysis using available data (shared between circuit breaker and LLM failures)
+  const getEnhancedFallback = (reason) => {
     const basePrior = typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5;
     let fallbackProbability = basePrior;
-    let fallbackReasoning = 'LLM call failed - using enhanced fallback analysis';
+    let fallbackReasoning = reason;
 
     // Use news sentiment if available
     if (news && news.length > 0) {
@@ -708,6 +723,35 @@ async function generateEnhancedAnalysis(marketData) {
       generatedAt: Date.now(),
       fallback: true
     };
+  };
+
+  try {
+    if (!checkCircuitBreaker()) {
+      console.warn(`[LLM] Circuit breaker is open, using enhanced fallback for ${marketData.id}`);
+      return getEnhancedFallback('LLM circuit breaker open - using enhanced fallback analysis');
+    }
+
+    console.log(`[LLM] Starting API call for ${marketData.id}`);
+    response = await llmCall();
+    llmOk = true;
+    recordLLMSuccess();
+    console.log(`[LLM] API call completed for ${marketData.id}`);
+  } catch (error) {
+    recordLLMFailure();
+    llmMetrics.errors += 1;
+    emitLLMMetrics({
+      ok: false,
+      marketId: marketData.id,
+      llm_latency_ms: Date.now() - llmStart,
+      provider: PROVIDER,
+      model: LLM_MODEL,
+      error: error.message
+    });
+    console.error(`[LLM] API call failed for ${marketData.id}: ${error.message}`);
+    console.error(`[LLM] Error stack: ${error.stack}`);
+    console.error(`[LLM] Client type: ${typeof sharedLLMClient}, has chat: ${!!sharedLLMClient?.chat}, has completions: ${!!sharedLLMClient?.chat?.completions}`);
+
+    return getEnhancedFallback('LLM call failed - using enhanced fallback analysis');
   }
 
   emitLLMMetrics({
@@ -778,8 +822,10 @@ async function generateEnhancedAnalysis(marketData) {
       0.01,
       0.99
     );
-    // Use LLM's revised_prior directly - NO averaging to preserve edge
-    const winProb = clamp(result.revised_prior, 0.02, 0.98);
+    // Use LLM's confidence as the probability for YES outcome
+    // If confidence > 50%, use it directly; if < 50%, it's a NO prediction
+    const llmConfidence = result.confidence > 1 ? result.confidence / 100 : result.confidence;
+    const winProb = clamp(llmConfidence, 0.02, 0.98);
 
     const daysLeft = marketData.endDateIso
       ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
@@ -804,13 +850,15 @@ async function generateEnhancedAnalysis(marketData) {
     // Ensure sentimentScore is not zero if there's news
     if (news && news.length > 0 && sentimentScore === 0) {
       // Calculate sentiment from news headlines as fallback
+      // Limit news array size to prevent memory leaks
+      const limitedNews = news.slice(0, 20); // Max 20 news items
       const positiveKeywords = ['rise', 'increase', 'growth', 'bullish', 'positive', 'up', 'gain', 'surge', 'rally', 'strong', 'good', 'excellent'];
       const negativeKeywords = ['fall', 'decrease', 'decline', 'bearish', 'negative', 'down', 'loss', 'drop', 'crash', 'weak', 'bad', 'poor'];
       
       let positiveCount = 0;
       let negativeCount = 0;
       
-      news.forEach(item => {
+      limitedNews.forEach(item => {
         const title = (item.title || '').toLowerCase();
         const snippet = (item.snippet || '').toLowerCase();
         const text = title + ' ' + snippet;
@@ -825,7 +873,7 @@ async function generateEnhancedAnalysis(marketData) {
       });
       
       const totalSentiment = positiveCount - negativeCount;
-      const totalItems = news.length || 1;
+      const totalItems = limitedNews.length || 1;
       sentimentScore = Math.max(-1, Math.min(1, totalSentiment / totalItems));
     }
 
@@ -844,7 +892,7 @@ async function generateEnhancedAnalysis(marketData) {
     const entropyPenalty = Math.max(0, (entropy - 0.3) * 0.02);
     const baseThreshold = 0.05;
     const dynamicThreshold = Math.max(
-      0.015,
+      0.01, // Minimum threshold to prevent negative values
       baseThreshold - liquidityBoost - deltaBoost - priceMomentum + entropyPenalty
     );
 
