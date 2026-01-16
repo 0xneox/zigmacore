@@ -3,9 +3,22 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const path = require('path');
 const fs = require('fs');
+const { findBestMatchingMarket } = require('./src/utils/nlp-market-matcher');
+const http = require('http');
 const { randomUUID } = require('crypto');
 const { BoundedMap } = require('./src/utils/bounded-map');
 const { createBackup, listBackups, verifyBackup } = require('./backup');
+const PriceWebSocketServer = require('./src/websocket');
+const prometheusMetrics = require('./src/prometheus');
+
+// Create HTTP server for WebSocket support
+const server = http.createServer(app);
+
+// Initialize WebSocket server
+const wsServer = new PriceWebSocketServer(server, {
+  broadcastInterval: 5000,
+  reconnectInterval: 30000
+});
 
 // API Key authentication
 const API_KEY = process.env.API_KEY || 'zigma-api-key-2024';
@@ -273,15 +286,23 @@ app.get('/status', async (req, res) => {
   });
 });
 
-// Basic metrics endpoint (for monitoring)
+// Prometheus metrics endpoint (for monitoring with Grafana)
 app.get('/metrics', (req, res) => {
-  res.json({
-    uptime_seconds: systemHealth.uptime,
-    posts_total: systemHealth.posts,
-    markets_monitored: systemHealth.marketsMonitored,
-    alerts_active: systemHealth.alertsActive,
-    last_run_timestamp: systemHealth.lastRun
-  });
+  const acceptHeader = req.headers.accept || '';
+  
+  if (acceptHeader.includes('application/json')) {
+    // Return JSON format for compatibility
+    res.json(prometheusMetrics.getMetricsJSON());
+  } else {
+    // Return Prometheus text format
+    res.set('Content-Type', 'text/plain; version=0.0.4');
+    res.send(prometheusMetrics.generatePrometheusOutput());
+  }
+});
+
+// Basic metrics endpoint (for backward compatibility)
+app.get('/api/metrics', (req, res) => {
+  res.json(prometheusMetrics.getMetricsJSON());
 });
 
 // Data endpoint for UI (structured cycle data)
@@ -1081,18 +1102,15 @@ async function resolveMarketIntent({
 
   const textMatch = marketQuestion || query;
   if (textMatch) {
-    let bestMatch = null;
-    let bestScore = 0;
-    for (const market of markets) {
-      const question = market.question || '';
-      const score = calculateSimilarity(textMatch.toLowerCase(), question.toLowerCase());
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = market;
-      }
-    }
-    if (bestMatch && bestScore >= 0.25) {
-      return respondWithIntent({ market: bestMatch, similarity: bestScore, source: 'similarity' });
+    // Use enhanced NLP matching for better natural language understanding
+    const matches = findBestMatchingMarket(markets, textMatch, { minSimilarity: 0.15, maxResults: 1 });
+    
+    if (matches.length > 0 && matches[0].similarity >= 0.15) {
+      return respondWithIntent({ 
+        market: matches[0].market, 
+        similarity: matches[0].similarity, 
+        source: 'nlp_similarity' 
+      });
     }
   }
 
@@ -1119,15 +1137,15 @@ async function resolveMarketIntent({
             }
           }
           if (direct.market.question && (query || '').length > 0) {
-            const similarity = calculateSimilarity(query, direct.market.question);
-            if (similarity < 0.2) {
+            const matches = findBestMatchingMarket([direct.market], query || marketQuestion || '', { minSimilarity: 0.15, maxResults: 1 });
+            if (matches.length === 0 || matches[0].similarity < 0.15) {
               continue;
             }
           }
           return respondWithIntent({
             market: direct.market,
-            similarity: direct.market.question
-              ? calculateSimilarity(query || marketQuestion || '', direct.market.question)
+            similarity: direct.market.question && (query || marketQuestion || '').length > 0
+              ? findBestMatchingMarket([direct.market], query || marketQuestion || '', { minSimilarity: 0.15, maxResults: 1 })[0]?.similarity || 1
               : 1,
             source: 'search_api',
             event: direct.event
@@ -2485,8 +2503,6 @@ app.get('/backtest', async (req, res) => {
 });
 
 // Graceful shutdown handler
-let server = null;
-
 const gracefulShutdown = async (signal) => {
   console.log(`\n${signal} received. Starting graceful shutdown...`);
 
@@ -2556,11 +2572,14 @@ app.use((req, res) => {
 
 module.exports = {
   app,
+  server,
+  wsServer,
   updateHealthMetrics,
   startServer: () => {
-    server = app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Agent Zigma server running on port ${PORT}`);
       console.log(`Health check: http://localhost:${PORT}/status`);
+      console.log(`WebSocket endpoint: ws://localhost:${PORT}/ws/prices`);
       systemHealth.status = 'operational';
     });
     return server;

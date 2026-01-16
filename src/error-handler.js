@@ -1,9 +1,86 @@
 /**
  * Standardized Error Handling Module
- * Provides consistent error handling across the application
+ * Provides consistent error handling across the application with actionable suggestions
  */
 
 const { recordError } = require('./monitoring');
+
+/**
+ * Actionable error suggestions mapping
+ */
+const ERROR_SUGGESTIONS = {
+  // API Errors
+  'API_ERROR': {
+    suggestion: 'The external API is experiencing issues. Please try again in a few minutes or check the service status.',
+    action: 'retry'
+  },
+  'RATE_LIMIT_EXCEEDED': {
+    suggestion: 'You have exceeded the rate limit. Please wait {retryAfter} seconds before making another request.',
+    action: 'wait'
+  },
+  
+  // Market Errors
+  'MARKET_ERROR': {
+    suggestion: 'Unable to fetch market data. Verify the market ID is correct or try searching for the market by name.',
+    action: 'verify'
+  },
+  'MARKET_NOT_FOUND': {
+    suggestion: 'Market not found. Check the Polymarket URL or search for the market name.',
+    action: 'search'
+  },
+  
+  // User Errors
+  'USER_NOT_FOUND': {
+    suggestion: 'User profile not found. Verify the wallet address is correct. The user may not have trading activity.',
+    action: 'verify'
+  },
+  'INVALID_WALLET_ADDRESS': {
+    suggestion: 'Invalid wallet address format. Provide a valid Ethereum address (0x followed by 40 hex characters).',
+    action: 'correct'
+  },
+  
+  // LLM Errors
+  'LLM_ERROR': {
+    suggestion: 'AI analysis service issue. Try simplifying your query or break it into smaller parts.',
+    action: 'simplify'
+  },
+  'LLM_TIMEOUT': {
+    suggestion: 'AI analysis took too long. Try a more specific query or check back later.',
+    action: 'wait'
+  },
+  'LLM_QUOTA_EXCEEDED': {
+    suggestion: 'Daily AI analysis limit reached. Try again tomorrow or upgrade your plan.',
+    action: 'upgrade'
+  },
+  
+  // Database Errors
+  'DATABASE_ERROR': {
+    suggestion: 'Database operation failed. Please try again. If the issue persists, contact support.',
+    action: 'retry'
+  },
+  
+  // Validation Errors
+  'VALIDATION_ERROR': {
+    suggestion: 'Invalid input data. Check the required fields and their formats.',
+    action: 'correct'
+  },
+  'INSUFFICIENT_DATA': {
+    suggestion: 'Not enough data for analysis. Try a different market or user with more trading history.',
+    action: 'change'
+  },
+  
+  // Network Errors
+  'NETWORK_ERROR': {
+    suggestion: 'Network connection issue. Check your internet connection and try again.',
+    action: 'check_network'
+  },
+  
+  // Default
+  'UNKNOWN_ERROR': {
+    suggestion: 'An unexpected error occurred. Please try again. If the issue persists, contact support.',
+    action: 'retry'
+  }
+};
 
 /**
  * Custom error classes
@@ -61,6 +138,27 @@ class MarketError extends ZigmaError {
 }
 
 /**
+ * Get actionable suggestion for error code
+ * @param {string} errorCode - Error code
+ * @param {Object} context - Context variables for suggestion template
+ * @returns {Object} Suggestion object with message and action
+ */
+function getSuggestion(errorCode, context = {}) {
+  const suggestion = ERROR_SUGGESTIONS[errorCode] || ERROR_SUGGESTIONS['UNKNOWN_ERROR'];
+  
+  // Replace placeholders in suggestion with context values
+  let message = suggestion.suggestion;
+  Object.keys(context).forEach(key => {
+    message = message.replace(`{${key}}`, context[key]);
+  });
+  
+  return {
+    suggestion: message,
+    action: suggestion.action
+  };
+}
+
+/**
  * Standardized error handler
  * @param {Error} error - The error to handle
  * @param {Object} context - Additional context
@@ -68,10 +166,15 @@ class MarketError extends ZigmaError {
  * @returns {Object|null} Error result or null if thrown
  */
 function handleError(error, context = {}, shouldThrow = false) {
+  const errorCode = error.code || 'UNKNOWN_ERROR';
+  const suggestionData = getSuggestion(errorCode, context);
+  
   const errorInfo = {
     message: error.message,
     name: error.name,
-    code: error.code || 'UNKNOWN_ERROR',
+    code: errorCode,
+    suggestion: suggestionData.suggestion,
+    suggestedAction: suggestionData.action,
     context: {
       ...context,
       timestamp: Date.now()
@@ -234,6 +337,7 @@ module.exports = {
 
   // Error handling functions
   handleError,
+  getSuggestion,
   asyncHandler,
   safeAsync,
   withRetry,
