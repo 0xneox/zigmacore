@@ -822,10 +822,16 @@ async function generateEnhancedAnalysis(marketData) {
       0.01,
       0.99
     );
-    // Use LLM's confidence as the probability for YES outcome
-    // If confidence > 50%, use it directly; if < 50%, it's a NO prediction
+    // Use market price as probability anchor, LLM confidence determines direction
+    // LLM confidence = how sure we are about the direction, not the YES probability
     const llmConfidence = result.confidence > 1 ? result.confidence / 100 : result.confidence;
-    const winProb = clamp(llmConfidence, 0.02, 0.98);
+    const basePrior = clamp(ensureNumber(marketData.yesPrice, 0.5), 0.01, 0.99);
+
+    // Calculate winProb based on direction, scaled by LLM confidence
+    // If delta > 0, LLM thinks YES is more likely than market price
+    // If delta < 0, LLM thinks YES is less likely than market price
+    // The confidence determines how much we adjust the probability
+    const winProb = clamp(basePrior + (combinedDelta * llmConfidence), 0.02, 0.98);
 
     const daysLeft = marketData.endDateIso
       ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)

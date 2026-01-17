@@ -1564,11 +1564,18 @@ async function generateSignals(selectedMarkets) {
     const marketProb = yesPrice;
     const blendedConfidence = blendProbabilities(normalizedConfidence, marketProb, priorProb, market.liquidity || 10000);
 
-    // Determine action using RAW LLM confidence (not blended) to preserve edges
+    // Calculate raw edge first based on YES probability
+    // If model confidence > market price, edge is positive for YES
+    // If model confidence < market price, edge is negative for YES (positive for NO)
+    const rawEdgeYes = rawLLMConfidence - yesPrice;
+
+    // Determine action based on edge direction and magnitude
     let action = 'SKIP_NO_TRADE';
-    if (rawLLMConfidence > yesPrice + EDGE_THRESHOLD) {
+    if (rawEdgeYes > EDGE_THRESHOLD) {
+      // Model is more bullish than market → BUY YES
       action = 'BUY YES';
-    } else if (rawLLMConfidence < yesPrice - EDGE_THRESHOLD) {
+    } else if (rawEdgeYes < -EDGE_THRESHOLD) {
+      // Model is more bearish than market → BUY NO
       action = 'BUY NO';
     }
 
@@ -1576,6 +1583,7 @@ async function generateSignals(selectedMarkets) {
     if (action === 'BUY YES') action = 'EXECUTE BUY YES';
     if (action === 'BUY NO') action = 'EXECUTE BUY NO';
 
+    // Calculate winProb and betPrice based on action
     let winProb, betPrice;
     if (action === 'EXECUTE BUY YES') {
       winProb = normalizedConfidence;
@@ -1706,8 +1714,8 @@ async function generateSignals(selectedMarkets) {
     }
 
     // Use OR logic for execution - accept if edge is high OR (confidence is decent AND exposure is good)
-    const debugDecision = (Math.abs(rawEdge) >= EDGE_THRESHOLD) || 
-                          (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdge) >= 0.01) 
+    const debugDecision = (Math.abs(rawEdgeYes) >= EDGE_THRESHOLD) ||
+                          (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdgeYes) >= 0.01)
                           ? 'EXECUTABLE' : 'DROPPED';
     log(`[DEBUG] Signal ${(market.question || '').slice(0, 50)} | Edge ${(signal.effectiveEdge * 100).toFixed(2)}% | Exposure ${(signal.intentExposure * 100).toFixed(2)}% | Conf ${signal.confidenceScore.toFixed(1)} (${boostedConfidenceScore.toFixed(1)} boosted) | Tier ${signal.tradeTier} → ${debugDecision}`);
 
@@ -1741,8 +1749,8 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
     };
 
     // Edge veto REMOVED - use OR logic for execution
-    if ((Math.abs(rawEdge) >= EDGE_THRESHOLD) || (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdge) >= 0.01)) {
-      if (signal.tradeTier === 'PROBE' && rawEdge > PROBE_EDGE_THRESHOLD) {
+    if ((Math.abs(rawEdgeYes) >= EDGE_THRESHOLD) || (signal.intentExposure >= 0.01 && boostedConfidenceScore >= edgeThreshold && Math.abs(rawEdgeYes) >= 0.01)) {
+      if (signal.tradeTier === 'PROBE' && rawEdgeYes > PROBE_EDGE_THRESHOLD) {
         signal.tradeTier = 'MEDIUM_TRADE';
       }
       executableTrades.push(signalWithMarket);
