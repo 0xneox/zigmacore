@@ -599,7 +599,7 @@ class MarketAnalyzer {
         const reasoning = `Crypto market shows strong momentum (${priceChange > 0 ? 'bullish' : 'bearish'}) with adequate liquidity. Suitable for speculative positioning.`;
         return {
           action: 'SPECULATIVE BUY',
-          confidence: Math.min(85, 60 + Math.abs(priceChange)),
+          confidence: 60 + Math.abs(priceChange),
           reasoning: spreadPct > 5 ? reasoning + ` ⚠️ High slippage warning: ${spreadPct.toFixed(2)}% spread detected.` : reasoning,
           riskLevel: riskAssessment.level,
           timestamp: Date.now()
@@ -687,18 +687,20 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
   const liqNum = liquidity;
 
   // 1. Safety check: No edge or invalid price
-  if (p <= (priceNum + edgeBuffer) || priceNum <= 0 || priceNum >= 1) {
+  const edge = p - priceNum;
+  if (Math.abs(edge) <= edgeBuffer || priceNum <= 0 || priceNum >= 1) {
     return 0; 
   }
 
-  const rawEdge = Math.abs(p - priceNum);
-  // Removed minimum edge threshold for MVP
+  // Flip to NO bet when edge is negative
+  const effectiveWinProb = edge > 0 ? p : (1 - p);
+  const effectivePrice = edge > 0 ? priceNum : (1 - priceNum);
 
   // 2. Standard Kelly: (p*b - q) / b
   // b = net odds (e.g., if price is 0.25, b is 3)
-  const b = (1 - priceNum) / priceNum;
-  const q = 1 - p;
-  let fullKelly = (p * b - q) / b;
+  const b = (1 - effectivePrice) / effectivePrice;
+  const q = 1 - effectiveWinProb;
+  let fullKelly = (effectiveWinProb * b - q) / b;
 
   // 3. Liquidity Scaling (More aggressive for MVP)
   // If liquidity < 1000, we don't bet.

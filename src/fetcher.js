@@ -132,11 +132,11 @@ async function fetchAllMarkets() {
   const baseUrl = `${GAMMA}/markets`;
   const params = {
     closed: 'false',
-    limit: 20000,
+    limit: 12000,
     order: 'startDate',
     sort: 'desc'
   };
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 20000;
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 12000;
   let offset = 0;
   let allMarkets = [];
 
@@ -187,7 +187,7 @@ async function fetchAllMarkets() {
 
       allMarkets.push(...markets.slice(0, remainingSlots));
       console.log(`📈 Accumulator length: ${allMarkets.length}`);
-      offset += params.limit;
+      offset += markets.length;
 
       // Rate limiting delay
       if (markets.length === 500) {
@@ -362,10 +362,13 @@ async function fetchUserActivity(maker, limit = 100) {
     const maxItems = MAX_ACTIVITY_ITEMS;
     let emptyResponseCount = 0;
     const seenActivityIds = new Set();
+    const MAX_API_CALLS = 50; // Add hard limit to prevent infinite loops
+    let apiCallCount = 0;
     
-    while (allActivity.length < maxItems) {
+    while (allActivity.length < maxItems && apiCallCount < MAX_API_CALLS) {
+      apiCallCount++;
       const url = `${DATA_API}/activity?user=${maker}&limit=${limit}&offset=${offset}`;
-      console.log(`[USER PROFILE] Fetching activity from: ${url} (offset: ${offset})`);
+      console.log(`[USER PROFILE] Fetching activity from: ${url} (offset: ${offset}, apiCall: ${apiCallCount}/${MAX_API_CALLS})`);
       
       const res = await http.get(url);
       const activityBatch = res.data || [];
@@ -400,6 +403,10 @@ async function fetchUserActivity(maker, limit = 100) {
       
       // Rate limiting
       await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    if (apiCallCount >= MAX_API_CALLS) {
+      console.warn(`[USER PROFILE] Hit max API calls limit (${MAX_API_CALLS})`);
     }
     
     console.log(`[USER PROFILE] Total activity fetched: ${allActivity.length}`);
@@ -572,41 +579,52 @@ function calculateUserMetricsWithRedemptions(positions = [], activity = [], bala
       buys.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
       sells.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
 
+      // Use position tracking for O(n) FIFO matching
+      let position = 0;
+      let costBasis = 0;
       let buyIndex = 0;
       let sellIndex = 0;
 
-      // Match buys and sells using FIFO
-      while (buyIndex < buys.length && sellIndex < sells.length) {
+      // Build position from all buys
+      while (buyIndex < buys.length) {
         const buy = buys[buyIndex];
-        const sell = sells[sellIndex];
-        
-        // Validate prices exist before calculating P&L
-        if (!buy.price || !sell.price) {
-          console.warn(`[USER PROFILE] Skipping trade with missing prices - buy: ${buy.price}, sell: ${sell.price}`);
+        if (!buy.price) {
           buyIndex++;
           continue;
         }
-        
-        const matchedSize = Math.min(buy.size, sell.size);
+        position += buy.size;
+        costBasis += buy.size * buy.price;
+        buyIndex++;
+      }
 
-        // P&L = (sellPrice - buyPrice) * matchedSize - fees
-        // Fee is 2% of total trade value (buy + sell)
-        const buyValue = buy.price * matchedSize;
+      // Match sells against position
+      while (sellIndex < sells.length && position > 0) {
+        const sell = sells[sellIndex];
+        if (!sell.price) {
+          sellIndex++;
+          continue;
+        }
+
+        const matchedSize = Math.min(position, sell.size);
+        const avgCost = costBasis / position;
+
+        // P&L = (sellPrice - avgCost) * matchedSize - fees
+        const buyValue = avgCost * matchedSize;
         const sellValue = sell.price * matchedSize;
         const tradeValue = buyValue + sellValue;
         const fee = tradeValue * POLYMARKET_FEE;
-        const pnl = (sell.price - buy.price) * matchedSize - fee;
-        
+        const pnl = (sell.price - avgCost) * matchedSize - fee;
+
         totalRealizedPnl += pnl;
         closedPositions++;
         if (pnl > 0) profitablePositions++;
 
-        // Reduce remaining sizes
-        buy.size -= matchedSize;
-        sell.size -= matchedSize;
+        // Update position
+        position -= matchedSize;
+        costBasis -= avgCost * matchedSize;
 
-        // Move to next trade if size is exhausted
-        if (buy.size < 0.0001) buyIndex++;
+        // Move to next sell
+        sell.size -= matchedSize;
         if (sell.size < 0.0001) sellIndex++;
       }
     });

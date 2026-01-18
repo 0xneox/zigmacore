@@ -276,6 +276,8 @@ app.get('/status', async (req, res) => {
     uptime: systemHealth.uptime,
     lastRun: systemHealth.lastRun,
     posts: systemHealth.posts,
+    marketsScanned: global.latestData?.cycleSummary?.marketsFetched || 0,
+    marketsQualified: global.latestData?.cycleSummary?.marketsEligible || 0,
     marketsMonitored: systemHealth.marketsMonitored,
     alertsActive: systemHealth.alertsActive,
     timestamp: Date.now(),

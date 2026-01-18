@@ -12,12 +12,80 @@ const { applyCalibration } = require('./confidence-calibration');
 require('dotenv').config();
 
 // Horizon discount function for time-based edge reduction
+// More time until resolution → larger discount (less certainty)
 function computeHorizonDiscount(daysToResolution) {
-  return Math.max(0.1, 1 - (daysToResolution / 365) * 0.5);
+  return Math.max(0.5, 1 - (daysToResolution / 365) * 0.3);
 }
 
 // Utility functions
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+// CORRECT edge calculation with proper direction
+function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
+  // Raw edge = your probability - market price
+  // Positive = market underpriced (BUY YES)
+  // Negative = market overpriced (BUY NO)
+  const rawEdge = llmProbability - marketPrice;
+
+  // Execution costs
+  const spread = orderBook?.spread || 0.02; // 2% default
+  const fees = 0.02; // 2% Polymarket fee
+  const totalCost = spread + fees;
+
+  // Net edge after costs (must overcome spread + fees)
+  const netEdge = Math.abs(rawEdge) - totalCost;
+
+  // Determine direction
+  const direction = rawEdge > 0 ? 'BUY_YES' : 'BUY_NO';
+
+  return {
+    rawEdge,           // Signed edge (-1 to +1)
+    netEdge,           // Absolute edge after costs
+    direction,         // Trade direction
+    isExecutable: netEdge > 0.01, // Only trade if >1% net edge
+    totalCost,
+    spread,
+    fees
+  };
+}
+
+// Conservative structural confidence based on market microstructure & liquidity
+function calculateStructuralConfidence(marketData = {}, orderBook = {}) {
+  const ob = orderBook || {};
+  const liquidity = Math.max(0, Number(marketData.liquidity) || 0);
+  const volume = Math.max(0, Number(marketData.volume24h || marketData.volume) || 0);
+  const depth = (() => {
+    const bids = Array.isArray(ob.bids) ? ob.bids : [];
+    const asks = Array.isArray(ob.asks) ? ob.asks : [];
+    const bidDepth = bids.slice(0, 5).reduce((sum, b) => sum + (Number(b?.size) || 0), 0);
+    const askDepth = asks.slice(0, 5).reduce((sum, a) => sum + (Number(a?.size) || 0), 0);
+    return bidDepth + askDepth;
+  })();
+
+  // Start conservative, lift slightly with structure, cap by entropy/volatility if available
+  let structural = 0.35;
+  if (liquidity > 100000) structural += 0.2;
+  else if (liquidity > 50000) structural += 0.12;
+  else if (liquidity > 20000) structural += 0.07;
+
+  if (volume > 50000) structural += 0.08;
+  else if (volume > 10000) structural += 0.04;
+
+  if (depth > 5000) structural += 0.08;
+  else if (depth > 1000) structural += 0.04;
+
+  const entropy = typeof marketData.entropy === 'number' ? marketData.entropy : null;
+  if (entropy !== null) {
+    structural -= Math.max(0, (entropy - 0.25) * 0.3);
+  }
+
+  const volatility = typeof marketData.priceVolatility === 'number' ? marketData.priceVolatility : null;
+  if (volatility !== null) {
+    structural -= Math.max(0, (volatility - 0.1) * 0.5);
+  }
+
+  return clamp(structural, 0.1, 0.95);
+}
 
 function getEntropy(question, daysLeft) {
   const q = (question || '').toLowerCase();
@@ -191,16 +259,14 @@ function safeParseLLM(output) {
     }
   }
 
+  const rawConf = confMatch ? parseInt(confMatch[1]) : 60;
   const parsed = {
     revised_prior: priorMatch ? parseFloat(priorMatch[1]) : 0.5,
-    confidence: confMatch ? parseInt(confMatch[1]) : 60, // Default mid if missing
+    confidence: Math.max(1, Math.min(100, rawConf)), // Enforce [1, 100]
     narrative,
     sentimentScore,
     newsSources
   };
-
-  // Ensure confidence is positive and above minimum floor
-  parsed.confidence = Math.max(1, parsed.confidence);
 
   console.log(`[PARSE] Fallback used: confidence=${parsed.confidence}, sentimentScore=${parsed.sentimentScore}, newsSources=${parsed.newsSources.length}`);
   return parsed;
@@ -236,47 +302,65 @@ function generateMockAnalysis(marketData) {
 // Enhanced system prompt for professional analysis
 const RESOLUTION_FIRST_PROMPT = `First, quote exact resolution criteria from market: [insert market.resolutionCriteria]. Then, build binary checklist: 1. Condition A met? (prob) 2. Condition B? etc. Only then narrative. Base on facts, not vibes. For YES: list 2-3 bull points. For NO: 2-3 bear. End with delta vs market.`;
 
-const ENHANCED_SYSTEM_PROMPT_TEMPLATE = RESOLUTION_FIRST_PROMPT + `
-You are the Agent Zigma. Today is {{todayDate}}. You are aware that Google's Gemini 3 Pro holds the #1 spot on Artificial Analysis, ahead of OpenAI's GPT-5.2 Garlic. Every trade must be cross-referenced against the BOJ Dec 19 rate hike decision (likely causing Yen Carry Trade unwind, -15% Bitcoin probability penalty) and the Trump 'Directive' vs 'Final Rule' legal framework. Reference market microstructure context: spread {{spread}}%, depth {{depth}}, liquidity score {{liquidityScore}}, recommended Kelly fraction {{kelly}}%.
+const ENHANCED_SYSTEM_PROMPT_TEMPLATE = `
+You are Agent Zigma, a professional prediction market analyst. Today is {{todayDate}}. You are aware that Google's Gemini 3 Pro holds the #1 spot on Artificial Analysis, ahead of OpenAI's GPT-5.2 Garlic. Every trade must be cross-referenced against the BOJ Dec 19 rate hike decision (likely causing Yen Carry Trade unwind, -15% Bitcoin probability penalty) and the Trump 'Directive' vs 'Final Rule' legal framework. Reference market microstructure context: spread {{spread}}%, depth {{depth}}, liquidity score {{liquidityScore}}, recommended Kelly fraction {{kelly}}%.
 
-MANDATORY OUTPUT: Return a valid JSON object with exactly these keys:
+MANDATORY OUTPUT SCHEMA:
 {
-  "deltaNews": number between -0.5 and 0.5 (news impact delta),
-  "deltaStructure": number between -0.5 and 0.5 (structural impact delta),
-  "deltaBehavior": number between -0.5 and 0.5 (behavioral impact delta),
-  "deltaTime": number between -0.5 and 0.5 (time decay impact delta),
-  "primaryReason": "NEWS_LAG", "STRUCTURAL_MISPRICING", "BEHAVIORAL_BIAS", "TIME_DECAY_ERROR", or "CROSS_MARKET_ARBITRAGE",
-  "reasoning": string explaining your analysis,
-  "uncertainty": number between 0 and 1 (quantified uncertainty in the analysis),
-  "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive),
-  "confidence": number between 1 and 100 (your confidence in this analysis as an integer),
-  "newsSources": array of objects with "title", "source", "date", "url" (if available), and "relevance" (high/medium/low)
+  "revised_prior": number between 0.01 and 0.99 (YOUR probability estimate for YES outcome),
+  "confidence": integer between 1 and 100 (how certain you are in this estimate),
+  "reasoning": string (explain your analysis in 2-3 sentences),
+  "sentimentScore": number between -1 and 1 (news sentiment),
+  "newsSources": array of {"title": string, "source": string, "relevance": "high"|"medium"|"low"},
+  "uncertainty": number between 0 and 1 (data quality and time risk)
 }
 
-CRITICAL: You MUST analyze the provided news headlines and return:
-1. sentimentScore: Calculate based on news sentiment (-1 to 1)
-2. newsSources: Extract 3-5 most relevant news items with title, source, date, and relevance
+CRITICAL INSTRUCTIONS:
+1. revised_prior is your ABSOLUTE probability for YES (0.01 to 0.99)
+2. If market is at 60% and you think it should be 70%, return revised_prior: 0.70
+3. If market is at 60% and you think it should be 40%, return revised_prior: 0.40
+4. confidence is how CERTAIN you are (1-100), NOT the probability
+5. Base revised_prior on: news sentiment, historical data, base rates, market inefficiencies
 
-Always include "confidence": 1-100 integer in JSON; explain why in reasoning.
-IMPORTANT: For each news item mentioned in reasoning, include it in newsSources array with title, source, date, and relevance level.
+CALIBRATION EXAMPLES:
+Example 1: "Will Bitcoin reach $100k in 2024?"
+- Market: 65% YES
+- Analysis: Strong fundamentals, but macro headwinds
+- Output: revised_prior: 0.58, confidence: 65
+- Reasoning: Slightly bearish vs market due to Fed policy
+
+Example 2: "Will Team X win championship?" (1 of 32 teams)
+- Market: 8% YES (overpriced vs 3.1% base rate)
+- Analysis: Recent injuries, tough schedule
+- Output: revised_prior: 0.02, confidence: 70
+- Reasoning: Market inefficiency detected, strong edge
+
+Example 3: "Will Governor win re-election in California?"
+- Market: 72% YES
+- Analysis: Incumbent advantage in blue state, strong polling
+- Output: revised_prior: 0.78, confidence: 75
+- Reasoning: Historical base rate 70% + incumbent boost
+
+Example 4: "Will ETF be approved by SEC?"
+- Market: 85% YES
+- Analysis: Legal timeline constraints, APA requirements
+- Output: revised_prior: 0.60, confidence: 80
+- Reasoning: Executive Order != Final Rule, time too short
+
+ANALYSIS STEPS:
+Step 1: Calculate base rate prior (historical YES rate for this category)
+Step 2: Analyze news headlines for bullish/bearish signals
+Step 3: Adjust base rate by news sentiment (max ±20%)
+Step 4: Compare to market price - if significantly different, explain why
+Step 5: Set confidence based on evidence quality (high evidence = high confidence)
+
+CRITICAL LEGAL ANALYST: You are a Legal Analyst. If a market asks if a federal regulation will change, you MUST factor in the Administrative Procedure Act (APA). A Presidential Executive Order is an INTENT, not a RESOLUTION. Finalizing a Schedule III reclassification requires a 'Final Rule' in the Federal Register. If today is Dec 18 and the market ends Dec 31, a 99% probability is a HALLUCINATION.
+
+You MUST analyze the provided news headlines and return:
+1. sentimentScore: Calculate based on news sentiment (-1 to 1)
+2. newsSources: Extract 3-5 most relevant news items with title, source, and relevance
 
 RESPONSE MUST BE STRICT JSON ONLY. NO PROSE. NO MARKDOWN BLOCKS. NO ADDITIONAL TEXT. ONLY THE JSON OBJECT AS SHOWN ABOVE.
-
-INSTRUCTIONS:
-- CRITICAL LEGAL ANALYST: You are a Legal Analyst. If a market asks if a federal regulation will change, you MUST factor in the Administrative Procedure Act (APA). A Presidential Executive Order is an INTENT, not a RESOLUTION. Finalizing a Schedule III reclassification requires a 'Final Rule' in the Federal Register. If today is Dec 18 and the market ends Dec 31, a 99% probability is a HALLUCINATION. The correct delta is -0.30 for time decay.
-- CRITICAL: It is December 18. For any market resolving by Dec 31, evaluate if the news event results in immediate legal resolution per the market's specific description.
-- Check the market description for resolution criteria and compare to news timing. Do not assume announcement equals resolution.
-- Multi-Step Reasoning: Step 1: Analyze news headlines for sentiment and relevance. Step 2: Calculate base probability from priors and data. Step 3: Adjust for deltas and assess survivability. Step 4: Quantify uncertainty based on data quality and time left.
-- Uncertainty Quantification: Provide a score from 0 (certain) to 1 (highly uncertain) based on news volume, source credibility, and market maturity.
-- Sentiment Integration: Aggregate sentiment from headlines as a score: positive for bullish, negative for bearish, neutral otherwise.
-- Entity-Specific Sentiment: Weight news sources by credibility.
-- Resolution Rule Guardrail: Parse market fine print.
-- Shadow Market Tracking: Factor correlated events.
-- Base deltas on market question, current price, news, fundamentals, and sentiment.
-- Output deltas that adjust the market price to the true probability.
-- NEVER output probabilities, confidence, or actions. Only deltas and reasoning.
-- NEWS SOURCES: Extract 3-5 most relevant news items with title, source, date, and relevance (high/medium/low)
-- SENTIMENT: Calculate sentiment score (-1 to 1) based on news headlines
 `;
 
 function buildEnhancedSystemPrompt(context = {}) {
@@ -336,13 +420,14 @@ function buildEnhancedAnalysisPrompt(marketData, analysis, orderBook, news = [])
 
   return `You are a professional Polymarket analyst. You must return STRICT JSON ONLY (no markdown) that matches this schema:
 {
-  "delta": number between -0.20 and 0.20 (adjustment to the current market YES price based on news, fundamentals, and biases; positive for more likely YES, negative for less likely),
-  "confidence": number between 1 and 100 (your confidence in this delta as an integer),
-  "narrative": string (brief explanation of your reasoning, including how news influenced the delta),
+  "revised_prior": number between 0 and 1 (your probability estimate for YES outcome),
+  "delta": number between -0.20 and 0.20 (difference from market price, for reference),
+  "confidence": number between 1 and 100 (your confidence in this revised_prior as an integer),
+  "narrative": string (brief explanation of your reasoning, including how news influenced the revised_prior),
   "sentimentScore": number between -1 and 1 (overall sentiment from news headlines, -1 negative, 0 neutral, 1 positive),
   "newsSources": array of objects with "title", "source", "date", "url" (if available), and "relevance" (high/medium/low)
 }
-Always include "confidence": 1-100 integer in JSON. Do NOT output absolute probabilities—only the delta adjustment to the market price.
+Always include "confidence": 1-100 integer in JSON. Output your revised_prior (0 to 1) as your probability estimate for YES outcome.
 
 CRITICAL: You MUST analyze the provided news headlines and return:
 1. sentimentScore: Calculate based on news sentiment (-1 to 1)
@@ -352,7 +437,7 @@ Context for your assessment:
 MARKET DATA:
 ${marketJson}
 
-Current YES market price (base for delta adjustment): ${marketData.yesPrice}
+Current YES market price (for reference): ${marketData.yesPrice}
 Historical base rate prior: ${baseRatePrior} (This is the expected probability based on historical data, state political leanings, or competitor count)
 
 HISTORICAL CONTEXT:
@@ -370,7 +455,7 @@ ${newsText}
 Instructions:
 - First, provide the strongest argument for YES outcome.
 - Second, provide the strongest argument for NO outcome.
-- Then, considering both arguments, estimate the delta adjustment (between -0.20 and 0.20) to the current market price.
+- Then, considering both arguments, estimate the revised_prior probability (between 0 and 1) for the YES outcome.
 - Compare the market price (${marketData.yesPrice}) to the historical base rate (${baseRatePrior}). If they differ significantly, explain why in your narrative.
 - Consider historical base rates, state-specific political leanings, and incumbent advantages if applicable.
 - Provide confidence score based on evidence strength (e.g., high for credible news, low for speculative).
@@ -385,6 +470,24 @@ Return ONLY the JSON object—no prose or extra text.`;
 function calculateBaseRatePrior(marketData) {
   const question = marketData.question || '';
   const q = question.toLowerCase();
+
+  // Historical category base rates (YES resolution rates)
+  const CATEGORY_BASE_RATES = {
+    'CRYPTO': 0.42,
+    'POLITICS': 0.48,
+    'SPORTS': 0.35,
+    'SPORTS_FUTURES': 0.35,
+    'SPORTS_PLAYER': 0.32,
+    'MACRO': 0.44,
+    'ECONOMY': 0.44,
+    'ETF_APPROVAL': 0.55,
+    'TECH_ADOPTION': 0.46,
+    'TECH': 0.46,
+    'ENTERTAINMENT': 0.50,
+    'CELEBRITY': 0.40,
+    'EVENT': 0.45,
+    'OTHER': 0.50
+  };
 
   // Detect NFL teams (32 teams = 3.1% base rate)
   if (/win the (super bowl|afc championship|nfc championship)/i.test(q)) {
@@ -474,21 +577,27 @@ function calculateBaseRatePrior(marketData) {
     }
   }
 
-  // Default category priors
-  if (/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) {
-    return 0.55;
-  }
-  if (/recession|inflation|fed|fed rate|gdp|unemployment|economy/i.test(q)) {
-    return 0.50;
-  }
-  if (/election|president|trump|biden|senate|congress|political|government/i.test(q)) {
-    return 0.42;
-  }
-  if (/grammy|oscar|emmy|award|nomination/i.test(q)) {
-    return 0.48;
+  // Category-based priors as fallback
+  const category = (marketData.category || '').toUpperCase();
+  if (category && CATEGORY_BASE_RATES[category] != null) {
+    return CATEGORY_BASE_RATES[category];
   }
 
-  return 0.50; // Default 50% for unknown markets
+  // Fuzzy category detection from question text
+  if (/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) {
+    return CATEGORY_BASE_RATES.CRYPTO;
+  }
+  if (/recession|inflation|fed|fed rate|gdp|unemployment|economy|macro/i.test(q)) {
+    return CATEGORY_BASE_RATES.MACRO;
+  }
+  if (/election|president|trump|biden|senate|congress|political|government/i.test(q)) {
+    return CATEGORY_BASE_RATES.POLITICS;
+  }
+  if (/grammy|oscar|emmy|award|nomination/i.test(q)) {
+    return CATEGORY_BASE_RATES.ENTERTAINMENT;
+  }
+
+  return CATEGORY_BASE_RATES.OTHER; // Default 50% for unknown markets
 }
 
 // Get historical context for LLM
@@ -713,17 +822,17 @@ async function generateEnhancedAnalysis(marketData) {
       confidence: fallbackConfidence,
       action: fallbackAction,
       probability: fallbackProbability,
+      revised_prior: fallbackProbability,
       reasoning: fallbackReasoning,
-      deltaNews: news && news.length > 0 ? (fallbackProbability - basePrior) : 0,
-      deltaStructure: 0,
-      deltaBehavior: 0,
-      deltaTime: 0,
       sentimentScore: news && news.length > 0 ? (fallbackProbability - basePrior) * 10 : 0,
       uncertainty: 0.5,
       generatedAt: Date.now(),
       fallback: true
     };
   };
+
+  // Declare newsDeltaResult outside try block for proper scope
+  let newsDeltaResult = 0;
 
   try {
     if (!checkCircuitBreaker()) {
@@ -732,7 +841,41 @@ async function generateEnhancedAnalysis(marketData) {
     }
 
     console.log(`[LLM] Starting API call for ${marketData.id}`);
-    response = await llmCall();
+    
+    // Execute news delta computation in parallel with main LLM call to prevent stale data
+    const [llmResponse, newsDeltaResultValue] = await Promise.all([
+      llmCall(),
+      (async () => {
+        if (news.length === 0) return 0;
+        try {
+          const newsSummary = news.map(n => n.title + ' ' + n.snippet).join('\n').substring(0, 1000);
+          const deltaPrompt = `Based ONLY on the provided news summary, does it make the YES outcome more likely (+), less likely (-), or neutral (0) compared to current market odds? Respond with only: +X%, -X%, or 0% where X is 5-20.\n\nNews summary:\n${newsSummary}`;
+          const deltaResponse = await client.chat.completions.create({
+            model: NEWS_DELTA_MODEL,
+            messages: [{ role: 'user', content: deltaPrompt }],
+            max_tokens: 20,
+            temperature: 0
+          });
+          const deltaText = deltaResponse.choices[0].message.content.trim();
+          if (deltaText === '0%') {
+            return 0;
+          } else if (deltaText.startsWith('+')) {
+            const num = parseFloat(deltaText.replace('+', '').replace('%', ''));
+            return isNaN(num) ? 0 : Math.min(num, 20) / 100;
+          } else if (deltaText.startsWith('-')) {
+            const num = parseFloat(deltaText.replace('-', '').replace('%', ''));
+            return isNaN(num) ? 0 : -Math.min(num, 20) / 100;
+          }
+          return 0;
+        } catch (e) {
+          console.error('News delta computation failed:', e);
+          return 0;
+        }
+      })()
+    ]);
+    
+    newsDeltaResult = newsDeltaResultValue;
+    response = llmResponse;
     llmOk = true;
     recordLLMSuccess();
     console.log(`[LLM] API call completed for ${marketData.id}`);
@@ -763,38 +906,10 @@ async function generateEnhancedAnalysis(marketData) {
   });
 
   let llmAnalysis = response?.choices?.[0]?.message?.content || '{}';
+  const newsDelta = newsDeltaResult ?? 0;
 
   console.log('LLM Response:', llmAnalysis);
-
-    // Compute news delta if news available
-
-    // Compute news delta if news available
-    let newsDelta = 0;
-    if (news.length > 0) {
-      const newsSummary = news.map(n => n.title + ' ' + n.snippet).join('\n').substring(0, 1000); // limit length
-      const deltaPrompt = `Based ONLY on the provided news summary, does it make the YES outcome more likely (+), less likely (-), or neutral (0) compared to current market odds? Respond with only: +X%, -X%, or 0% where X is 5-20.\n\nNews summary:\n${newsSummary}`;
-      try {
-        const deltaResponse = await client.chat.completions.create({
-          model: NEWS_DELTA_MODEL,
-          messages: [{ role: 'user', content: deltaPrompt }],
-          max_tokens: 20,
-          temperature: 0
-        });
-        const deltaText = deltaResponse.choices[0].message.content.trim();
-        if (deltaText === '0%') {
-          newsDelta = 0;
-        } else if (deltaText.startsWith('+')) {
-          const num = parseFloat(deltaText.replace('+', '').replace('%', ''));
-          newsDelta = isNaN(num) ? 0 : Math.min(num, 20) / 100;
-        } else if (deltaText.startsWith('-')) {
-          const num = parseFloat(deltaText.replace('-', '').replace('%', ''));
-          newsDelta = isNaN(num) ? 0 : -Math.min(num, 20) / 100;
-        }
-      } catch (e) {
-        console.error('News delta computation failed:', e);
-        newsDelta = 0;
-      }
-    }
+  console.log('News Delta:', newsDelta);
 
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const result = safeParseLLM(llmAnalysis);
@@ -807,39 +922,39 @@ async function generateEnhancedAnalysis(marketData) {
       return fallback;
     };
 
-    // Compute revised_prior from delta (Change 1)
-    const base_prior = clamp(ensureNumber(marketData.yesPrice, 0.5), 0.01, 0.99);
-    const delta = clamp(ensureNumber(result.delta, 0), -0.20, 0.20);
-    const combinedDelta = clamp(delta + newsDelta, -0.25, 0.25);
-    const revised_prior = clamp(base_prior + combinedDelta, 0.01, 0.99);
-    result.revised_prior = ensureNumber(result.revised_prior, revised_prior);
-
-    const pMarket = clamp(typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5, 0.01, 0.99);
-    const basePriorForAvg = clamp(
-      typeof marketData.basePrior === 'number' && Number.isFinite(marketData.basePrior)
-        ? marketData.basePrior
-        : base_prior,
+    // Extract probability (revised_prior) from LLM - TRUST LLM's value
+    const llmProbability = clamp(
+      ensureNumber(result.revised_prior, marketData.yesPrice),
       0.01,
       0.99
     );
-    // Use market price as probability anchor, LLM confidence determines direction
-    // LLM confidence = how sure we are about the direction, not the YES probability
-    const llmConfidence = result.confidence > 1 ? result.confidence / 100 : result.confidence;
-    const basePrior = clamp(ensureNumber(marketData.yesPrice, 0.5), 0.01, 0.99);
 
-    // Calculate winProb based on direction, scaled by LLM confidence
-    // If delta > 0, LLM thinks YES is more likely than market price
-    // If delta < 0, LLM thinks YES is less likely than market price
-    // The confidence determines how much we adjust the probability
-    const winProb = clamp(basePrior + (combinedDelta * llmConfidence), 0.02, 0.98);
+    // Extract confidence (certainty) from LLM
+    const llmConfidence = result.confidence > 1
+      ? result.confidence / 100
+      : result.confidence;
 
-    const daysLeft = marketData.endDateIso
-      ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
-      : marketData.endDate
-        ? (new Date(marketData.endDate) - Date.now()) / (1000 * 60 * 60 * 24)
-        : 365;
-    
-    // Enhanced entropy calculation
+    // DO NOT recalculate probability - trust LLM's revised_prior
+    const winProb = llmProbability;
+
+    // Calculate edge with spread and fee adjustments
+    const pMarket = marketData.yesPrice || 0.5;
+    const edgeAnalysis = computeNetEdge(winProb, pMarket, orderBook || {});
+    const rawEdge = edgeAnalysis.rawEdge;
+    const netEdge = edgeAnalysis.netEdge;
+    const direction = edgeAnalysis.direction;
+
+    // Set action based on direction
+    let action = 'HOLD';
+    if (edgeAnalysis.isExecutable) {
+      action = direction === 'BUY_YES' ? 'BUY YES' : 'BUY NO';
+    }
+
+    // Position sizing
+    const baseKelly = calculateKelly(winProb, pMarket, 0.01, marketData.liquidity || 10000);
+    const exposure = Math.min(0.05, Math.max(0, baseKelly));
+
+    // Calculate entropy for additional context
     const entropyAnalysis = calculateMarketEntropy(marketData, {
       endDate: marketData.endDateIso || marketData.endDate,
       outcomes: marketData.outcomePrices || marketData.prices || []
@@ -847,102 +962,24 @@ async function generateEnhancedAnalysis(marketData) {
     const entropy = entropyAnalysis.entropy;
 
     // Enhanced sentiment analysis
-    let sentimentScore = 0;
-    if (news && news.length > 0) {
+    let sentimentScore = result.sentimentScore || 0;
+    if (news && news.length > 0 && sentimentScore === 0) {
       const sentimentAnalysis = calculateAggregateSentiment(news);
       sentimentScore = sentimentAnalysis.score;
     }
-    
-    // Ensure sentimentScore is not zero if there's news
-    if (news && news.length > 0 && sentimentScore === 0) {
-      // Calculate sentiment from news headlines as fallback
-      // Limit news array size to prevent memory leaks
-      const limitedNews = news.slice(0, 20); // Max 20 news items
-      const positiveKeywords = ['rise', 'increase', 'growth', 'bullish', 'positive', 'up', 'gain', 'surge', 'rally', 'strong', 'good', 'excellent'];
-      const negativeKeywords = ['fall', 'decrease', 'decline', 'bearish', 'negative', 'down', 'loss', 'drop', 'crash', 'weak', 'bad', 'poor'];
-      
-      let positiveCount = 0;
-      let negativeCount = 0;
-      
-      limitedNews.forEach(item => {
-        const title = (item.title || '').toLowerCase();
-        const snippet = (item.snippet || '').toLowerCase();
-        const text = title + ' ' + snippet;
-        
-        positiveKeywords.forEach(keyword => {
-          if (text.includes(keyword)) positiveCount++;
-        });
-        
-        negativeKeywords.forEach(keyword => {
-          if (text.includes(keyword)) negativeCount++;
-        });
-      });
-      
-      const totalSentiment = positiveCount - negativeCount;
-      const totalItems = limitedNews.length || 1;
-      sentimentScore = Math.max(-1, Math.min(1, totalSentiment / totalItems));
-    }
 
-    const liquidityUsd = Number(marketData.liquidity) || 0;
-    const priceMomentum =
-      typeof marketData.priceChange === 'number'
-        ? Math.min(Math.max(Math.abs(marketData.priceChange) / 100, 0), 0.03)
-        : 0;
-
-    const liquidityBoost =
-      liquidityUsd >= 100000 ? 0.025 :
-      liquidityUsd >= 50000 ? 0.02 :
-      liquidityUsd >= 20000 ? 0.01 : 0;
-
-    const deltaBoost = Math.min(Math.abs(combinedDelta), 0.03);
-    const entropyPenalty = Math.max(0, (entropy - 0.3) * 0.02);
-    const baseThreshold = 0.05;
-    const dynamicThreshold = Math.max(
-      0.01, // Minimum threshold to prevent negative values
-      baseThreshold - liquidityBoost - deltaBoost - priceMomentum + entropyPenalty
-    );
-
-    let action = 'HOLD';
-    if (winProb > pMarket + dynamicThreshold) action = 'BUY YES';
-    else if (winProb < pMarket - dynamicThreshold) action = 'BUY NO';
-
-    const rawEdge = winProb - pMarket;
+    // Calculate absolute edge and confidence score
     const absEdge = Math.abs(rawEdge);
+    const confidenceScore = llmConfidence;
 
-    const daysToResolution = marketData.endDateIso
-      ? Math.max(0, (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24))
-      : marketData.endDate
-        ? Math.max(0, (new Date(marketData.endDate) - Date.now()) / (1000 * 60 * 60 * 24))
-        : 365;
-    const horizonDiscount = computeHorizonDiscount(daysToResolution);
-
-    let normalizedConfidence = result.confidence > 1 ? result.confidence / 100 : result.confidence;
-    normalizedConfidence = clamp(normalizedConfidence, 0.01, 1);
-    const expectedEdge = rawEdge * normalizedConfidence * horizonDiscount;
-    const absExpectedEdge = Math.abs(expectedEdge);
-
+    // Classify market category for adaptive learning
     const category = classifyMarket(marketData.question);
-    let exposure = 0;
-    let tier = 'None';
 
-    // Liquidity-aware Kelly-style sizing
-    const liqUsd = Math.max(0, Number(marketData.liquidity) || 0);
-    let liquidityTier = 1.0;
-    if (liqUsd < 30000) liquidityTier = 0.6;
-    else if (liqUsd < 80000) liquidityTier = 0.85;
-    else if (liqUsd > 300000) liquidityTier = 1.4;
-
-    const baseKelly = calculateKelly(winProb, pMarket, 0.01, liqUsd || 10000);
-    exposure = Math.min(0.05, Math.max(0, baseKelly * liquidityTier));
+    // Determine trade tier based on exposure
+    let tier = 'SCOUT';
     if (exposure >= 0.04) tier = 'STRONG_TRADE';
     else if (exposure >= 0.02) tier = 'SMALL_TRADE';
     else if (exposure >= 0.005) tier = 'PROBE';
-    else tier = 'SCOUT';
-
-    // Conviction boost: Adjust based on edge/volatility
-    const volatilityFactor = marketData.priceVolatility || 0.05; // from metrics
-    // Use LLM's confidence directly - don't overwrite it with formula
-    let confidenceScore = clamp(normalizedConfidence, 0.01, 1);
 
     // Apply adaptive learning
     const adaptiveLearning = applyAdaptiveLearning(category, action, absEdge, confidenceScore * 100);
@@ -985,16 +1022,10 @@ async function generateEnhancedAnalysis(marketData) {
       sentimentScore: sentimentScore !== 0 ? sentimentScore : extractSentimentFromNews(news),
       adaptiveLearning: adaptiveLearning,
       calibration: calibratedSignal,
-      // Include factor breakdown deltas from LLM
-      deltaNews: ensureNumber(result.deltaNews, newsDelta),
-      deltaStructure: ensureNumber(result.deltaStructure, 0),
-      deltaBehavior: ensureNumber(result.deltaBehavior, 0),
-      deltaTime: ensureNumber(result.deltaTime, 0),
-      primaryReason: result.primaryReason || 'ANALYSIS',
+      revised_prior: ensureNumber(result.revised_prior, llmProbability),
       uncertainty: ensureNumber(result.uncertainty, entropy),
-      // Include news sources with citations - use LLM result or extract from news
-      newsSources: Array.isArray(result.newsSources) && result.newsSources.length > 0 
-        ? result.newsSources 
+      newsSources: Array.isArray(result.newsSources) && result.newsSources.length > 0
+        ? result.newsSources
         : extractNewsSourcesFromNews(news)
     };
     structuredAnalysis.baseEffectiveEdge = baseEffectiveEdge;
@@ -1099,4 +1130,4 @@ async function generatePersonalizedAnalysis(marketData, userProfile) {
   }
 }
 
-module.exports = { generateDecrees, generateEnhancedAnalysis, generatePersonalizedAnalysis };
+module.exports = { generateDecrees, generateEnhancedAnalysis, generatePersonalizedAnalysis, computeNetEdge };
