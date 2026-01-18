@@ -84,7 +84,7 @@ const CYCLE_HISTORY_FILE = path.join(CACHE_DIR, 'cycle_history.json');
 // Set LOG_LEVEL=DEBUG for development, LOG_LEVEL=INFO for production
 // Usage: log('message', 'DEBUG') - only executes if level >= current threshold
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'INFO').toUpperCase();
-const LOG_TO_CONSOLE = LOG_LEVEL === 'DEBUG' || process.env.NODE_ENV === 'development';
+const LOG_TO_CONSOLE = LOG_LEVEL === 'DEBUG' || process.env.NODE_ENV === 'development' || true;
 
 const LOG_LEVEL_NUM = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
 const CURRENT_LOG_LEVEL = LOG_LEVEL_NUM[LOG_LEVEL] || 1;
@@ -94,8 +94,8 @@ const log = (msg, level = 'INFO') => {
     const timestamped = `[${new Date().toISOString()}] [${level}] ${msg}`;
     // Write to stream instead of appendFile to prevent file descriptor leaks
     consoleLogStream.write(timestamped + '\n');
-    // Always output to console immediately for visibility
-    console.log(timestamped);
+    // Always output to console immediately for visibility - use original console to avoid circular dependency
+    originalConsoleLog(timestamped);
   }
 };
 
