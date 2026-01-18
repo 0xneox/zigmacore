@@ -27,12 +27,19 @@ function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
   // Negative = market overpriced (BUY NO)
   const rawEdge = llmProbability - marketPrice;
 
-  // Execution costs
-  const spread = orderBook?.spread || 0.02; // 2% default
-  const fees = 0.02; // 2% Polymarket fee
-  const totalCost = spread + fees;
+  // Polymarket costs:
+  // - Trading fee: 2% on profits only (not upfront)
+  // - Spread: 0.5-1% for liquid markets, 1-2% for illiquid
+  const estimatedSpread = orderBook?.spread || 0.01; // 1% default spread
+  const tradingFee = 0.02; // 2% on profits
 
-  // Net edge after costs (must overcome spread + fees)
+  // Effective cost calculation:
+  // If you have 5% edge and win, you pay 2% fee on the 5% profit = 0.1% effective cost
+  // Plus you cross the spread upfront = 1% cost
+  // Total effective cost ≈ 1.1%
+  const effectiveFee = Math.abs(rawEdge) * tradingFee; // Fee only on profits
+  const totalCost = estimatedSpread + effectiveFee;
+
   const netEdge = Math.abs(rawEdge) - totalCost;
 
   // Determine direction
@@ -42,10 +49,10 @@ function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
     rawEdge,           // Signed edge (-1 to +1)
     netEdge,           // Absolute edge after costs
     direction,         // Trade direction
-    isExecutable: netEdge > 0.01, // Only trade if >1% net edge
+    isExecutable: netEdge > 0.005, // 0.5% minimum net edge
     totalCost,
-    spread,
-    fees
+    spread: estimatedSpread,
+    fees: effectiveFee
   };
 }
 

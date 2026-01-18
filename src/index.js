@@ -196,7 +196,7 @@ const PROBE_EDGE_THRESHOLD = 0.02; // Minimum edge for probe trades
 const STRONG_TRADE_EXPOSURE = 0.02; // Minimum exposure for strong trades
 const SMALL_TRADE_EXPOSURE = 0.005; // Minimum exposure for small trades
 const PROBE_EXPOSURE = 0.0001; // Minimum exposure for probe trades
-const MIN_NET_EDGE = 0.05; // 5% minimum net edge after costs
+const MIN_NET_EDGE = 0.01; // 1% minimum net edge after costs
 const CONVICTION_MULTIPLIER_MIN = 0.8; // Minimum conviction multiplier
 const HIGH_EDGE_THRESHOLD = 0.10; // Edge above which conviction doesn't matter
 const MEDIUM_EDGE_THRESHOLD = 0.05; // Edge above which conviction penalty is reduced
@@ -367,20 +367,20 @@ const PROBABILITY_CAPS = {
 };
 
 const CATEGORY_EDGE_CONFIG = {
-  SPORTS_FUTURES: { base: 0.05, low: 0.02, hiLiquidity: 150000 },
-  POLITICS: { base: 0.04, low: 0.0225, hiLiquidity: 120000 },
-  MACRO: { base: 0.035, low: 0.02, hiLiquidity: 100000 },
-  CRYPTO: { base: 0.04, low: 0.025, hiLiquidity: 90000 },
-  TECH: { base: 0.035, low: 0.02, hiLiquidity: 80000 },
-  TECH_ADOPTION: { base: 0.035, low: 0.02, hiLiquidity: 80000 },
-  ETF_APPROVAL: { base: 0.04, low: 0.025, hiLiquidity: 80000 },
-  ENTERTAINMENT: { base: 0.05, low: 0.03, hiLiquidity: 60000 },
-  CELEBRITY: { base: 0.05, low: 0.035, hiLiquidity: 40000 },
-  WAR_OUTCOMES: { base: 0.045, low: 0.03, hiLiquidity: 70000 },
-  EVENT: { base: 0.05, low: 0.03, hiLiquidity: 60000 },
-  OTHER: { base: 0.05, low: 0.035, hiLiquidity: 60000 }
+  SPORTS_FUTURES: { base: 0.01, low: 0.008, hiLiquidity: 150000 },
+  POLITICS: { base: 0.015, low: 0.01, hiLiquidity: 120000 },
+  MACRO: { base: 0.015, low: 0.01, hiLiquidity: 100000 },
+  CRYPTO: { base: 0.015, low: 0.01, hiLiquidity: 90000 },
+  TECH: { base: 0.015, low: 0.01, hiLiquidity: 80000 },
+  TECH_ADOPTION: { base: 0.015, low: 0.01, hiLiquidity: 80000 },
+  ETF_APPROVAL: { base: 0.015, low: 0.01, hiLiquidity: 80000 },
+  ENTERTAINMENT: { base: 0.02, low: 0.015, hiLiquidity: 60000 },
+  CELEBRITY: { base: 0.02, low: 0.015, hiLiquidity: 40000 },
+  WAR_OUTCOMES: { base: 0.02, low: 0.015, hiLiquidity: 70000 },
+  EVENT: { base: 0.02, low: 0.015, hiLiquidity: 60000 },
+  OTHER: { base: 0.02, low: 0.015, hiLiquidity: 60000 }
 };
-const DEFAULT_EDGE_CONFIG = { base: 0.05, low: 0.03, hiLiquidity: 60000 };
+const DEFAULT_EDGE_CONFIG = { base: 0.02, low: 0.015, hiLiquidity: 60000 };
 
 // Meme/joke market patterns to filter out
 const MEME_MARKET_PATTERNS = [
@@ -1187,18 +1187,14 @@ function decideAction(probZigma, probMarket, effectiveEdge, market) {
   return 'NO_TRADE';
 }
 
-function getTradeTier(effectiveEdge, probZigma) {
-  const absEdge = Math.abs(effectiveEdge);
-  const confidence = probZigma > 0.5 ? probZigma : 1 - probZigma;
+function getTradeTier(netEdge, confidence) {
+  // Use net edge (after costs) and confidence (certainty)
+  const absNetEdge = Math.abs(netEdge);
 
-  if (absEdge > 0.10 && confidence > 0.70) {
-    return 'STRONG_TRADE';
-  } else if (absEdge > 0.05 && confidence > 0.60) {
-    return 'SMALL_TRADE';
-  } else if (absEdge > 0.02 && confidence > 0.50) {
-    return 'PROBE';
-  }
-
+  // Thresholds based on NET edge
+  if (absNetEdge > 0.03 && confidence > 0.70) return 'STRONG_TRADE';   // 3%+ net edge, high certainty
+  else if (absNetEdge > 0.015 && confidence > 0.60) return 'SMALL_TRADE'; // 1.5%+ net edge
+  else if (absNetEdge > 0.005 && confidence > 0.50) return 'PROBE';       // 0.5%+ net edge
   return 'NO_TRADE';
 }
 
@@ -1711,24 +1707,32 @@ async function generateSignals(selectedMarkets) {
     };
 
     const marketOdds = yesPrice * 100;
-    // Block tail markets by default
-    if ((yesPrice > TAIL_MARKET_THRESHOLD || yesPrice < (1 - TAIL_MARKET_THRESHOLD))
-        && confidencePercent < TAIL_MARKET_MIN_CONFIDENCE) {
-      log(`[BLOCK] Tail market with low confidence: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%)`);
+    // Tail market handling - only skip if edge is weak, otherwise reduce exposure
+    const isTailMarket = (marketOdds < 3 || marketOdds > 97) && confidencePercent < 70;
 
-      rejectedSignals.push({
-        marketId: market.id,
-        marketSlug: market.slug,
-        marketQuestion: market.question,
-        action,
-        price: yesPrice,
-        confidenceScore: confidencePercent,
-        marketOdds,
-        reason: 'TAIL_MARKET_BLOCK',
-        details: `Market at ${marketOdds.toFixed(1)}% requires ${TAIL_MARKET_MIN_CONFIDENCE}% confidence, got ${confidencePercent}%`,
-        timestamp: new Date().toISOString()
-      });
-      continue;
+    if (isTailMarket) {
+      // Only skip if edge is also weak (< 8%)
+      if (Math.abs(rawEdge) < 0.08) {
+        log(`[SKIP] Tail market with insufficient edge: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%, edge: ${(rawEdge * 100).toFixed(2)}%)`);
+
+        rejectedSignals.push({
+          marketId: market.id,
+          marketSlug: market.slug,
+          marketQuestion: market.question,
+          action,
+          price: yesPrice,
+          confidenceScore: confidencePercent,
+          marketOdds,
+          reason: 'TAIL_MARKET_LOW_EDGE',
+          details: `Tail market at ${marketOdds.toFixed(1)}% with ${(rawEdge * 100).toFixed(2)}% edge requires 8% minimum`,
+          timestamp: new Date().toISOString()
+        });
+        continue;
+      } else {
+        // Reduce exposure by 50% for tail markets with strong edge
+        log(`[WARNING] Tail market with strong edge - reducing exposure by 50%: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%)`);
+        // Will apply exposure reduction later after intentExposure is calculated
+      }
     }
 
     const adaptiveLearning = applyAdaptiveLearning(categoryKey, action, absEdge, confidencePercent);
@@ -1766,6 +1770,12 @@ async function generateSignals(selectedMarkets) {
     intentExposure = Math.min(maxExposure, intentExposure);
     log(`[POSITION SIZING] Step 3 - After liquidity cap: ${(intentExposure * 100).toFixed(2)}% (max: ${(maxExposure * 100).toFixed(2)}%)`);
 
+    // Step 4: Apply tail market exposure reduction (if applicable)
+    if (isTailMarket && Math.abs(rawEdge) >= 0.08) {
+      intentExposure *= 0.5; // Reduce exposure by 50% for tail markets with strong edge
+      log(`[POSITION SIZING] Step 4 - After tail market reduction: ${(intentExposure * 100).toFixed(2)}%`);
+    }
+
     const boostedConfidenceScore = Math.min(100, confidencePercent * convictionBoost);
 
     const cluster = getClusterForCategory(market.category);
@@ -1784,7 +1794,7 @@ async function generateSignals(selectedMarkets) {
       tradeDecision: action,
       modelConfidence: Number((normalizedConfidence * 100).toFixed(1)),
       executionConfidence: Number((normalizedConfidence * 100).toFixed(1)),
-      tradeTier: getTradeTier(netEdge, winProb),
+      tradeTier: getTradeTier(netEdge, normalizedConfidence),
       effectiveEdge: netEdge * 100,          // ABSOLUTE edge after costs
       cluster
     };

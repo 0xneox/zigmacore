@@ -193,7 +193,7 @@
     "priceHistory": [
       {
         "price": 0.018,
-        "timestamp": 1768711773620
+        "timestamp": 1768713854939
       }
     ],
     "priceVolatility": 0,
@@ -263,12 +263,12 @@
     "price": 0.022
   },
   "will-the-us-collect-less-than-100b-in-revenue-in-2025": {
-    "price": 0.4355,
+    "price": 0.433,
     "volume": 5475.538376,
     "priceHistory": [
       {
-        "price": 0.4355,
-        "timestamp": 1768711773620
+        "price": 0.433,
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -283,7 +283,7 @@
     "priceHistory": [
       {
         "price": 0.22,
-        "timestamp": 1768711773620
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -293,12 +293,12 @@
     "startDateIso": "2025-04-15"
   },
   "will-the-us-collect-between-200b-and-500b-in-revenue-in-2025": {
-    "price": 0.3,
+    "price": 0.295,
     "volume": 19607.889673999995,
     "priceHistory": [
       {
-        "price": 0.3,
-        "timestamp": 1768711773621
+        "price": 0.295,
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -313,7 +313,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773620
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -363,12 +363,12 @@
     "price": 0.115
   },
   "will-the-chicago-bears-win-super-bowl-2026": {
-    "price": 0.056,
+    "price": 0.0565,
     "volume": 171152.699461,
     "priceHistory": [
       {
-        "price": 0.056,
-        "timestamp": 1768711773621
+        "price": 0.0565,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -378,12 +378,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-denver-broncos-win-super-bowl-2026": {
-    "price": 0.0825,
+    "price": 0.0795,
     "volume": 304791.160005,
     "priceHistory": [
       {
-        "price": 0.0825,
-        "timestamp": 1768711773621
+        "price": 0.0795,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -397,12 +397,12 @@
     "price": 0.0415
   },
   "will-the-houston-texans-win-super-bowl-2026": {
-    "price": 0.1075,
+    "price": 0.1135,
     "volume": 179079.65086700005,
     "priceHistory": [
       {
-        "price": 0.1075,
-        "timestamp": 1768711773621
+        "price": 0.1135,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -420,12 +420,12 @@
     "price": 0.0395
   },
   "will-the-los-angeles-rams-win-super-bowl-2026": {
-    "price": 0.1945,
+    "price": 0.198,
     "volume": 178529.52552400003,
     "priceHistory": [
       {
-        "price": 0.1945,
-        "timestamp": 1768711773621
+        "price": 0.198,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -435,12 +435,12 @@
     "startDateIso": "2025-05-01"
   },
   "will-the-new-england-patriots-win-super-bowl-2026": {
-    "price": 0.1945,
+    "price": 0.187,
     "volume": 85630.85527,
     "priceHistory": [
       {
-        "price": 0.1945,
-        "timestamp": 1768711773621
+        "price": 0.187,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -462,12 +462,12 @@
     "price": 0.0655
   },
   "will-the-seattle-seahawks-win-super-bowl-2026": {
-    "price": 0.3645,
+    "price": 0.3675,
     "volume": 257311.68405900002,
     "priceHistory": [
       {
-        "price": 0.3645,
-        "timestamp": 1768711773621
+        "price": 0.3675,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -490,7 +490,7 @@
     "priceHistory": [
       {
         "price": 0.08,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -509,7 +509,7 @@
     "priceHistory": [
       {
         "price": 0.32,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -527,12 +527,12 @@
     "price": 0.143
   },
   "will-the-seahawks-win-the-2026-nfc-championship": {
-    "price": 0.5885,
+    "price": 0.6,
     "volume": 13240.430765999994,
     "priceHistory": [
       {
-        "price": 0.5885,
-        "timestamp": 1768711773621
+        "price": 0.6,
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -550,12 +550,12 @@
     "price": 0.19
   },
   "will-the-patriots-win-the-afc-championship-1": {
-    "price": 0.4265,
+    "price": 0.416,
     "volume": 3740.978113,
     "priceHistory": [
       {
-        "price": 0.4265,
-        "timestamp": 1768711773621
+        "price": 0.416,
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -573,12 +573,12 @@
     "price": 0.059
   },
   "will-the-texans-win-the-afc-championship-1": {
-    "price": 0.2365,
+    "price": 0.2555,
     "volume": 12022.839868000001,
     "priceHistory": [
       {
-        "price": 0.2365,
-        "timestamp": 1768711773621
+        "price": 0.2555,
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -592,12 +592,12 @@
     "price": 0.163
   },
   "will-the-broncos-win-the-afc-championship-1": {
-    "price": 0.34,
+    "price": 0.335,
     "volume": 5329.156094999999,
     "priceHistory": [
       {
-        "price": 0.34,
-        "timestamp": 1768711773621
+        "price": 0.335,
+        "timestamp": 1768713854940
       }
     ],
     "priceVolatility": 0,
@@ -676,7 +676,7 @@
     "priceHistory": [
       {
         "price": 0.585,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -691,7 +691,7 @@
     "priceHistory": [
       {
         "price": 0.565,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -701,12 +701,12 @@
     "startDateIso": "2025-05-02"
   },
   "new-playboi-carti-album-before-gta-vi-421": {
-    "price": 0.58,
+    "price": 0.545,
     "volume": 609.654715,
     "priceHistory": [
       {
-        "price": 0.58,
-        "timestamp": 1768711773621
+        "price": 0.545,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -721,7 +721,7 @@
     "priceHistory": [
       {
         "price": 0.515,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -736,7 +736,7 @@
     "priceHistory": [
       {
         "price": 0.495,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -751,7 +751,7 @@
     "priceHistory": [
       {
         "price": 0.515,
-        "timestamp": 1768711773621
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -766,7 +766,7 @@
     "priceHistory": [
       {
         "price": 0.485,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -781,7 +781,7 @@
     "priceHistory": [
       {
         "price": 0.0205,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -791,12 +791,12 @@
     "startDateIso": "2025-05-02"
   },
   "will-nick-emmanowori-be-the-2025-2026-nfl-defensive-rookie-of-the-year": {
-    "price": 0.0185,
+    "price": 0.018,
     "volume": 653.48,
     "priceHistory": [
       {
-        "price": 0.0185,
-        "timestamp": 1768711773622
+        "price": 0.018,
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -811,7 +811,7 @@
     "priceHistory": [
       {
         "price": 0.048,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -826,7 +826,7 @@
     "priceHistory": [
       {
         "price": 0.94,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -841,7 +841,7 @@
     "priceHistory": [
       {
         "price": 0.023,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854941
       }
     ],
     "priceVolatility": 0,
@@ -851,12 +851,12 @@
     "startDateIso": "2025-05-06"
   },
   "will-tetairoa-mcmillan-be-the-2025-2026-nfl-offensive-rookie-of-the-year-271": {
-    "price": 0.9185,
+    "price": 0.918,
     "volume": 613.979387,
     "priceHistory": [
       {
-        "price": 0.9185,
-        "timestamp": 1768711773622
+        "price": 0.918,
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -871,7 +871,7 @@
     "priceHistory": [
       {
         "price": 0.0455,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -886,22 +886,7 @@
     "priceHistory": [
       {
         "price": 0.014,
-        "timestamp": 1768711773622
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-05-06"
-  },
-  "will-christian-mccaffrey-be-the-2025-2026-nfl-comeback-player-of-the-year": {
-    "price": 0.93,
-    "volume": 31.42842,
-    "priceHistory": [
-      {
-        "price": 0.93,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -916,7 +901,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -931,7 +916,7 @@
     "priceHistory": [
       {
         "price": 0.025,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -946,7 +931,7 @@
     "priceHistory": [
       {
         "price": 0.7,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -961,7 +946,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -976,7 +961,7 @@
     "priceHistory": [
       {
         "price": 0.024,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -986,12 +971,12 @@
     "startDateIso": "2025-05-07"
   },
   "will-kyle-shanahan-win-nfl-coach-of-the-year": {
-    "price": 0.0365,
+    "price": 0.0165,
     "volume": 2132.7361170000004,
     "priceHistory": [
       {
-        "price": 0.0365,
-        "timestamp": 1768711773622
+        "price": 0.0165,
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -1006,7 +991,7 @@
     "priceHistory": [
       {
         "price": 0.1975,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -1021,7 +1006,7 @@
     "priceHistory": [
       {
         "price": 0.1095,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -1036,7 +1021,7 @@
     "priceHistory": [
       {
         "price": 0.38,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -1051,7 +1036,7 @@
     "priceHistory": [
       {
         "price": 0.235,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -1066,7 +1051,7 @@
     "priceHistory": [
       {
         "price": 0.65,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854942
       }
     ],
     "priceVolatility": 0,
@@ -1081,7 +1066,7 @@
     "priceHistory": [
       {
         "price": 0.315,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1096,7 +1081,7 @@
     "priceHistory": [
       {
         "price": 0.08,
-        "timestamp": 1768711773622
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1111,7 +1096,7 @@
     "priceHistory": [
       {
         "price": 0.075,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1126,7 +1111,7 @@
     "priceHistory": [
       {
         "price": 0.095,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1141,7 +1126,7 @@
     "priceHistory": [
       {
         "price": 0.0975,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1156,7 +1141,7 @@
     "priceHistory": [
       {
         "price": 0.055,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1171,7 +1156,7 @@
     "priceHistory": [
       {
         "price": 0.2445,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1181,12 +1166,12 @@
     "startDateIso": "2025-06-23"
   },
   "will-the-vegas-golden-knights-win-the-2026-nhl-stanley-cup": {
-    "price": 0.0635,
+    "price": 0.0735,
     "volume": 902.498717,
     "priceHistory": [
       {
-        "price": 0.0635,
-        "timestamp": 1768711773623
+        "price": 0.0735,
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1201,7 +1186,7 @@
     "priceHistory": [
       {
         "price": 0.0185,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1216,7 +1201,7 @@
     "priceHistory": [
       {
         "price": 0.0105,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854943
       }
     ],
     "priceVolatility": 0,
@@ -1231,7 +1216,7 @@
     "priceHistory": [
       {
         "price": 0.013,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1246,7 +1231,7 @@
     "priceHistory": [
       {
         "price": 0.0155,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1261,7 +1246,7 @@
     "priceHistory": [
       {
         "price": 0.047,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1276,7 +1261,7 @@
     "priceHistory": [
       {
         "price": 0.027,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1291,7 +1276,7 @@
     "priceHistory": [
       {
         "price": 0.013,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1306,7 +1291,7 @@
     "priceHistory": [
       {
         "price": 0.014,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1321,7 +1306,7 @@
     "priceHistory": [
       {
         "price": 0.0155,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1336,7 +1321,7 @@
     "priceHistory": [
       {
         "price": 0.012,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1351,7 +1336,7 @@
     "priceHistory": [
       {
         "price": 0.023,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1366,7 +1351,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1381,7 +1366,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1396,7 +1381,7 @@
     "priceHistory": [
       {
         "price": 0.4,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1411,7 +1396,7 @@
     "priceHistory": [
       {
         "price": 0.055,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1426,7 +1411,7 @@
     "priceHistory": [
       {
         "price": 0.065,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1441,7 +1426,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854944
       }
     ],
     "priceVolatility": 0,
@@ -1456,7 +1441,7 @@
     "priceHistory": [
       {
         "price": 0.0325,
-        "timestamp": 1768711773623
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1466,12 +1451,12 @@
     "startDateIso": "2025-06-23"
   },
   "will-the-los-angeles-lakers-win-the-2026-nba-finals": {
-    "price": 0.0265,
+    "price": 0.0255,
     "volume": 8817.425937,
     "priceHistory": [
       {
-        "price": 0.0265,
-        "timestamp": 1768711773624
+        "price": 0.0255,
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1486,7 +1471,7 @@
     "priceHistory": [
       {
         "price": 0.0515,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1501,7 +1486,7 @@
     "priceHistory": [
       {
         "price": 0.0255,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1516,7 +1501,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1531,7 +1516,7 @@
     "priceHistory": [
       {
         "price": 0.125,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1541,12 +1526,12 @@
     "startDateIso": "2025-06-23"
   },
   "will-the-philadelphia-76ers-win-the-2026-nba-finals": {
-    "price": 0.0115,
+    "price": 0.012,
     "volume": 696.245421,
     "priceHistory": [
       {
-        "price": 0.0115,
-        "timestamp": 1768711773624
+        "price": 0.012,
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1556,12 +1541,12 @@
     "startDateIso": "2025-06-23"
   },
   "will-the-san-antonio-spurs-win-the-2026-nba-finals": {
-    "price": 0.0645,
+    "price": 0.0655,
     "volume": 6470.8228850000005,
     "priceHistory": [
       {
-        "price": 0.0645,
-        "timestamp": 1768711773624
+        "price": 0.0655,
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1576,7 +1561,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1591,7 +1576,7 @@
     "priceHistory": [
       {
         "price": 0.0115,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854945
       }
     ],
     "priceVolatility": 0,
@@ -1606,7 +1591,7 @@
     "priceHistory": [
       {
         "price": 0.0145,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1621,7 +1606,7 @@
     "priceHistory": [
       {
         "price": 0.0375,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1631,12 +1616,12 @@
     "startDateIso": "2025-06-25"
   },
   "will-robbie-williams-perform-during-the-super-bowl-lx-halftime-show": {
-    "price": 0.025,
+    "price": 0.024,
     "volume": 645.308704,
     "priceHistory": [
       {
-        "price": 0.025,
-        "timestamp": 1768711773624
+        "price": 0.024,
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1651,7 +1636,7 @@
     "priceHistory": [
       {
         "price": 0.0105,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1666,7 +1651,7 @@
     "priceHistory": [
       {
         "price": 0.0275,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1681,7 +1666,7 @@
     "priceHistory": [
       {
         "price": 0.9825,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1696,7 +1681,7 @@
     "priceHistory": [
       {
         "price": 0.0375,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1711,7 +1696,7 @@
     "priceHistory": [
       {
         "price": 0.053,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1721,12 +1706,12 @@
     "startDateIso": "2025-06-25"
   },
   "will-christina-aguilera-perform-during-the-super-bowl-lx-halftime-show-677": {
-    "price": 0.0135,
+    "price": 0.014,
     "volume": 1721.519436,
     "priceHistory": [
       {
-        "price": 0.0135,
-        "timestamp": 1768711773624
+        "price": 0.014,
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1741,7 +1726,7 @@
     "priceHistory": [
       {
         "price": 0.0375,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1756,7 +1741,7 @@
     "priceHistory": [
       {
         "price": 0.0175,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1771,7 +1756,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1786,7 +1771,7 @@
     "priceHistory": [
       {
         "price": 0.1215,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1801,7 +1786,7 @@
     "priceHistory": [
       {
         "price": 0.018,
-        "timestamp": 1768711773624
+        "timestamp": 1768713854946
       }
     ],
     "priceVolatility": 0,
@@ -1816,7 +1801,7 @@
     "priceHistory": [
       {
         "price": 0.081,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1831,7 +1816,7 @@
     "priceHistory": [
       {
         "price": 0.0205,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1846,7 +1831,7 @@
     "priceHistory": [
       {
         "price": 0.05,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1861,7 +1846,7 @@
     "priceHistory": [
       {
         "price": 0.011,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1876,7 +1861,7 @@
     "priceHistory": [
       {
         "price": 0.0345,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1891,7 +1876,7 @@
     "priceHistory": [
       {
         "price": 0.035,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1906,7 +1891,7 @@
     "priceHistory": [
       {
         "price": 0.012,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1921,7 +1906,7 @@
     "priceHistory": [
       {
         "price": 0.1595,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854947
       }
     ],
     "priceVolatility": 0,
@@ -1936,7 +1921,7 @@
     "priceHistory": [
       {
         "price": 0.0255,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -1951,7 +1936,7 @@
     "priceHistory": [
       {
         "price": 0.023,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -1966,7 +1951,7 @@
     "priceHistory": [
       {
         "price": 0.45,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -1981,7 +1966,7 @@
     "priceHistory": [
       {
         "price": 0.0245,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -1991,12 +1976,12 @@
     "startDateIso": "2025-06-25"
   },
   "will-green-day-perform-during-the-super-bowl-lx-halftime-show": {
-    "price": 0.0215,
+    "price": 0.0205,
     "volume": 1835.979535,
     "priceHistory": [
       {
-        "price": 0.0215,
-        "timestamp": 1768711773625
+        "price": 0.0205,
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2011,7 +1996,7 @@
     "priceHistory": [
       {
         "price": 0.032,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2026,7 +2011,7 @@
     "priceHistory": [
       {
         "price": 0.0135,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2041,7 +2026,7 @@
     "priceHistory": [
       {
         "price": 0.028,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2051,12 +2036,12 @@
     "startDateIso": "2025-06-26"
   },
   "will-megaeth-perform-an-airdrop-by-june-30-143": {
-    "price": 0.909,
+    "price": 0.9085,
     "volume": 408.300213,
     "priceHistory": [
       {
-        "price": 0.909,
-        "timestamp": 1768711773625
+        "price": 0.9085,
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2071,7 +2056,7 @@
     "priceHistory": [
       {
         "price": 0.155,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2086,7 +2071,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854948
       }
     ],
     "priceVolatility": 0,
@@ -2101,7 +2086,7 @@
     "priceHistory": [
       {
         "price": 0.135,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2116,7 +2101,7 @@
     "priceHistory": [
       {
         "price": 0.125,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2131,7 +2116,7 @@
     "priceHistory": [
       {
         "price": 0.095,
-        "timestamp": 1768711773625
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2146,7 +2131,7 @@
     "priceHistory": [
       {
         "price": 0.0625,
-        "timestamp": 1768711773626
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2161,7 +2146,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773626
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2171,12 +2156,12 @@
     "startDateIso": "2025-07-02"
   },
   "will-italy-win-the-2026-fifa-world-cup-813": {
-    "price": 0.0215,
+    "price": 0.0225,
     "volume": 62607.938558999995,
     "priceHistory": [
       {
-        "price": 0.0215,
-        "timestamp": 1768711773626
+        "price": 0.0225,
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2191,7 +2176,7 @@
     "priceHistory": [
       {
         "price": 0.0775,
-        "timestamp": 1768711773629
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2206,7 +2191,7 @@
     "priceHistory": [
       {
         "price": 0.0165,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2221,7 +2206,7 @@
     "priceHistory": [
       {
         "price": 0.0105,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2236,7 +2221,7 @@
     "priceHistory": [
       {
         "price": 0.0165,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2251,7 +2236,7 @@
     "priceHistory": [
       {
         "price": 0.0135,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854949
       }
     ],
     "priceVolatility": 0,
@@ -2266,7 +2251,7 @@
     "priceHistory": [
       {
         "price": 0.0165,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2281,7 +2266,7 @@
     "priceHistory": [
       {
         "price": 0.0265,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2291,12 +2276,12 @@
     "startDateIso": "2025-07-02"
   },
   "will-morocco-win-the-2026-fifa-world-cup-464": {
-    "price": 0.0215,
+    "price": 0.0225,
     "volume": 11875.039206000003,
     "priceHistory": [
       {
-        "price": 0.0215,
-        "timestamp": 1768711773630
+        "price": 0.0225,
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2311,7 +2296,7 @@
     "priceHistory": [
       {
         "price": 0.252,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2326,7 +2311,7 @@
     "priceHistory": [
       {
         "price": 0.745,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2341,7 +2326,7 @@
     "priceHistory": [
       {
         "price": 0.055,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2356,7 +2341,7 @@
     "priceHistory": [
       {
         "price": 0.095,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2366,12 +2351,12 @@
     "startDateIso": "2025-07-06"
   },
   "will-dick-schoof-become-the-next-prime-minister-of-the-netherlands": {
-    "price": 0.013,
+    "price": 0.014,
     "volume": 21860.79,
     "priceHistory": [
       {
-        "price": 0.013,
-        "timestamp": 1768711773630
+        "price": 0.014,
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2386,7 +2371,7 @@
     "priceHistory": [
       {
         "price": 0.011,
-        "timestamp": 1768711773630
+        "timestamp": 1768713854950
       }
     ],
     "priceVolatility": 0,
@@ -2401,7 +2386,7 @@
     "priceHistory": [
       {
         "price": 0.9565,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2416,7 +2401,7 @@
     "priceHistory": [
       {
         "price": 0.76,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2431,7 +2416,7 @@
     "priceHistory": [
       {
         "price": 0.04,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2446,7 +2431,7 @@
     "priceHistory": [
       {
         "price": 0.1635,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2461,7 +2446,7 @@
     "priceHistory": [
       {
         "price": 0.0315,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2476,7 +2461,7 @@
     "priceHistory": [
       {
         "price": 0.125,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2491,7 +2476,7 @@
     "priceHistory": [
       {
         "price": 0.61,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2506,7 +2491,7 @@
     "priceHistory": [
       {
         "price": 0.29,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2521,7 +2506,7 @@
     "priceHistory": [
       {
         "price": 0.0785,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2536,7 +2521,7 @@
     "priceHistory": [
       {
         "price": 0.345,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2551,7 +2536,7 @@
     "priceHistory": [
       {
         "price": 0.045,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2566,7 +2551,7 @@
     "priceHistory": [
       {
         "price": 0.1,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2576,12 +2561,12 @@
     "startDateIso": "2025-07-11"
   },
   "will-wes-moore-win-the-2028-democratic-presidential-nomination-714": {
-    "price": 0.023,
+    "price": 0.0225,
     "volume": 3409.119537,
     "priceHistory": [
       {
-        "price": 0.023,
-        "timestamp": 1768711773631
+        "price": 0.0225,
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2596,7 +2581,7 @@
     "priceHistory": [
       {
         "price": 0.0645,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2611,7 +2596,7 @@
     "priceHistory": [
       {
         "price": 0.0405,
-        "timestamp": 1768711773631
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2621,12 +2606,12 @@
     "startDateIso": "2025-07-11"
   },
   "will-andy-beshear-win-the-2028-democratic-presidential-nomination-832": {
-    "price": 0.036,
+    "price": 0.0355,
     "volume": 20839.863111000002,
     "priceHistory": [
       {
-        "price": 0.036,
-        "timestamp": 1768711773631
+        "price": 0.0355,
+        "timestamp": 1768713854951
       }
     ],
     "priceVolatility": 0,
@@ -2641,7 +2626,7 @@
     "priceHistory": [
       {
         "price": 0.0205,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854952
       }
     ],
     "priceVolatility": 0,
@@ -2656,7 +2641,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854952
       }
     ],
     "priceVolatility": 0,
@@ -2666,12 +2651,12 @@
     "startDateIso": "2025-07-11"
   },
   "will-jb-pritzker-win-the-2028-democratic-presidential-nomination-288": {
-    "price": 0.0305,
+    "price": 0.0285,
     "volume": 4204.952258,
     "priceHistory": [
       {
-        "price": 0.0305,
-        "timestamp": 1768711773632
+        "price": 0.0285,
+        "timestamp": 1768713854952
       }
     ],
     "priceVolatility": 0,
@@ -2686,7 +2671,7 @@
     "priceHistory": [
       {
         "price": 0.0195,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854952
       }
     ],
     "priceVolatility": 0,
@@ -2701,22 +2686,7 @@
     "priceHistory": [
       {
         "price": 0.023,
-        "timestamp": 1768711773632
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-07-11"
-  },
-  "will-dwayne-the-rock-johnson-win-the-2028-democratic-presidential-nomination": {
-    "price": 0.0105,
-    "volume": 8555.327452,
-    "priceHistory": [
-      {
-        "price": 0.0105,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854952
       }
     ],
     "priceVolatility": 0,
@@ -2731,7 +2701,7 @@
     "priceHistory": [
       {
         "price": 0.028,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854952
       }
     ],
     "priceVolatility": 0,
@@ -2746,7 +2716,7 @@
     "priceHistory": [
       {
         "price": 0.265,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854956
       }
     ],
     "priceVolatility": 0,
@@ -2761,7 +2731,7 @@
     "priceHistory": [
       {
         "price": 0.065,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854956
       }
     ],
     "priceVolatility": 0,
@@ -2776,7 +2746,7 @@
     "priceHistory": [
       {
         "price": 0.19,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2791,7 +2761,7 @@
     "priceHistory": [
       {
         "price": 0.0245,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2806,7 +2776,7 @@
     "priceHistory": [
       {
         "price": 0.033,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2821,7 +2791,7 @@
     "priceHistory": [
       {
         "price": 0.0965,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2836,7 +2806,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2846,12 +2816,12 @@
     "startDateIso": "2025-07-11"
   },
   "will-andy-beshear-win-the-2028-us-presidential-election": {
-    "price": 0.018,
+    "price": 0.0175,
     "volume": 7413.632348,
     "priceHistory": [
       {
-        "price": 0.018,
-        "timestamp": 1768711773632
+        "price": 0.0175,
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2866,7 +2836,7 @@
     "priceHistory": [
       {
         "price": 0.0205,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2881,7 +2851,7 @@
     "priceHistory": [
       {
         "price": 0.024,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2896,7 +2866,7 @@
     "priceHistory": [
       {
         "price": 0.0325,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2911,7 +2881,7 @@
     "priceHistory": [
       {
         "price": 0.0105,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854957
       }
     ],
     "priceVolatility": 0,
@@ -2921,12 +2891,12 @@
     "startDateIso": "2025-07-11"
   },
   "will-ron-desantis-win-the-2028-us-presidential-election": {
-    "price": 0.015,
+    "price": 0.0145,
     "volume": 8387.859046,
     "priceHistory": [
       {
-        "price": 0.015,
-        "timestamp": 1768711773632
+        "price": 0.0145,
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -2941,7 +2911,7 @@
     "priceHistory": [
       {
         "price": 0.0105,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -2956,7 +2926,7 @@
     "priceHistory": [
       {
         "price": 0.0185,
-        "timestamp": 1768711773632
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -2971,7 +2941,7 @@
     "priceHistory": [
       {
         "price": 0.0135,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -2986,7 +2956,7 @@
     "priceHistory": [
       {
         "price": 0.515,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3001,7 +2971,7 @@
     "priceHistory": [
       {
         "price": 0.047,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3011,12 +2981,12 @@
     "startDateIso": "2025-07-11"
   },
   "will-marco-rubio-win-the-2028-republican-presidential-nomination": {
-    "price": 0.1785,
+    "price": 0.178,
     "volume": 16957.345511999993,
     "priceHistory": [
       {
-        "price": 0.1785,
-        "timestamp": 1768711773633
+        "price": 0.178,
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3031,7 +3001,7 @@
     "priceHistory": [
       {
         "price": 0.0135,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3046,7 +3016,7 @@
     "priceHistory": [
       {
         "price": 0.0165,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3061,7 +3031,7 @@
     "priceHistory": [
       {
         "price": 0.0285,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3076,7 +3046,7 @@
     "priceHistory": [
       {
         "price": 0.0115,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854958
       }
     ],
     "priceVolatility": 0,
@@ -3091,7 +3061,7 @@
     "priceHistory": [
       {
         "price": 0.0105,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3106,7 +3076,7 @@
     "priceHistory": [
       {
         "price": 0.017,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3121,7 +3091,7 @@
     "priceHistory": [
       {
         "price": 0.02,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3136,7 +3106,7 @@
     "priceHistory": [
       {
         "price": 0.014,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3151,7 +3121,7 @@
     "priceHistory": [
       {
         "price": 0.345,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3166,7 +3136,7 @@
     "priceHistory": [
       {
         "price": 0.655,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3181,7 +3151,7 @@
     "priceHistory": [
       {
         "price": 0.345,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3196,7 +3166,7 @@
     "priceHistory": [
       {
         "price": 0.435,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3211,7 +3181,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3226,7 +3196,7 @@
     "priceHistory": [
       {
         "price": 0.215,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3241,7 +3211,7 @@
     "priceHistory": [
       {
         "price": 0.14,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3256,7 +3226,7 @@
     "priceHistory": [
       {
         "price": 0.15,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3271,7 +3241,7 @@
     "priceHistory": [
       {
         "price": 0.715,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3281,12 +3251,12 @@
     "startDateIso": "2025-07-17"
   },
   "will-luka-doncic-win-the-20252026-nba-mvp": {
-    "price": 0.0665,
+    "price": 0.065,
     "volume": 1588.335912,
     "priceHistory": [
       {
-        "price": 0.0665,
-        "timestamp": 1768711773633
+        "price": 0.065,
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3296,12 +3266,12 @@
     "startDateIso": "2025-07-17"
   },
   "will-cade-cunningham-win-the-20252026-nba-mvp": {
-    "price": 0.0245,
+    "price": 0.0305,
     "volume": 1119.846086,
     "priceHistory": [
       {
-        "price": 0.0245,
-        "timestamp": 1768711773633
+        "price": 0.0305,
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3316,7 +3286,7 @@
     "priceHistory": [
       {
         "price": 0.0195,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854959
       }
     ],
     "priceVolatility": 0,
@@ -3331,7 +3301,7 @@
     "priceHistory": [
       {
         "price": 0.0705,
-        "timestamp": 1768711773633
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3346,7 +3316,7 @@
     "priceHistory": [
       {
         "price": 0.135,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3361,7 +3331,7 @@
     "priceHistory": [
       {
         "price": 0.245,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3376,7 +3346,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3391,7 +3361,7 @@
     "priceHistory": [
       {
         "price": 0.0695,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3406,7 +3376,7 @@
     "priceHistory": [
       {
         "price": 0.18,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3416,12 +3386,12 @@
     "startDateIso": "2025-07-17"
   },
   "will-the-boston-celtics-win-the-nba-eastern-conference-finals": {
-    "price": 0.19,
+    "price": 0.1895,
     "volume": 218.707113,
     "priceHistory": [
       {
-        "price": 0.19,
-        "timestamp": 1768711773634
+        "price": 0.1895,
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3436,7 +3406,7 @@
     "priceHistory": [
       {
         "price": 0.0115,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3451,7 +3421,7 @@
     "priceHistory": [
       {
         "price": 0.0355,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3466,7 +3436,7 @@
     "priceHistory": [
       {
         "price": 0.0515,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3481,7 +3451,7 @@
     "priceHistory": [
       {
         "price": 0.535,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3496,7 +3466,7 @@
     "priceHistory": [
       {
         "price": 0.1,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3511,7 +3481,7 @@
     "priceHistory": [
       {
         "price": 0.14,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3526,7 +3496,7 @@
     "priceHistory": [
       {
         "price": 0.035,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3541,7 +3511,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3556,7 +3526,7 @@
     "priceHistory": [
       {
         "price": 0.046,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854960
       }
     ],
     "priceVolatility": 0,
@@ -3571,7 +3541,7 @@
     "priceHistory": [
       {
         "price": 0.0285,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3586,7 +3556,7 @@
     "priceHistory": [
       {
         "price": 0.104,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3601,7 +3571,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3616,7 +3586,7 @@
     "priceHistory": [
       {
         "price": 0.535,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3631,7 +3601,7 @@
     "priceHistory": [
       {
         "price": 0.465,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3646,7 +3616,7 @@
     "priceHistory": [
       {
         "price": 0.275,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3661,7 +3631,7 @@
     "priceHistory": [
       {
         "price": 0.075,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3676,7 +3646,7 @@
     "priceHistory": [
       {
         "price": 0.7935,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3686,12 +3656,12 @@
     "startDateIso": "2025-07-23"
   },
   "will-drake-maye-win-the-202526-nfl-mvp-award": {
-    "price": 0.173,
+    "price": 0.1725,
     "volume": 920.0146659999999,
     "priceHistory": [
       {
-        "price": 0.173,
-        "timestamp": 1768711773634
+        "price": 0.1725,
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3706,7 +3676,7 @@
     "priceHistory": [
       {
         "price": 0.775,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3721,7 +3691,7 @@
     "priceHistory": [
       {
         "price": 0.155,
-        "timestamp": 1768711773634
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3731,12 +3701,12 @@
     "startDateIso": "2025-07-24"
   },
   "will-aston-villa-win-the-202526-english-premier-league": {
-    "price": 0.0475,
+    "price": 0.047,
     "volume": 127658.79297100005,
     "priceHistory": [
       {
-        "price": 0.0475,
-        "timestamp": 1768711773635
+        "price": 0.047,
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3751,7 +3721,7 @@
     "priceHistory": [
       {
         "price": 0.465,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3766,7 +3736,7 @@
     "priceHistory": [
       {
         "price": 0.525,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3781,7 +3751,7 @@
     "priceHistory": [
       {
         "price": 0.245,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3796,7 +3766,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3811,7 +3781,7 @@
     "priceHistory": [
       {
         "price": 0.125,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854961
       }
     ],
     "priceVolatility": 0,
@@ -3826,7 +3796,7 @@
     "priceHistory": [
       {
         "price": 0.415,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3836,12 +3806,12 @@
     "startDateIso": "2025-07-24"
   },
   "netanyahu-out-before-2027": {
-    "price": 0.465,
+    "price": 0.46,
     "volume": 339.852137,
     "priceHistory": [
       {
-        "price": 0.465,
-        "timestamp": 1768711773635
+        "price": 0.46,
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3856,7 +3826,7 @@
     "priceHistory": [
       {
         "price": 0.125,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3871,7 +3841,7 @@
     "priceHistory": [
       {
         "price": 0.075,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3881,12 +3851,12 @@
     "startDateIso": "2025-07-25"
   },
   "will-real-madrid-win-the-202526-la-liga": {
-    "price": 0.305,
+    "price": 0.31,
     "volume": 24036.886365,
     "priceHistory": [
       {
-        "price": 0.305,
-        "timestamp": 1768711773635
+        "price": 0.31,
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3901,7 +3871,7 @@
     "priceHistory": [
       {
         "price": 0.67,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3916,7 +3886,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3931,7 +3901,7 @@
     "priceHistory": [
       {
         "price": 0.075,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3946,7 +3916,7 @@
     "priceHistory": [
       {
         "price": 0.085,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3961,7 +3931,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3976,7 +3946,7 @@
     "priceHistory": [
       {
         "price": 0.18,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -3991,7 +3961,7 @@
     "priceHistory": [
       {
         "price": 0.115,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -4006,7 +3976,7 @@
     "priceHistory": [
       {
         "price": 0.165,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -4021,7 +3991,7 @@
     "priceHistory": [
       {
         "price": 0.043,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -4031,12 +4001,12 @@
     "startDateIso": "2025-07-28"
   },
   "will-atletico-madrid-win-the-202526-champions-league": {
-    "price": 0.022,
+    "price": 0.0225,
     "volume": 2739.8658229999996,
     "priceHistory": [
       {
-        "price": 0.022,
-        "timestamp": 1768711773635
+        "price": 0.0225,
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -4051,7 +4021,7 @@
     "priceHistory": [
       {
         "price": 0.013,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854962
       }
     ],
     "priceVolatility": 0,
@@ -4066,7 +4036,7 @@
     "priceHistory": [
       {
         "price": 0.026,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4081,7 +4051,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773635
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4096,7 +4066,7 @@
     "priceHistory": [
       {
         "price": 0.016,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4111,7 +4081,7 @@
     "priceHistory": [
       {
         "price": 0.9575,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4126,7 +4096,7 @@
     "priceHistory": [
       {
         "price": 0.0185,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4141,7 +4111,7 @@
     "priceHistory": [
       {
         "price": 0.09,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4156,7 +4126,7 @@
     "priceHistory": [
       {
         "price": 0.68,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4171,7 +4141,7 @@
     "priceHistory": [
       {
         "price": 0.0425,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4186,7 +4156,7 @@
     "priceHistory": [
       {
         "price": 0.18,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4201,7 +4171,7 @@
     "priceHistory": [
       {
         "price": 0.024,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4216,7 +4186,7 @@
     "priceHistory": [
       {
         "price": 0.865,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4231,7 +4201,7 @@
     "priceHistory": [
       {
         "price": 0.017,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4241,12 +4211,12 @@
     "startDateIso": "2025-07-28"
   },
   "will-lens-win-the-202526-french-ligue-1": {
-    "price": 0.1,
+    "price": 0.0995,
     "volume": 234.730682,
     "priceHistory": [
       {
-        "price": 0.1,
-        "timestamp": 1768711773636
+        "price": 0.0995,
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4261,7 +4231,7 @@
     "priceHistory": [
       {
         "price": 0.12,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4276,7 +4246,7 @@
     "priceHistory": [
       {
         "price": 0.07,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4291,7 +4261,7 @@
     "priceHistory": [
       {
         "price": 0.52,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854963
       }
     ],
     "priceVolatility": 0,
@@ -4301,12 +4271,12 @@
     "startDateIso": "2025-07-29"
   },
   "will-avcce-win-the-most-seats-in-the-2026-colombian-senate-election": {
-    "price": 0.059,
+    "price": 0.0585,
     "volume": 114526.531169,
     "priceHistory": [
       {
-        "price": 0.059,
-        "timestamp": 1768711773636
+        "price": 0.0585,
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4316,12 +4286,12 @@
     "startDateIso": "2025-07-29"
   },
   "will-plc-win-the-most-seats-in-the-2026-colombian-senate-election": {
-    "price": 0.0415,
-    "volume": 20926.761744,
+    "price": 0.0445,
+    "volume": 21726.761744,
     "priceHistory": [
       {
-        "price": 0.0415,
-        "timestamp": 1768711773636
+        "price": 0.0445,
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4336,7 +4306,7 @@
     "priceHistory": [
       {
         "price": 0.295,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4351,7 +4321,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4366,7 +4336,7 @@
     "priceHistory": [
       {
         "price": 0.295,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4381,7 +4351,7 @@
     "priceHistory": [
       {
         "price": 0.0305,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4396,7 +4366,7 @@
     "priceHistory": [
       {
         "price": 0.565,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4411,7 +4381,7 @@
     "priceHistory": [
       {
         "price": 0.078,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854964
       }
     ],
     "priceVolatility": 0,
@@ -4426,7 +4396,7 @@
     "priceHistory": [
       {
         "price": 0.0155,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4441,7 +4411,7 @@
     "priceHistory": [
       {
         "price": 0.045,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4456,7 +4426,7 @@
     "priceHistory": [
       {
         "price": 0.395,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4471,7 +4441,7 @@
     "priceHistory": [
       {
         "price": 0.37,
-        "timestamp": 1768711773636
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4481,12 +4451,12 @@
     "startDateIso": "2025-07-29"
   },
   "will-juan-carlos-pinzn-win-the-2026-colombian-presidential-election": {
-    "price": 0.0915,
+    "price": 0.097,
     "volume": 7795.43626,
     "priceHistory": [
       {
-        "price": 0.0915,
-        "timestamp": 1768711773636
+        "price": 0.097,
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4496,12 +4466,12 @@
     "startDateIso": "2025-07-29"
   },
   "will-paloma-valencia-win-the-2026-colombian-presidential-election": {
-    "price": 0.0835,
+    "price": 0.083,
     "volume": 6044.719964,
     "priceHistory": [
       {
-        "price": 0.0835,
-        "timestamp": 1768711773637
+        "price": 0.083,
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4516,7 +4486,7 @@
     "priceHistory": [
       {
         "price": 0.057,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4531,7 +4501,7 @@
     "priceHistory": [
       {
         "price": 0.0335,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4541,12 +4511,12 @@
     "startDateIso": "2025-08-04"
   },
   "callum-turner-announced-as-next-james-bond": {
-    "price": 0.525,
+    "price": 0.52,
     "volume": 1355.287953,
     "priceHistory": [
       {
-        "price": 0.525,
-        "timestamp": 1768711773637
+        "price": 0.52,
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4561,7 +4531,7 @@
     "priceHistory": [
       {
         "price": 0.365,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4576,7 +4546,7 @@
     "priceHistory": [
       {
         "price": 0.525,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4591,7 +4561,7 @@
     "priceHistory": [
       {
         "price": 0.115,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4601,12 +4571,12 @@
     "startDateIso": "2025-08-05"
   },
   "will-trump-nominate-christopher-waller-as-the-next-fed-chair": {
-    "price": 0.1525,
+    "price": 0.152,
     "volume": 293144.08850100014,
     "priceHistory": [
       {
-        "price": 0.1525,
-        "timestamp": 1768711773637
+        "price": 0.152,
+        "timestamp": 1768713854965
       }
     ],
     "priceVolatility": 0,
@@ -4616,12 +4586,27 @@
     "startDateIso": "2025-08-05"
   },
   "will-trump-nominate-judy-shelton-as-the-next-fed-chair": {
-    "price": 0.021,
+    "price": 0.016,
     "volume": 407015.51435199956,
     "priceHistory": [
       {
-        "price": 0.021,
-        "timestamp": 1768711773637
+        "price": 0.016,
+        "timestamp": 1768713854966
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-05"
+  },
+  "will-trump-nominate-scott-bessent-as-the-next-fed-chair": {
+    "price": 0.011,
+    "volume": 224734.21495,
+    "priceHistory": [
+      {
+        "price": 0.011,
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4636,7 +4621,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4646,12 +4631,12 @@
     "startDateIso": "2025-08-05"
   },
   "will-trump-nominate-rick-rieder-as-the-next-fed-chair": {
-    "price": 0.1425,
+    "price": 0.145,
     "volume": 518039.8421889992,
     "priceHistory": [
       {
-        "price": 0.1425,
-        "timestamp": 1768711773637
+        "price": 0.145,
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4666,7 +4651,7 @@
     "priceHistory": [
       {
         "price": 0.0745,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4681,7 +4666,7 @@
     "priceHistory": [
       {
         "price": 0.1205,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4691,12 +4676,12 @@
     "startDateIso": "2025-08-06"
   },
   "will-man-city-be-relegated-from-the-english-premier-league-after-the-202526-season": {
-    "price": 0.0395,
+    "price": 0.064,
     "volume": 43.259447,
     "priceHistory": [
       {
-        "price": 0.0395,
-        "timestamp": 1768711773637
+        "price": 0.064,
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4711,7 +4696,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4726,7 +4711,7 @@
     "priceHistory": [
       {
         "price": 0.0455,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4741,7 +4726,7 @@
     "priceHistory": [
       {
         "price": 0.0955,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4756,7 +4741,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4771,7 +4756,7 @@
     "priceHistory": [
       {
         "price": 0.74,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4786,7 +4771,7 @@
     "priceHistory": [
       {
         "price": 0.125,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4801,7 +4786,7 @@
     "priceHistory": [
       {
         "price": 0.079,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4816,7 +4801,7 @@
     "priceHistory": [
       {
         "price": 0.0465,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4831,7 +4816,7 @@
     "priceHistory": [
       {
         "price": 0.0395,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4846,7 +4831,7 @@
     "priceHistory": [
       {
         "price": 0.07,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854966
       }
     ],
     "priceVolatility": 0,
@@ -4861,7 +4846,7 @@
     "priceHistory": [
       {
         "price": 0.92,
-        "timestamp": 1768711773637
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4876,7 +4861,7 @@
     "priceHistory": [
       {
         "price": 0.87,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4891,7 +4876,7 @@
     "priceHistory": [
       {
         "price": 0.044,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4906,7 +4891,7 @@
     "priceHistory": [
       {
         "price": 0.115,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4916,12 +4901,12 @@
     "startDateIso": "2025-08-06"
   },
   "will-manchester-city-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
-    "price": 0.615,
+    "price": 0.625,
     "volume": 321.122161,
     "priceHistory": [
       {
-        "price": 0.615,
-        "timestamp": 1768711773638
+        "price": 0.625,
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4936,7 +4921,7 @@
     "priceHistory": [
       {
         "price": 0.015,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4946,12 +4931,12 @@
     "startDateIso": "2025-08-06"
   },
   "will-aston-villa-finish-in-2nd-place-in-the-2025-26-english-premier-league": {
-    "price": 0.206,
+    "price": 0.195,
     "volume": 1045.713228,
     "priceHistory": [
       {
-        "price": 0.206,
-        "timestamp": 1768711773638
+        "price": 0.195,
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4966,7 +4951,7 @@
     "priceHistory": [
       {
         "price": 0.0365,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4981,7 +4966,7 @@
     "priceHistory": [
       {
         "price": 0.3875,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -4996,7 +4981,7 @@
     "priceHistory": [
       {
         "price": 0.0245,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5011,7 +4996,7 @@
     "priceHistory": [
       {
         "price": 0.0425,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5026,7 +5011,7 @@
     "priceHistory": [
       {
         "price": 0.016,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5036,12 +5021,12 @@
     "startDateIso": "2025-08-06"
   },
   "will-gpt-6-be-released": {
-    "price": 0.68,
+    "price": 0.685,
     "volume": 375.145285,
     "priceHistory": [
       {
-        "price": 0.68,
-        "timestamp": 1768711773638
+        "price": 0.685,
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5056,7 +5041,7 @@
     "priceHistory": [
       {
         "price": 0.15,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5071,7 +5056,7 @@
     "priceHistory": [
       {
         "price": 0.295,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5086,7 +5071,7 @@
     "priceHistory": [
       {
         "price": 0.0295,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854967
       }
     ],
     "priceVolatility": 0,
@@ -5101,7 +5086,7 @@
     "priceHistory": [
       {
         "price": 0.135,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5116,7 +5101,7 @@
     "priceHistory": [
       {
         "price": 0.255,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5131,7 +5116,7 @@
     "priceHistory": [
       {
         "price": 0.155,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5140,28 +5125,13 @@
     "vVel": 0,
     "startDateIso": "2025-08-08"
   },
-  "will-getafe-be-relegated-from-la-liga-after-the-202526-season": {
-    "price": 0.19,
-    "volume": 327.295713,
-    "priceHistory": [
-      {
-        "price": 0.19,
-        "timestamp": 1768711773638
-      }
-    ],
-    "priceVolatility": 0,
-    "volumeHistory": [],
-    "avgVvel": 0,
-    "vVel": 0,
-    "startDateIso": "2025-08-15"
-  },
   "will-alavs-be-relegated-from-la-liga-after-the-202526-season": {
-    "price": 0.265,
+    "price": 0.26,
     "volume": 111.716358,
     "priceHistory": [
       {
-        "price": 0.265,
-        "timestamp": 1768711773638
+        "price": 0.26,
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5171,12 +5141,12 @@
     "startDateIso": "2025-08-15"
   },
   "will-oviedo-be-relegated-from-la-liga-after-the-202526-season": {
-    "price": 0.84,
+    "price": 0.83,
     "volume": 4.76,
     "priceHistory": [
       {
-        "price": 0.84,
-        "timestamp": 1768711773638
+        "price": 0.83,
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5186,12 +5156,12 @@
     "startDateIso": "2025-08-15"
   },
   "will-valencia-be-relegated-from-la-liga-after-the-202526-season": {
-    "price": 0.375,
+    "price": 0.34,
     "volume": 430.925845,
     "priceHistory": [
       {
-        "price": 0.375,
-        "timestamp": 1768711773638
+        "price": 0.34,
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5201,12 +5171,12 @@
     "startDateIso": "2025-08-15"
   },
   "will-sevilla-be-relegated-from-la-liga-after-the-202526-season": {
-    "price": 0.205,
+    "price": 0.21,
     "volume": 333.87,
     "priceHistory": [
       {
-        "price": 0.205,
-        "timestamp": 1768711773638
+        "price": 0.21,
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5216,12 +5186,12 @@
     "startDateIso": "2025-08-15"
   },
   "will-mallorca-be-relegated-from-la-liga-after-the-202526-season": {
-    "price": 0.375,
+    "price": 0.33,
     "volume": 53.319676,
     "priceHistory": [
       {
-        "price": 0.375,
-        "timestamp": 1768711773638
+        "price": 0.33,
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5236,7 +5206,7 @@
     "priceHistory": [
       {
         "price": 0.825,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5251,7 +5221,7 @@
     "priceHistory": [
       {
         "price": 0.018,
-        "timestamp": 1768711773638
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5261,12 +5231,12 @@
     "startDateIso": "2025-08-15"
   },
   "will-us-gdp-growth-in-2025-be-greater-than-2pt5": {
-    "price": 0.15,
+    "price": 0.1555,
     "volume": 790.361585,
     "priceHistory": [
       {
-        "price": 0.15,
-        "timestamp": 1768711773639
+        "price": 0.1555,
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5281,7 +5251,7 @@
     "priceHistory": [
       {
         "price": 0.9275,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5296,7 +5266,7 @@
     "priceHistory": [
       {
         "price": 0.87,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5311,7 +5281,7 @@
     "priceHistory": [
       {
         "price": 0.041,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854968
       }
     ],
     "priceVolatility": 0,
@@ -5326,7 +5296,7 @@
     "priceHistory": [
       {
         "price": 0.925,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5336,12 +5306,12 @@
     "startDateIso": "2025-08-18"
   },
   "will-robert-lewandowski-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
-    "price": 0.0175,
+    "price": 0.0165,
     "volume": 5,
     "priceHistory": [
       {
-        "price": 0.0175,
-        "timestamp": 1768711773639
+        "price": 0.0165,
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5356,7 +5326,7 @@
     "priceHistory": [
       {
         "price": 0.02,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5371,7 +5341,7 @@
     "priceHistory": [
       {
         "price": 0.0125,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5381,12 +5351,12 @@
     "startDateIso": "2025-08-18"
   },
   "will-vedat-muriqi-be-the-top-goal-scorer-in-the-202526-la-liga-season": {
-    "price": 0.0115,
+    "price": 0.0105,
     "volume": 92.646968,
     "priceHistory": [
       {
-        "price": 0.0115,
-        "timestamp": 1768711773639
+        "price": 0.0105,
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5401,7 +5371,7 @@
     "priceHistory": [
       {
         "price": 0.0575,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5416,7 +5386,7 @@
     "priceHistory": [
       {
         "price": 0.235,
-        "timestamp": 1768711773639
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5431,7 +5401,7 @@
     "priceHistory": [
       {
         "price": 0.044,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5446,7 +5416,7 @@
     "priceHistory": [
       {
         "price": 0.024,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5461,7 +5431,7 @@
     "priceHistory": [
       {
         "price": 0.0375,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5476,7 +5446,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5491,7 +5461,7 @@
     "priceHistory": [
       {
         "price": 0.085,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5506,7 +5476,7 @@
     "priceHistory": [
       {
         "price": 0.1075,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5521,7 +5491,7 @@
     "priceHistory": [
       {
         "price": 0.09,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5536,7 +5506,7 @@
     "priceHistory": [
       {
         "price": 0.095,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5551,7 +5521,7 @@
     "priceHistory": [
       {
         "price": 0.0455,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854969
       }
     ],
     "priceVolatility": 0,
@@ -5566,7 +5536,7 @@
     "priceHistory": [
       {
         "price": 0.016,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5581,7 +5551,7 @@
     "priceHistory": [
       {
         "price": 0.011,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5596,7 +5566,7 @@
     "priceHistory": [
       {
         "price": 0.0215,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5611,7 +5581,7 @@
     "priceHistory": [
       {
         "price": 0.014,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5626,7 +5596,7 @@
     "priceHistory": [
       {
         "price": 0.0365,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5641,7 +5611,7 @@
     "priceHistory": [
       {
         "price": 0.1045,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5651,12 +5621,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-matias-goncalo-ramos-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.105,
+    "price": 0.1045,
     "volume": 91,
     "priceHistory": [
       {
-        "price": 0.105,
-        "timestamp": 1768711773640
+        "price": 0.1045,
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5671,7 +5641,7 @@
     "priceHistory": [
       {
         "price": 0.08,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5681,12 +5651,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-desire-doue-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.107,
+    "price": 0.106,
     "volume": 61,
     "priceHistory": [
       {
-        "price": 0.107,
-        "timestamp": 1768711773640
+        "price": 0.106,
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5696,12 +5666,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-georges-mikautadze-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.104,
+    "price": 0.1025,
     "volume": 86,
     "priceHistory": [
       {
-        "price": 0.104,
-        "timestamp": 1768711773640
+        "price": 0.1025,
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5716,7 +5686,7 @@
     "priceHistory": [
       {
         "price": 0.0305,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5731,7 +5701,7 @@
     "priceHistory": [
       {
         "price": 0.102,
-        "timestamp": 1768711773640
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5741,12 +5711,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-amine-gouiri-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.1045,
+    "price": 0.104,
     "volume": 46,
     "priceHistory": [
       {
-        "price": 0.1045,
-        "timestamp": 1768711773640
+        "price": 0.104,
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5756,12 +5726,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-emanuel-emegha-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.3235,
+    "price": 0.313,
     "volume": 76,
     "priceHistory": [
       {
-        "price": 0.3235,
-        "timestamp": 1768711773641
+        "price": 0.313,
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5771,12 +5741,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-terem-moffi-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.343,
+    "price": 0.3375,
     "volume": 40,
     "priceHistory": [
       {
-        "price": 0.343,
-        "timestamp": 1768711773641
+        "price": 0.3375,
+        "timestamp": 1768713854970
       }
     ],
     "priceVolatility": 0,
@@ -5786,12 +5756,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-ludovic-ajorque-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.104,
+    "price": 0.1035,
     "volume": 51,
     "priceHistory": [
       {
-        "price": 0.104,
-        "timestamp": 1768711773641
+        "price": 0.1035,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5801,12 +5771,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-achraf-hakimi-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.342,
+    "price": 0.3385,
     "volume": 56,
     "priceHistory": [
       {
-        "price": 0.342,
-        "timestamp": 1768711773641
+        "price": 0.3385,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5816,12 +5786,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-breel-embolo-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.349,
+    "price": 0.345,
     "volume": 56,
     "priceHistory": [
       {
-        "price": 0.349,
-        "timestamp": 1768711773641
+        "price": 0.345,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5831,12 +5801,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-matthis-abline-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.1035,
+    "price": 0.103,
     "volume": 51,
     "priceHistory": [
       {
-        "price": 0.1035,
-        "timestamp": 1768711773641
+        "price": 0.103,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5846,12 +5816,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-folarin-balogun-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.104,
+    "price": 0.1035,
     "volume": 51,
     "priceHistory": [
       {
-        "price": 0.104,
-        "timestamp": 1768711773641
+        "price": 0.1035,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5866,7 +5836,7 @@
     "priceHistory": [
       {
         "price": 0.1065,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5876,12 +5846,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-jean-philippe-krasso-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.3355,
+    "price": 0.333,
     "volume": 46,
     "priceHistory": [
       {
-        "price": 0.3355,
-        "timestamp": 1768711773641
+        "price": 0.333,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5896,7 +5866,7 @@
     "priceHistory": [
       {
         "price": 0.08,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5906,12 +5876,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-mostafa-mohamed-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.104,
+    "price": 0.1035,
     "volume": 46,
     "priceHistory": [
       {
-        "price": 0.104,
-        "timestamp": 1768711773641
+        "price": 0.1035,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5921,12 +5891,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-esteban-lepaul-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.116,
+    "price": 0.115,
     "volume": 92.842817,
     "priceHistory": [
       {
-        "price": 0.116,
-        "timestamp": 1768711773641
+        "price": 0.115,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5936,12 +5906,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-igor-paixao-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.104,
+    "price": 0.1035,
     "volume": 61,
     "priceHistory": [
       {
-        "price": 0.104,
-        "timestamp": 1768711773641
+        "price": 0.1035,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5951,12 +5921,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-frank-magri-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.1035,
+    "price": 0.103,
     "volume": 61,
     "priceHistory": [
       {
-        "price": 0.1035,
-        "timestamp": 1768711773641
+        "price": 0.103,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5966,12 +5936,12 @@
     "startDateIso": "2025-08-20"
   },
   "will-cheikh-sabaly-be-the-top-goal-scorer-in-the-2025-26-ligue-1-season": {
-    "price": 0.104,
+    "price": 0.1035,
     "volume": 46,
     "priceHistory": [
       {
-        "price": 0.104,
-        "timestamp": 1768711773641
+        "price": 0.1035,
+        "timestamp": 1768713854971
       }
     ],
     "priceVolatility": 0,
@@ -5986,7 +5956,7 @@
     "priceHistory": [
       {
         "price": 0.0815,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6001,7 +5971,7 @@
     "priceHistory": [
       {
         "price": 0.1045,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6016,7 +5986,7 @@
     "priceHistory": [
       {
         "price": 0.0115,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6031,7 +6001,7 @@
     "priceHistory": [
       {
         "price": 0.911,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6046,7 +6016,7 @@
     "priceHistory": [
       {
         "price": 0.395,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6061,7 +6031,7 @@
     "priceHistory": [
       {
         "price": 0.495,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6076,7 +6046,7 @@
     "priceHistory": [
       {
         "price": 0.045,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6091,7 +6061,7 @@
     "priceHistory": [
       {
         "price": 0.05,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6106,7 +6076,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6121,7 +6091,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773641
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6136,7 +6106,7 @@
     "priceHistory": [
       {
         "price": 0.9725,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6151,7 +6121,7 @@
     "priceHistory": [
       {
         "price": 0.045,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6161,12 +6131,12 @@
     "startDateIso": "2025-08-22"
   },
   "will-como-finish-in-the-top-4-in-the-2025-26-serie-a-season": {
-    "price": 0.151,
+    "price": 0.1505,
     "volume": 700.422675,
     "priceHistory": [
       {
-        "price": 0.151,
-        "timestamp": 1768711773642
+        "price": 0.1505,
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6181,7 +6151,7 @@
     "priceHistory": [
       {
         "price": 0.05,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6196,7 +6166,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6211,7 +6181,7 @@
     "priceHistory": [
       {
         "price": 0.05,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6226,7 +6196,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854972
       }
     ],
     "priceVolatility": 0,
@@ -6241,7 +6211,7 @@
     "priceHistory": [
       {
         "price": 0.89,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6256,7 +6226,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6271,7 +6241,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6286,7 +6256,7 @@
     "priceHistory": [
       {
         "price": 0.05,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6301,7 +6271,7 @@
     "priceHistory": [
       {
         "price": 0.105,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6316,7 +6286,7 @@
     "priceHistory": [
       {
         "price": 0.272,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6331,7 +6301,7 @@
     "priceHistory": [
       {
         "price": 0.0505,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6346,7 +6316,7 @@
     "priceHistory": [
       {
         "price": 0.272,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6361,7 +6331,7 @@
     "priceHistory": [
       {
         "price": 0.2725,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6376,7 +6346,7 @@
     "priceHistory": [
       {
         "price": 0.285,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6391,7 +6361,7 @@
     "priceHistory": [
       {
         "price": 0.054,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6406,7 +6376,7 @@
     "priceHistory": [
       {
         "price": 0.054,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6421,7 +6391,7 @@
     "priceHistory": [
       {
         "price": 0.285,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6436,7 +6406,7 @@
     "priceHistory": [
       {
         "price": 0.055,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6451,7 +6421,7 @@
     "priceHistory": [
       {
         "price": 0.1055,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6466,7 +6436,7 @@
     "priceHistory": [
       {
         "price": 0.2005,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6481,7 +6451,7 @@
     "priceHistory": [
       {
         "price": 0.272,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6496,7 +6466,7 @@
     "priceHistory": [
       {
         "price": 0.271,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6511,7 +6481,7 @@
     "priceHistory": [
       {
         "price": 0.285,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6526,7 +6496,7 @@
     "priceHistory": [
       {
         "price": 0.285,
-        "timestamp": 1768711773642
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6541,7 +6511,7 @@
     "priceHistory": [
       {
         "price": 0.285,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854973
       }
     ],
     "priceVolatility": 0,
@@ -6556,7 +6526,7 @@
     "priceHistory": [
       {
         "price": 0.1155,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6571,7 +6541,7 @@
     "priceHistory": [
       {
         "price": 0.272,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6586,7 +6556,7 @@
     "priceHistory": [
       {
         "price": 0.165,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6601,7 +6571,7 @@
     "priceHistory": [
       {
         "price": 0.07,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6611,12 +6581,12 @@
     "startDateIso": "2025-08-25"
   },
   "will-the-team-that-wins-the-2025-26-super-bowl-play-in-the-nfc-north": {
-    "price": 0.049,
+    "price": 0.05,
     "volume": 667.313082,
     "priceHistory": [
       {
-        "price": 0.049,
-        "timestamp": 1768711773643
+        "price": 0.05,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6626,12 +6596,12 @@
     "startDateIso": "2025-08-25"
   },
   "will-the-team-that-wins-the-2025-26-super-bowl-play-in-the-afc-west": {
-    "price": 0.1,
+    "price": 0.095,
     "volume": 286.819284,
     "priceHistory": [
       {
-        "price": 0.1,
-        "timestamp": 1768711773643
+        "price": 0.095,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6646,7 +6616,7 @@
     "priceHistory": [
       {
         "price": 0.505,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6661,7 +6631,7 @@
     "priceHistory": [
       {
         "price": 0.255,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6676,7 +6646,7 @@
     "priceHistory": [
       {
         "price": 0.0995,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6686,12 +6656,12 @@
     "startDateIso": "2025-08-25"
   },
   "will-fernando-mendoza-be-the-first-pick-of-the-2026-nfl-draft": {
-    "price": 0.905,
+    "price": 0.9,
     "volume": 55.217387,
     "priceHistory": [
       {
-        "price": 0.905,
-        "timestamp": 1768711773643
+        "price": 0.9,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6706,7 +6676,7 @@
     "priceHistory": [
       {
         "price": 0.011,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6721,7 +6691,7 @@
     "priceHistory": [
       {
         "price": 0.0145,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6736,7 +6706,7 @@
     "priceHistory": [
       {
         "price": 0.75,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6751,7 +6721,7 @@
     "priceHistory": [
       {
         "price": 0.2465,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6766,7 +6736,7 @@
     "priceHistory": [
       {
         "price": 0.4775,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6781,7 +6751,7 @@
     "priceHistory": [
       {
         "price": 0.46,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6796,7 +6766,7 @@
     "priceHistory": [
       {
         "price": 0.0145,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6806,12 +6776,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-chelsea-win-the-202526-carabao-cup": {
-    "price": 0.0615,
+    "price": 0.064,
     "volume": 12.275608,
     "priceHistory": [
       {
-        "price": 0.0615,
-        "timestamp": 1768711773643
+        "price": 0.064,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6826,7 +6796,7 @@
     "priceHistory": [
       {
         "price": 0.0285,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6836,12 +6806,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-vfl-wolfsburg-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.31,
+    "price": 0.321,
     "volume": 127.6,
     "priceHistory": [
       {
-        "price": 0.31,
-        "timestamp": 1768711773643
+        "price": 0.321,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6856,7 +6826,7 @@
     "priceHistory": [
       {
         "price": 0.885,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6866,12 +6836,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-fc-koln-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.4075,
+    "price": 0.4345,
     "volume": 5.78,
     "priceHistory": [
       {
-        "price": 0.4075,
-        "timestamp": 1768711773643
+        "price": 0.4345,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6886,7 +6856,7 @@
     "priceHistory": [
       {
         "price": 0.26,
-        "timestamp": 1768711773643
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6896,12 +6866,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-mainz-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.242,
+    "price": 0.241,
     "volume": 64.918582,
     "priceHistory": [
       {
-        "price": 0.242,
-        "timestamp": 1768711773643
+        "price": 0.241,
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6916,7 +6886,7 @@
     "priceHistory": [
       {
         "price": 0.921,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854974
       }
     ],
     "priceVolatility": 0,
@@ -6926,12 +6896,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-hamburger-sv-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.3235,
+    "price": 0.335,
     "volume": 33.652032,
     "priceHistory": [
       {
-        "price": 0.3235,
-        "timestamp": 1768711773644
+        "price": 0.335,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -6941,12 +6911,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-st-pauli-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.331,
+    "price": 0.337,
     "volume": 14.83,
     "priceHistory": [
       {
-        "price": 0.331,
-        "timestamp": 1768711773644
+        "price": 0.337,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -6956,12 +6926,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-werder-bremen-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.259,
+    "price": 0.315,
     "volume": 1461.649293,
     "priceHistory": [
       {
-        "price": 0.259,
-        "timestamp": 1768711773644
+        "price": 0.315,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -6976,7 +6946,7 @@
     "priceHistory": [
       {
         "price": 0.23,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -6986,12 +6956,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-union-berlin-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.295,
+    "price": 0.345,
     "volume": 1.0309,
     "priceHistory": [
       {
-        "price": 0.295,
-        "timestamp": 1768711773644
+        "price": 0.345,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7001,12 +6971,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-fc-heidenheim-finish-in-the-top-4-of-the-bundesliga-202526-standings": {
-    "price": 0.3555,
+    "price": 0.2735,
     "volume": 79.69,
     "priceHistory": [
       {
-        "price": 0.3555,
-        "timestamp": 1768711773644
+        "price": 0.2735,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7016,12 +6986,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-rayo-vallecano-finish-in-the-top-4-of-the-la-liga-202526-standings": {
-    "price": 0.249,
+    "price": 0.2495,
     "volume": 20.514525,
     "priceHistory": [
       {
-        "price": 0.249,
-        "timestamp": 1768711773644
+        "price": 0.2495,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7036,7 +7006,7 @@
     "priceHistory": [
       {
         "price": 0.136,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7051,7 +7021,7 @@
     "priceHistory": [
       {
         "price": 0.036,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7066,7 +7036,7 @@
     "priceHistory": [
       {
         "price": 0.9305,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7081,7 +7051,7 @@
     "priceHistory": [
       {
         "price": 0.925,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7091,12 +7061,12 @@
     "startDateIso": "2025-08-27"
   },
   "will-levante-finish-in-the-top-4-of-the-la-liga-202526-standings": {
-    "price": 0.132,
+    "price": 0.1315,
     "volume": 10.267133,
     "priceHistory": [
       {
-        "price": 0.132,
-        "timestamp": 1768711773644
+        "price": 0.1315,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7111,7 +7081,7 @@
     "priceHistory": [
       {
         "price": 0.9675,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
@@ -7126,7 +7096,22 @@
     "priceHistory": [
       {
         "price": 0.016,
-        "timestamp": 1768711773644
+        "timestamp": 1768713854975
+      }
+    ],
+    "priceVolatility": 0,
+    "volumeHistory": [],
+    "avgVvel": 0,
+    "vVel": 0,
+    "startDateIso": "2025-08-27"
+  },
+  "will-girona-finish-in-the-top-4-of-the-la-liga-202526-standings": {
+    "price": 0.135,
+    "volume": 3.308356,
+    "priceHistory": [
+      {
+        "price": 0.135,
+        "timestamp": 1768713854975
       }
     ],
     "priceVolatility": 0,
