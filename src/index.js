@@ -204,15 +204,18 @@ const MAX_EXPOSURE_HIGH_LIQUIDITY = 0.05; // 5% max exposure for high liquidity
 const PROBE_EDGE_THRESHOLD = 0.02; // Minimum edge for probe trades
 const STRONG_TRADE_EXPOSURE = 0.02; // Minimum exposure for strong trades
 const SMALL_TRADE_EXPOSURE = 0.005; // Minimum exposure for small trades
-const PROBE_EXPOSURE = 0.0001; // Minimum exposure for probe trades
-const MIN_NET_EDGE = 0.01; // 1% minimum net edge after costs
-const CONVICTION_MULTIPLIER_MIN = 0.8; // Minimum conviction multiplier
-const HIGH_EDGE_THRESHOLD = 0.10; // Edge above which conviction doesn't matter
-const MEDIUM_EDGE_THRESHOLD = 0.05; // Edge above which conviction penalty is reduced
+const PROBE_EXPOSURE = 0.0005; // Minimum exposure for probe trades
+const MIN_NET_EDGE = 0.015; // 1.5% minimum net edge after costs
+const CONVICTION_MULTIPLIER_MIN = 0.85; // Minimum conviction multiplier
+const HIGH_EDGE_THRESHOLD = 0.12; // Edge above which conviction doesn't matter
+const MEDIUM_EDGE_THRESHOLD = 0.06; // Edge above which conviction penalty is reduced
+const MIN_LIQUIDITY_THRESHOLD = 7500; // $7.5K minimum liquidity (further reduced for 5000 markets)
+const MIN_VOLUME_VELOCITY = 150; // $150/hour minimum trading activity (further reduced)
+const PRIORITY_CATEGORIES = ['MACRO', 'POLITICS', 'CRYPTO', 'SPORTS_FUTURES'];
 const DATA_RICH_CATEGORIES = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
-const CONVICTION_BOOST_HIGH = 1.15; // 15% boost for high liquidity
-const CONVICTION_BOOST_MEDIUM = 1.10; // 10% boost for medium liquidity
-const CONVICTION_BOOST_LOW = 1.05; // 5% boost for low liquidity
+const CONVICTION_BOOST_HIGH = 1.20; // 20% boost for high liquidity
+const CONVICTION_BOOST_MEDIUM = 1.15; // 15% boost for medium liquidity
+const CONVICTION_BOOST_LOW = 1.10; // 10% boost for low liquidity
 const EDGE_THRESHOLD_HIGH = 0.10; // Very high edge threshold
 const EDGE_THRESHOLD_MEDIUM_HIGH = 0.07; // High edge threshold
 const EDGE_THRESHOLD_MEDIUM = 0.05; // Medium-high edge threshold
@@ -2131,7 +2134,7 @@ function applyClusterDampening(trades) {
     const bestTrade = clusterTrades[0];
     clusterTrades.forEach(trade => {
       if (trade !== bestTrade) {
-        trade.intentExposure *= 0.5;
+        trade.intentExposure *= 0.75; // Changed from 0.5 to 0.75
       }
     });
   });
@@ -2149,12 +2152,94 @@ function applyGlobalExposureCap(trades) {
   }
 }
 
+const ARBITRAGE_THRESHOLD = 0.02; // 2% minimum spread arbitrage
+const SPREAD_HISTORY_WINDOW = 300000; // 5 minutes in ms
+const ORDER_BOOK_DEPTH = 10; // Track top 10 levels
+
+function detectSpreadArbitrage(market) {
+  // POLYMARKET PRO: Use real order book data from CLOB
+  const orderBook = getOrderBook(market.conditionId) || getOrderBook(market.id);
+  
+  if (!orderBook || !orderBook.bids || !orderBook.asks) return null;
+  
+  // Calculate best bid/ask mid price
+  const bestBid = orderBook.bids[0]?.price || 0;
+  const bestAsk = orderBook.asks[0]?.price || 0;
+  const midPrice = (bestBid + bestAsk) / 2;
+  
+  if (!bestBid || !bestAsk || bestBid >= bestAsk) return null;
+  
+  // Calculate spread percentage
+  const spreadPct = ((bestAsk - bestBid) / midPrice) * 100;
+  
+  // Check for arbitrage opportunity
+  if (spreadPct > ARBITRAGE_THRESHOLD) {
+    // Calculate theoretical arbitrage profit
+    const theoreticalProfit = (spreadPct - 2) * 0.5; // After 2% fees
+    
+    return {
+      marketId: market.id,
+      marketQuestion: market.question,
+      spreadPct,
+      theoreticalProfit,
+      liquidity: market.liquidity || 0,
+      orderBookDepth: {
+        bidSize: orderBook.bids[0]?.size || 0,
+        askSize: orderBook.asks[0]?.size || 0,
+        bidLevels: orderBook.bids.length,
+        askLevels: orderBook.asks.length
+      },
+      timestamp: Date.now(),
+      isExecutable: theoreticalProfit > 1.0 && (market.liquidity || 0) > 25000
+    };
+  }
+
+  return null;
+}
+
+function filterHighValueMarkets(markets = []) {
+  log(`[INFO] filterHighValueMarkets: Processing ${markets.length} markets`);
+  
+  const filtered = markets.filter(market => {
+    const liquidity = Number(market.liquidity) || 0;
+    if (liquidity < MIN_LIQUIDITY_THRESHOLD) {
+      log(`[INFO] Market ${market.question?.slice(0, 30)}... rejected: liquidity $${liquidity} < $${MIN_LIQUIDITY_THRESHOLD}`);
+      return false;
+    }
+    
+    const volumeVelocity = computeVolumeVelocity(market);
+    if (volumeVelocity < MIN_VOLUME_VELOCITY) {
+      log(`[INFO] Market ${market.question?.slice(0, 30)}... rejected: volume velocity $${volumeVelocity} < $${MIN_VOLUME_VELOCITY}`);
+      return false;
+    }
+    
+    const category = getCategoryKey(market.question, market);
+    if (!PRIORITY_CATEGORIES.includes(category)) {
+      log(`[INFO] Market ${market.question?.slice(0, 30)}... rejected: category ${category} not in priority list`);
+      return false;
+    }
+    
+    log(`[INFO] Market ${market.question?.slice(0, 30)}... PASSED all filters`);
+    return true;
+  });
+  
+  log(`[INFO] filterHighValueMarkets: ${filtered.length} markets passed filters`);
+  return filtered;
+}
+
+function trackSpreadOpportunities(arbitrageOpportunities = []) {
+  return arbitrageOpportunities
+    .filter(opp => opp.isExecutable)
+    .sort((a, b) => b.theoreticalProfit - a.theoreticalProfit)
+    .slice(0, 5); // Top 5 opportunities
+}
+
 async function runCycle() {
   if (isRunning) return;
   isRunning = true;
   let markets = [];
   try {
-    log(`\n--- Agent Zigma Cycle: ${new Date().toISOString()} ---`);
+    // ...
     const rawMarkets = await fetchAllMarkets();
     markets = rawMarkets;
 
@@ -2176,11 +2261,28 @@ async function runCycle() {
       return;
     }
 
+    // POLYMARKET PRO MOVE: Filter for high-value markets first
+    const highValueMarkets = filterHighValueMarkets(enriched);
+    log(`HIGH-VALUE FILTER: ${highValueMarkets.length}/${enriched.length} markets meet liquidity thresholds`);
+    
+    // POLYMARKET PRO MOVE: Detect spread arbitrage opportunities
+    const arbitrageOpportunities = highValueMarkets
+      .map(market => detectSpreadArbitrage(market))
+      .filter(opp => opp !== null);
+    
+    const topArbitrageOpportunities = trackSpreadOpportunities(arbitrageOpportunities);
+    if (topArbitrageOpportunities.length > 0) {
+      log(` ARBITRAGE OPPORTUNITIES: ${topArbitrageOpportunities.length} found`);
+      topArbitrageOpportunities.forEach((opp, i) => {
+        log(`  #${i+1} ${opp.marketQuestion.slice(0, 50)}... | Spread: ${opp.spreadPct.toFixed(2)}% | Profit: ${opp.theoreticalProfit.toFixed(2)}% | Liquidity: $${(opp.liquidity/1000).toFixed(0)}K`);
+      });
+    }
+    
     // Use safe update function to prevent race conditions
-    safeUpdateCategoryPerformance(enriched);
-    dynamicCategoryPriors = safeBuildDynamicCategoryPriors(enriched);
+    safeUpdateCategoryPerformance(highValueMarkets);
+    dynamicCategoryPriors = safeBuildDynamicCategoryPriors(highValueMarkets);
 
-    enriched.forEach(m => {
+    highValueMarkets.forEach(m => {
       const prices = getYesNoPrices(m);
       if (prices) {
         m.yesPrice = prices.yes;
@@ -2222,18 +2324,18 @@ async function runCycle() {
     });
 
     const marketGroups = {};
-    enriched.forEach(m => {
+    highValueMarkets.forEach(m => {
       const category = getCategoryKey(m.question, m);
       if (!marketGroups[category]) marketGroups[category] = [];
       marketGroups[category].push(m);
     });
 
-    const avgVolatility = enriched.reduce((sum, m) => sum + (m.priceVolatility || 0), 0) / enriched.length;
-    const avgLiquidity = enriched.reduce((sum, m) => sum + (m.liquidity || 0), 0) / enriched.length;
+    const avgVolatility = highValueMarkets.reduce((sum, m) => sum + (m.priceVolatility || 0), 0) / highValueMarkets.length;
+    const avgLiquidity = highValueMarkets.reduce((sum, m) => sum + (m.liquidity || 0), 0) / highValueMarkets.length;
     isVolatilityLock = avgVolatility > 0.1;
     isLiquidityShock = avgLiquidity < 50000;
 
-    const selectedMarkets = pickHighAlphaMarkets(enriched, marketGroups).filter(m => (m.volume || 0) > 1000);
+    const selectedMarkets = pickHighAlphaMarkets(highValueMarkets, marketGroups).filter(m => (m.volume || 0) > 1000);
     log(` Selected ${selectedMarkets.length} markets for deep analysis`);
     
     // Apply cluster filtering BEFORE LLM analysis to save costs
@@ -2295,8 +2397,6 @@ async function runCycle() {
   } catch (error) {
     log(`CRITICAL CYCLE ERROR: ${error.message}\n${error.stack}`, 'ERROR');
   } finally {
-    // saveCustomSignals function not found - remove or implement
-    // await saveCustomSignals(global.latestData.liveSignals);
     isRunning = false;
   }
 }
