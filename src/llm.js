@@ -11,12 +11,6 @@ const { calculateAggregateSentiment } = require('./utils/sentiment-enhanced');
 const { applyCalibration } = require('./confidence-calibration');
 require('dotenv').config();
 
-// Horizon discount function for time-based edge reduction
-// More time until resolution → larger discount (less certainty)
-function computeHorizonDiscount(daysToResolution) {
-  return Math.max(0.5, 1 - (daysToResolution / 365) * 0.3);
-}
-
 // Utility functions
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -28,19 +22,13 @@ function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
   const rawEdge = llmProbability - marketPrice;
 
   // Polymarket costs:
-  // - Trading fee: 2% on profits only (not upfront)
-  // - Spread: 0.5-1% for liquid markets, 1-2% for illiquid
+  // - Trading fee: 2% on notional trade value (handled separately in Kelly)
+  // - Spread: You cross half the spread when trading
   const estimatedSpread = orderBook?.spread || 0.01; // 1% default spread
-  const tradingFee = 0.02; // 2% on profits
+  const spreadCost = estimatedSpread / 2; // You only cross half the spread
 
-  // Effective cost calculation:
-  // If you have 5% edge and win, you pay 2% fee on the 5% profit = 0.1% effective cost
-  // Plus you cross the spread upfront = 1% cost
-  // Total effective cost ≈ 1.1%
-  const effectiveFee = Math.abs(rawEdge) * tradingFee; // Fee only on profits
-  const totalCost = estimatedSpread + effectiveFee;
-
-  const netEdge = Math.abs(rawEdge) - totalCost;
+  // Net edge after spread cost (trading fee handled in Kelly calculation)
+  const netEdge = Math.abs(rawEdge) - spreadCost;
 
   // Determine direction
   const direction = rawEdge > 0 ? 'BUY_YES' : 'BUY_NO';
@@ -50,9 +38,8 @@ function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
     netEdge,           // Absolute edge after costs
     direction,         // Trade direction
     isExecutable: netEdge > 0.005, // 0.5% minimum net edge
-    totalCost,
-    spread: estimatedSpread,
-    fees: effectiveFee
+    spreadCost,
+    estimatedSpread
   };
 }
 
@@ -474,6 +461,12 @@ Return ONLY the JSON object—no prose or extra text.`;
 }
 
 // Calculate base rate prior for LLM context
+// Enhanced with sophisticated adjustments for:
+// - Incumbent advantage (12% boost based on political science research)
+// - Home-field advantage (8% boost for sports teams)
+// - Crypto ATH bias correction (15% reduction for recency bias)
+// - Momentum bias correction (10% reduction for overreactions)
+// - Anti-incumbent environments (12% reduction when applicable)
 function calculateBaseRatePrior(marketData) {
   const question = marketData.question || '';
   const q = question.toLowerCase();
@@ -586,25 +579,61 @@ function calculateBaseRatePrior(marketData) {
 
   // Category-based priors as fallback
   const category = (marketData.category || '').toUpperCase();
+  let prior = CATEGORY_BASE_RATES.OTHER; // Default 50% for unknown markets
+  
   if (category && CATEGORY_BASE_RATES[category] != null) {
-    return CATEGORY_BASE_RATES[category];
+    prior = CATEGORY_BASE_RATES[category];
+  } else {
+    // Fuzzy category detection from question text
+    if (/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) {
+      prior = CATEGORY_BASE_RATES.CRYPTO;
+    } else if (/recession|inflation|fed|fed rate|gdp|unemployment|economy|macro/i.test(q)) {
+      prior = CATEGORY_BASE_RATES.MACRO;
+    } else if (/election|president|trump|biden|senate|congress|political|government/i.test(q)) {
+      prior = CATEGORY_BASE_RATES.POLITICS;
+    } else if (/grammy|oscar|emmy|award|nomination/i.test(q)) {
+      prior = CATEGORY_BASE_RATES.ENTERTAINMENT;
+    }
   }
 
-  // Fuzzy category detection from question text
-  if (/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) {
-    return CATEGORY_BASE_RATES.CRYPTO;
-  }
-  if (/recession|inflation|fed|fed rate|gdp|unemployment|economy|macro/i.test(q)) {
-    return CATEGORY_BASE_RATES.MACRO;
-  }
-  if (/election|president|trump|biden|senate|congress|political|government/i.test(q)) {
-    return CATEGORY_BASE_RATES.POLITICS;
-  }
-  if (/grammy|oscar|emmy|award|nomination/i.test(q)) {
-    return CATEGORY_BASE_RATES.ENTERTAINMENT;
+  // Sophisticated adjustments to base rate prior
+  
+  // Incumbent advantage detection (political science standard: ~12% boost)
+  if (/incumbent|re-election|seeking re-election|running for re-election/i.test(q)) {
+    prior *= 1.12;
+    prior = Math.min(prior, 0.95); // Cap at 95% to avoid extreme values
   }
 
-  return CATEGORY_BASE_RATES.OTHER; // Default 50% for unknown markets
+  // Home-field advantage for sports (8% boost based on sports analytics)
+  if (/home|at home|home field|home court|home ice/i.test(q) && 
+      (category === 'SPORTS' || category === 'SPORTS_FUTURES' || category === 'SPORTS_PLAYER' ||
+       /football|basketball|baseball|hockey|soccer|game|match|win|beat|defeat/i.test(q))) {
+    prior *= 1.08;
+    prior = Math.min(prior, 0.95); // Cap at 95%
+  }
+
+  // Recency bias correction for crypto (markets overestimate continuation after ATH)
+  if ((category === 'CRYPTO' || /bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) && 
+      /all-time high|ath|new high|record high|hit \$[0-9]+k|reached \$[0-9]+/i.test(q)) {
+    prior *= 0.85; // Markets tend to overestimate continuation after new highs
+  }
+
+  // Momentum bias correction (markets overreact to recent trends)
+  if (/surge|spike|soar|skyrocket|plummet|crash|collapse|boom|burst/i.test(q)) {
+    prior *= 0.90; // Slight correction for momentum overreaction
+  }
+
+  // Incumbent disadvantage in anti-establishment environments
+  if (/incumbent|re-election/i.test(q) && 
+      (/anti-incumbent|anti-establishment|throw the bums out|change|time for change/i.test(q) ||
+       /approval rating.*below.*40|unpopular.*incumbent/i.test(q))) {
+    prior *= 0.88; // Reduce incumbent advantage in hostile environment
+  }
+
+  // Ensure prior stays within reasonable bounds
+  prior = Math.max(0.01, Math.min(prior, 0.99));
+  
+  return prior;
 }
 
 // Get historical context for LLM
@@ -631,7 +660,36 @@ function getHistoricalContext(marketData, baseRatePrior) {
       if (/incumbent|re-election|running for re-election/i.test(q)) {
         context.push(`Incumbent advantage: Governors running for re-election typically have a 10-15% boost in win rate`);
       }
+      
+      // Anti-incumbent context
+      if (/incumbent|re-election/i.test(q) && 
+          (/anti-incumbent|anti-establishment|throw the bums out|change|time for change/i.test(q) ||
+           /approval rating.*below.*40|unpopular.*incumbent/i.test(q))) {
+        context.push(`Anti-incumbent environment: Incumbent advantage may be reduced due to political climate or low approval ratings`);
+      }
     }
+  }
+
+  // General incumbent advantage context
+  if (/incumbent|re-election|seeking re-election/i.test(q)) {
+    context.push(`Incumbent advantage: Historical data shows incumbents typically have a 10-15% higher win rate due to name recognition, fundraising advantages, and institutional support`);
+  }
+
+  // Sports home-field advantage context
+  if (/home|at home|home field|home court|home ice/i.test(q) && 
+      (/football|basketball|baseball|hockey|soccer|game|match|win|beat|defeat/i.test(q))) {
+    context.push(`Home-field advantage: Teams playing at home historically win ~8% more often due to crowd support, travel fatigue for opponents, and familiarity with the venue`);
+  }
+
+  // Crypto ATH context
+  if ((/bitcoin|ethereum|btc|eth|crypto|solana|bnb|ada|doge/i.test(q)) && 
+      /all-time high|ath|new high|record high|hit \$[0-9]+k|reached \$[0-9]+/i.test(q)) {
+    context.push(`ATH bias correction: Crypto markets tend to overestimate continuation after all-time highs - historical data shows mean reversion is common after new peaks`);
+  }
+
+  // Momentum bias context
+  if (/surge|spike|soar|skyrocket|plummet|crash|collapse|boom|burst/i.test(q)) {
+    context.push(`Momentum bias: Markets often overreact to recent dramatic price movements - applying correction for potential mean reversion`);
   }
 
   // Sports context
@@ -776,7 +834,8 @@ async function generateEnhancedAnalysis(marketData) {
   
   // Enhanced fallback analysis using available data (shared between circuit breaker and LLM failures)
   const getEnhancedFallback = (reason) => {
-    const basePrior = typeof marketData.yesPrice === 'number' ? marketData.yesPrice : 0.5;
+    // Use base rate prior, not market price, to avoid zero-edge markets
+    const basePrior = calculateBaseRatePrior(marketData);
     let fallbackProbability = basePrior;
     let fallbackReasoning = reason;
 
@@ -936,29 +995,52 @@ async function generateEnhancedAnalysis(marketData) {
       0.99
     );
 
-    // Extract confidence (certainty) from LLM
-    const llmConfidence = result.confidence > 1
-      ? result.confidence / 100
-      : result.confidence;
+    // Extract confidence (certainty) from LLM - normalize to 0-1 scale
+    let llmConfidence = result.confidence;
+    if (typeof llmConfidence === 'number') {
+      if (llmConfidence > 1) {
+        // Confidence is in percentage (1-100), convert to decimal
+        llmConfidence = Math.min(100, Math.max(1, llmConfidence)) / 100;
+      } else {
+        // Already in decimal scale, ensure bounds
+        llmConfidence = Math.min(1, Math.max(0, llmConfidence));
+      }
+    } else {
+      llmConfidence = 0.5; // Default fallback
+    }
+
+    // Extract sentiment score from LLM result or calculate from news
+    let sentimentScore = result.sentimentScore || 0;
+    if (news && news.length > 0 && sentimentScore === 0) {
+      const sentimentAnalysis = calculateAggregateSentiment(news);
+      sentimentScore = sentimentAnalysis.score;
+    }
 
     // DO NOT recalculate probability - trust LLM's revised_prior
     const winProb = llmProbability;
 
+    // Reduced sentiment adjustment to prevent systematic bias - more conservative thresholds
+    let adjustedWinProb = winProb;
+    if (Math.abs(sentimentScore) > 0.5 && news.length >= 5) { // Higher threshold, more news required
+      const sentimentAdjustment = sentimentScore * 0.02; // Reduced from 0.05 to 0.02 (max ±2%)
+      adjustedWinProb = Math.max(0.01, Math.min(0.99, winProb + sentimentAdjustment));
+    }
+
     // Calculate edge with spread and fee adjustments
     const pMarket = marketData.yesPrice || 0.5;
-    const edgeAnalysis = computeNetEdge(winProb, pMarket, orderBook || {});
+    const edgeAnalysis = computeNetEdge(adjustedWinProb, pMarket, orderBook || {});
     const rawEdge = edgeAnalysis.rawEdge;
-    const netEdge = edgeAnalysis.netEdge;
+    const netEdge = edgeAnalysis.netEdge; // Use net edge consistently throughout
     const direction = edgeAnalysis.direction;
 
     // Set action based on direction
     let action = 'HOLD';
-    if (edgeAnalysis.isExecutable) {
+    if (netEdge > 0.005) { // Use netEdge for execution decision
       action = direction === 'BUY_YES' ? 'BUY YES' : 'BUY NO';
     }
 
     // Position sizing
-    const baseKelly = calculateKelly(winProb, pMarket, 0.01, marketData.liquidity || 10000);
+    const baseKelly = calculateKelly(adjustedWinProb, pMarket, 0.01, marketData.liquidity || 10000);
     const exposure = Math.min(0.05, Math.max(0, baseKelly));
 
     // Calculate entropy for additional context
@@ -967,13 +1049,6 @@ async function generateEnhancedAnalysis(marketData) {
       outcomes: marketData.outcomePrices || marketData.prices || []
     });
     const entropy = entropyAnalysis.entropy;
-
-    // Enhanced sentiment analysis
-    let sentimentScore = result.sentimentScore || 0;
-    if (news && news.length > 0 && sentimentScore === 0) {
-      const sentimentAnalysis = calculateAggregateSentiment(news);
-      sentimentScore = sentimentAnalysis.score;
-    }
 
     // Calculate absolute edge and confidence score
     const absEdge = Math.abs(rawEdge);
@@ -988,47 +1063,51 @@ async function generateEnhancedAnalysis(marketData) {
     else if (exposure >= 0.02) tier = 'SMALL_TRADE';
     else if (exposure >= 0.005) tier = 'PROBE';
 
-    // Apply adaptive learning
+    // Apply adaptive learning (single source of confidence adjustment)
     const adaptiveLearning = applyAdaptiveLearning(category, action, absEdge, confidenceScore * 100);
     const adjustedEdge = adaptiveLearning.adjustedEdge;
     const adjustedConfidence = adaptiveLearning.adjustedConfidence;
+    const finalConfidence = adjustedConfidence;
 
-    // Apply confidence calibration
-    const calibratedSignal = applyCalibration({
-      confidence: adjustedConfidence,
-      category: category
-    });
-    const finalConfidence = calibratedSignal.confidence;
-
-    // Entropy discount REMOVED - trust LLM's edge
-    // const entropyDiscountedEdge = applyEntropyDiscount(entropy, adjustedEdge);
-    const entropyDiscountedEdge = adjustedEdge;
+    // Entropy discount removed - trust LLM's edge but use netEdge for consistency
+    const entropyDiscountedEdge = netEdge; // Use netEdge instead of adjustedEdge
 
     let reasoning = result.narrative || 'No detailed reasoning from LLM.';
-    reasoning += ` | Conviction Tier: ${tier} | Revised Prior: ${winProb.toFixed(3)} (${category}) | Suggested Exposure: ${(exposure * 100).toFixed(0)}% bankroll.`;
+    reasoning += ` | Conviction Tier: ${tier} | Revised Prior: ${adjustedWinProb.toFixed(3)} (${category}) | Suggested Exposure: ${(exposure * 100).toFixed(0)}% bankroll.`;
     reasoning += ` | Entropy: ${(entropy * 100).toFixed(1)}% (${entropyAnalysis.uncertaintyLevel})`;
     reasoning += ` | Sentiment: ${sentimentScore > 0.1 ? 'POSITIVE' : sentimentScore < -0.1 ? 'NEGATIVE' : 'NEUTRAL'} (${(sentimentScore * 100).toFixed(1)}%)`;
+    
+    // Add sentiment adjustment to reasoning if applied - reduced adjustment
+    if (Math.abs(sentimentScore) > 0.5 && news.length >= 5) {
+      const sentimentAdjustment = sentimentScore * 0.02; // Reduced adjustment
+      reasoning += ` | Sentiment adjustment: ${(sentimentAdjustment * 100).toFixed(1)}%`;
+    }
     if (adaptiveLearning.sampleSize >= 20) {
       reasoning += ` | Adaptive Learning: ${adaptiveLearning.message}`;
     }
-    if (calibratedSignal.confidenceAdjustment !== 0) {
-      reasoning += ` | Calibration: ${(calibratedSignal.confidenceAdjustment > 0 ? '+' : '')}${calibratedSignal.confidenceAdjustment.toFixed(1)}%`;
-    }
+    // Calibration removed to avoid double confidence dampening
 
-    const baseEffectiveEdge = Number((entropyDiscountedEdge * 100).toFixed(2));
+    const baseEffectiveEdge = Number((netEdge * 100).toFixed(2)); // Use netEdge for consistency
 
     const structuredAnalysis = {
-      probability: winProb,
+      probability: adjustedWinProb, // Use sentiment-adjusted probability
+      originalProbability: winProb, // Preserve original LLM probability
       action,
       confidence: Math.round(finalConfidence),
       reasoning,
       kellyFraction: exposure,
       baseEffectiveEdge,
-      effectiveEdge: baseEffectiveEdge,
+      effectiveEdge: baseEffectiveEdge, // Both point to same netEdge value
       entropy: entropy,
       sentimentScore: sentimentScore !== 0 ? sentimentScore : extractSentimentFromNews(news),
       adaptiveLearning: adaptiveLearning,
-      calibration: calibratedSignal,
+      calibration: {
+        confidence: Number(finalConfidence.toFixed(2)),
+        rawConfidence: Number(finalConfidence.toFixed(2)),
+        confidenceAdjustment: 0,
+        calibrationSampleSize: adaptiveLearning.sampleSize || 0,
+        message: 'Calibration skipped (adaptive learning in control)'
+      },
       revised_prior: ensureNumber(result.revised_prior, llmProbability),
       uncertainty: ensureNumber(result.uncertainty, entropy),
       newsSources: Array.isArray(result.newsSources) && result.newsSources.length > 0

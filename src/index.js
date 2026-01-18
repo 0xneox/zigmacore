@@ -79,15 +79,24 @@ const CATEGORY_PERFORMANCE_FILE = path.join(CACHE_DIR, 'category_performance.jso
 const CYCLE_SNAPSHOT_FILE = path.join(CACHE_DIR, 'latest_cycle.json');
 const CYCLE_HISTORY_FILE = path.join(CACHE_DIR, 'cycle_history.json');
 
+// Log level filtering system to reduce production overhead
+// Levels: DEBUG (0) < INFO (1) < WARN (2) < ERROR (3)
+// Set LOG_LEVEL=DEBUG for development, LOG_LEVEL=INFO for production
+// Usage: log('message', 'DEBUG') - only executes if level >= current threshold
 const LOG_LEVEL = (process.env.LOG_LEVEL || 'INFO').toUpperCase();
 const LOG_TO_CONSOLE = LOG_LEVEL === 'DEBUG' || process.env.NODE_ENV === 'development';
 
-const log = (msg) => {
-  const timestamped = `[${new Date().toISOString()}] ${msg}`;
-  // Write to stream instead of appendFile to prevent file descriptor leaks
-  consoleLogStream.write(timestamped + '\n');
-  // Always output to console immediately for visibility
-  console.log(timestamped);
+const LOG_LEVEL_NUM = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+const CURRENT_LOG_LEVEL = LOG_LEVEL_NUM[LOG_LEVEL] || 1;
+
+const log = (msg, level = 'INFO') => {
+  if (LOG_LEVEL_NUM[level] >= CURRENT_LOG_LEVEL) {
+    const timestamped = `[${new Date().toISOString()}] [${level}] ${msg}`;
+    // Write to stream instead of appendFile to prevent file descriptor leaks
+    consoleLogStream.write(timestamped + '\n');
+    // Always output to console immediately for visibility
+    console.log(timestamped);
+  }
 };
 
 const cron = require('node-cron');
@@ -253,6 +262,56 @@ function getClusterForCategory(category = '') {
   return CATEGORY_CLUSTER_MAP[category.toUpperCase()] || null;
 }
 
+function applyPreAnalysisClusterFilter(markets = []) {
+  const clusters = markets.reduce((acc, market) => {
+    const cluster = getClusterForCategory(market.category);
+    const clusterKey = cluster || 'default';
+    acc[clusterKey] = acc[clusterKey] || [];
+    acc[clusterKey].push(market);
+    return acc;
+  }, {});
+
+  const filteredMarkets = [];
+  
+  Object.values(clusters).forEach(group => {
+    if (group.length === 1) {
+      // Single market in cluster - keep it
+      filteredMarkets.push(group[0]);
+    } else {
+      // Multiple markets in cluster - keep only the best one
+      // Sort by quality score, liquidity, and volume to find the best market
+      group.sort((a, b) => {
+        const scoreA = computeMarketQualityScore(a);
+        const scoreB = computeMarketQualityScore(b);
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        
+        const liquidityA = a.liquidity || 0;
+        const liquidityB = b.liquidity || 0;
+        if (liquidityB !== liquidityA) return liquidityB - liquidityA;
+        
+        const volumeA = a.volume || 0;
+        const volumeB = b.volume || 0;
+        return volumeB - volumeA;
+      });
+      
+      // Keep the best market from each cluster
+      filteredMarkets.push(group[0]);
+      
+      // Log the filtered markets for transparency
+      const filteredOut = group.slice(1);
+      if (filteredOut.length > 0) {
+        log(`[CLUSTER FILTER] Kept best market: ${(group[0].question || '').slice(0, 50)}... (score=${computeMarketQualityScore(group[0]).toFixed(1)})`, 'INFO');
+        filteredOut.forEach((market, idx) => {
+          log(`[CLUSTER FILTER] Filtered: ${(market.question || '').slice(0, 50)}... (score=${computeMarketQualityScore(market).toFixed(1)})`, 'DEBUG');
+        });
+      }
+    }
+  });
+
+  log(`[CLUSTER FILTER] Reduced from ${markets.length} to ${filteredMarkets.length} markets (${((markets.length - filteredMarkets.length) / markets.length * 100).toFixed(1)}% reduction)`, 'INFO');
+  return filteredMarkets;
+}
+
 function applyClusterDampening(signals = []) {
   const clusters = signals.reduce((acc, s) => {
     const cluster = s?.cluster || 'default';
@@ -270,20 +329,27 @@ function applyClusterDampening(signals = []) {
       const best = group[0];
       const corr = computeCorrelation(historyOf(sig), historyOf(best));
       if (corr <= 0.7) continue; // treat as independent
-      const penalty = i < CLUSTER_PENALTY_STEPS.length
+      
+      // Calculate penalty based on position AND correlation strength
+      const basePositionPenalty = i < CLUSTER_PENALTY_STEPS.length
         ? CLUSTER_PENALTY_STEPS[i]
         : CLUSTER_PENALTY_FLOOR;
+      
+      // Add correlation-based penalty: higher correlation = more penalty
+      const corrPenalty = 1 - ((corr - 0.7) / 0.3) * 0.15; // 0-15% additional penalty
+      const finalPenalty = basePositionPenalty * corrPenalty;
+      
       if (typeof sig.intentExposure === 'number') {
-        sig.intentExposure = Number((sig.intentExposure * penalty).toFixed(4));
+        sig.intentExposure = Number((sig.intentExposure * finalPenalty).toFixed(4));
       }
       if (typeof sig.effectiveEdge === 'number') {
-        sig.effectiveEdge = Number((sig.effectiveEdge * penalty).toFixed(2));
+        sig.effectiveEdge = Number((sig.effectiveEdge * finalPenalty).toFixed(2));
       }
       if (typeof sig.edgeScore === 'number') {
-        sig.edgeScore = Number((sig.edgeScore * penalty).toFixed(2));
+        sig.edgeScore = Number((sig.edgeScore * finalPenalty).toFixed(2));
       }
       if (typeof sig.finalEffectiveEdge === 'number') {
-        sig.finalEffectiveEdge = Number((sig.finalEffectiveEdge * penalty).toFixed(2));
+        sig.finalEffectiveEdge = Number((sig.finalEffectiveEdge * finalPenalty).toFixed(2));
       }
     }
   });
@@ -322,6 +388,13 @@ const STATE_POLITICAL_PRIORS = {
   'tennessee': 0.92,
   'kentucky': 0.90,
   'louisiana': 0.90,
+  'indiana': 0.90,
+  'missouri': 0.88,
+  'south carolina': 0.92,
+  'west virginia': 0.95,
+  'alaska': 0.92,
+  'iowa': 0.85,
+  'montana': 0.85,
 
   // Solid Democratic states (>80% Dem win rate historically)
   'rhode island': 0.80, // Democratic incumbent
@@ -336,6 +409,12 @@ const STATE_POLITICAL_PRIORS = {
   'oregon': 0.70,
   'connecticut': 0.75,
   'delaware': 0.75,
+  'colorado': 0.65,
+  'maine': 0.70,
+  'minnesota': 0.70,
+  'new hampshire': 0.60,
+  'new mexico': 0.65,
+  'virginia': 0.60,
 
   // Competitive states (40-60% range)
   'pennsylvania': 0.55,
@@ -494,6 +573,78 @@ let isLiquidityShock = false;
 let activeGroupSizes = {};
 let dynamicCategoryPriors = {};
 let categoryPerformance = loadCategoryPerformance();
+
+// Simple mutex-like mechanism to prevent race conditions
+let isUpdatingCategoryPerformance = false;
+let isUpdatingDynamicPriors = false;
+
+// Global directional bias tracking
+let directionalBiasStats = {
+  buyNoCount: 0,
+  buyYesCount: 0,
+  totalSignals: 0,
+  lastReset: Date.now()
+};
+
+async function safeUpdateCategoryPerformance(markets = []) {
+  if (isUpdatingCategoryPerformance) {
+    log('[RACE] Category performance update already in progress, skipping', 'WARN');
+    return;
+  }
+  
+  isUpdatingCategoryPerformance = true;
+  try {
+    if (!Array.isArray(markets) || markets.length === 0) return;
+    const aggregates = {};
+    for (const market of markets) {
+      const yesPrice = typeof market.yesPrice === 'number' ? market.yesPrice : null;
+      if (yesPrice === null) continue;
+      const category = getCategoryKey(market.question, market);
+      const liquidity = Math.max(1000, Number(market.liquidity) || 0);
+      const basePrior = getStaticBucketPrior(category);
+      const baseError = Math.abs(basePrior - yesPrice);
+      if (!aggregates[category]) {
+        aggregates[category] = { weight: 0, priceSum: 0, errorSum: 0, liquiditySum: 0, count: 0 };
+      }
+      aggregates[category].weight += liquidity;
+      aggregates[category].priceSum += yesPrice * liquidity;
+      aggregates[category].errorSum += baseError * liquidity;
+      aggregates[category].liquiditySum += liquidity;
+      aggregates[category].count += 1;
+    }
+
+    const alpha = 0.5;  // New: faster adaptation to recent market data
+    const now = Date.now();
+    let updated = false;
+
+    for (const [category, data] of Object.entries(aggregates)) {
+      if (data.weight === 0) continue;
+      const avgPrice = data.priceSum / data.weight;
+      const avgError = data.errorSum / data.weight;
+      const avgLiquidity = data.liquiditySum / Math.max(1, data.count);
+      const perf = categoryPerformance[category] || {};
+      perf.emaMarketPrice = perf.emaMarketPrice != null
+        ? (perf.emaMarketPrice * (1 - alpha)) + (avgPrice * alpha)
+        : avgPrice;
+      perf.emaError = perf.emaError != null
+        ? (perf.emaError * (1 - alpha)) + (avgError * alpha)
+        : avgError;
+      perf.liquidityEMA = perf.liquidityEMA != null
+        ? (perf.liquidityEMA * (1 - alpha)) + (avgLiquidity * alpha)
+        : avgLiquidity;
+      perf.lastUpdated = now;
+      categoryPerformance[category] = perf;
+      updated = true;
+    }
+
+    if (updated) {
+      saveCategoryPerformance(categoryPerformance);
+    }
+  } finally {
+    isUpdatingCategoryPerformance = false;
+  }
+}
+
 const MAX_CYCLE_HISTORY = Number(process.env.MAX_CYCLE_HISTORY || 168);
 global.cycleHistory = Array.isArray(global.cycleHistory) ? global.cycleHistory : [];
 
@@ -553,7 +704,7 @@ const recordCycleSnapshot = (latestData = {}) => {
 
 function loadCategoryPerformance() {
   try {
-    return JSON.parse(fs.readFileSync(CATEGORY_PERFORMANCE_FILE, 'utf8') || '{}');
+    return JSON.parse(fsSync.readFileSync(CATEGORY_PERFORMANCE_FILE, 'utf8') || '{}');
   } catch {
     return {};
   }
@@ -562,7 +713,7 @@ function loadCategoryPerformance() {
 function saveCategoryPerformance(data = {}) {
   try {
     fs.mkdirSync(path.dirname(CATEGORY_PERFORMANCE_FILE), { recursive: true });
-    fs.writeFileSync(CATEGORY_PERFORMANCE_FILE, JSON.stringify(data, null, 2));
+    fsSync.writeFileSync(CATEGORY_PERFORMANCE_FILE, JSON.stringify(data, null, 2));
   } catch (err) {
     console.error('Failed to persist category performance cache:', err.message);
   }
@@ -787,9 +938,7 @@ function calibratePrior(prior, categoryKey) {
   const blended = (sanitized * (1 - dampingFactor)) + (midpoint * dampingFactor);
   const capped = clamp(blended, guardrailMin, guardrailMax);
 
-  // Apply category-specific probability caps
-  const categoryCap = PROBABILITY_CAPS[categoryKey] || PROBABILITY_CAPS.OTHER || 0.45;
-  return Math.min(capped, categoryCap);
+  return capped;
 }
 
 function computeMarketTimeProgress(market = {}) {
@@ -831,7 +980,7 @@ function logVetoEvent(event = {}) {
     timestamp: new Date().toISOString(),
     ...event
   };
-  fs.appendFile(CONSOLE_LOG_FILE, JSON.stringify(payload) + '\n').catch(err => {
+  fsSync.appendFile(CONSOLE_LOG_FILE, JSON.stringify(payload) + '\n').catch(err => {
     console.error('Failed to write veto event:', err.message);
   });
   if (LOG_TO_CONSOLE) {
@@ -839,32 +988,43 @@ function logVetoEvent(event = {}) {
   }
 }
 
-function buildDynamicCategoryPriors(markets = []) {
-  const aggregates = {};
-  for (const market of markets) {
-    const yesPrice = typeof market.yesPrice === 'number' ? market.yesPrice : null;
-    if (yesPrice === null) continue;
+async function safeBuildDynamicCategoryPriors(markets = []) {
+  if (isUpdatingDynamicPriors) {
+    log('[RACE] Dynamic priors update already in progress, skipping', 'WARN');
+    return {};
+  }
+  
+  isUpdatingDynamicPriors = true;
+  try {
+    const aggregates = {};
+    for (const market of markets) {
+      const yesPrice = typeof market.yesPrice === 'number' ? market.yesPrice : null;
+      if (yesPrice === null) continue;
 
-    const category = getCategoryKey(market.question, market);
-    const weight = Math.max(1, Number(market.liquidity) || 0);
-    if (!aggregates[category]) {
-      aggregates[category] = { weight: 0, sum: 0, values: [] };
+      const category = getCategoryKey(market.question, market);
+      const weight = Math.max(1, Number(market.liquidity) || 0);
+      if (!aggregates[category]) {
+        aggregates[category] = { weight: 0, sum: 0, values: [] };
+      }
+      aggregates[category].weight += weight;
+      aggregates[category].sum += yesPrice * weight;
+      aggregates[category].values.push(yesPrice);
     }
-    aggregates[category].weight += weight;
-    aggregates[category].sum += yesPrice * weight;
-    aggregates[category].values.push(yesPrice);
-  }
 
-  const priors = {};
-  for (const [category, data] of Object.entries(aggregates)) {
-    if (data.weight === 0 || data.values.length === 0) continue;
-    const weighted = data.sum / data.weight;
-    const sorted = data.values.slice().sort((a, b) => a - b);
-    const median = sorted[Math.floor(sorted.length / 2)];
-    const blended = (weighted * 0.7) + (median * 0.3);
-    priors[category] = Math.max(0.01, Math.min(0.99, blended));
+    const priors = {};
+    for (const [category, data] of Object.entries(aggregates)) {
+      if (data.weight === 0 || data.values.length === 0) continue;
+      const weighted = data.sum / data.weight;
+      const sorted = data.values.slice().sort((a, b) => a - b);
+      const median = sorted[Math.floor(sorted.length / 2)];
+      const blended = (weighted * 0.7) + (median * 0.3);
+      priors[category] = Math.max(0.01, Math.min(0.99, blended));
+    }
+    
+    return priors;
+  } finally {
+    isUpdatingDynamicPriors = false;
   }
-  return priors;
 }
 
 function getYesNoPrices(market) {
@@ -1364,7 +1524,7 @@ function pickHighAlphaMarkets(data, marketGroups) {
     return yesPrice <= 0.995 && yesPrice >= 0.005;
   });
 
-  log(`DEBUG: Markets after extreme price filter: ${filteredList.length}`);
+  log(`DEBUG: Markets after extreme price filter: ${filteredList.length}`, 'DEBUG');
 
   const seen = new Set();
   const dedupedList = [];
@@ -1376,18 +1536,18 @@ function pickHighAlphaMarkets(data, marketGroups) {
     }
   }
 
-  log(`DEBUG: Markets after deduplication: ${dedupedList.length}`);
+  log(`DEBUG: Markets after deduplication: ${dedupedList.length}`, 'DEBUG');
 
-  dynamicCategoryPriors = Object.keys(dynamicCategoryPriors).length ? dynamicCategoryPriors : buildDynamicCategoryPriors(dedupedList);
+  dynamicCategoryPriors = Object.keys(dynamicCategoryPriors).length ? dynamicCategoryPriors : safeBuildDynamicCategoryPriors(dedupedList);
 
   const baselineFlagged = dedupedList.filter(m => {
     const yesPrice = typeof m.yesPrice === 'number' && Number.isFinite(m.yesPrice) ? m.yesPrice : 0.5;
     const pPrior = getBaseRate(m.question, m);
     const edge = Math.abs(pPrior - yesPrice);
     const category = getCategoryKey(m.question, m);
-    const edgeFloor = computeCategoryEdgeFloor(category, m);
+    const edgeThreshold = getCategoryEdgeThreshold(category) / 100; // Convert percentage to decimal
     const liquidityFloor = computeCategoryLiquidityFloor(category, m);
-    return edge > edgeFloor && (m.liquidity || 0) > liquidityFloor;
+    return edge > edgeThreshold && (m.liquidity || 0) > liquidityFloor;
   }).slice(0, 50);
 
   const priceSpikes = dedupedList
@@ -1525,24 +1685,16 @@ async function generateSignals(selectedMarkets) {
   for (const market of selectedMarkets) {
     // Filter out meme/joke markets
     if (isMemeMarket(market.question)) {
-      log(`[FILTER] Skipping meme market: ${market.question}`);
-      continue;
-    }
-
-    // Filter out sports markets entirely
-    const categoryKey = getCategoryKey(market.question, market);
-    if (categoryKey === 'SPORTS_FUTURES' || categoryKey === 'SPORTS_PLAYER') {
-      log(`[FILTER] Skipping sports market: ${market.question}`);
+      log(`[FILTER] Skipping meme market: ${market.question}`, 'DEBUG');
       continue;
     }
 
     // Filter out low-quality markets before LLM analysis (saves costs, improves accuracy)
     const qualityScore = computeMarketQualityScore(market);
-    const dataRichCategories = ['CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
-    // Lower threshold to 10 to find more signals
-    const qualityThreshold = 10;
+    const baseThreshold = selectedMarkets.length > 50 ? 25 : 15;
+    const qualityThreshold = DATA_RICH_CATEGORIES.includes(getCategoryKey(market.question, market)) ? baseThreshold - 5 : baseThreshold;
     if (qualityScore < qualityThreshold) {
-      log(`[FILTER] Skipping low-quality market (score=${qualityScore}, threshold=${qualityThreshold}): ${(market.question || '').slice(0, 50)}`);
+      log(`[FILTER] Skipping low-quality market (score=${qualityScore}, threshold=${qualityThreshold}): ${(market.question || '').slice(0, 50)}`, 'DEBUG');
       continue;
     }
 
@@ -1560,7 +1712,8 @@ async function generateSignals(selectedMarkets) {
     if (cached) {
       const timeDelta = Date.now() - cached.timestamp;
       const priceDelta = Math.abs(((livePrice - cached.last_price) / cached.last_price) * 100);
-      if (priceDelta <= 2 && timeDelta <= 3600000) {
+      // Tighter thresholds: 1% price change or 30 minutes
+      if (priceDelta <= 1 && timeDelta <= 1800000) {
         try {
           analysis = { llmAnalysis: JSON.parse(cached.reasoning), probability: livePrice };
         } catch (e) {
@@ -1573,7 +1726,7 @@ async function generateSignals(selectedMarkets) {
       const pBucketPrior = getBaseRate(market.question);
       if (Math.abs((market.yesPrice || 0.5) - pBucketPrior) < 0.05) continue;
 
-      log(`[LLM] Analyzing: ${market.id} - ${market.question}`);
+      log(`[LLM] Analyzing: ${market.id} - ${market.question}`, 'INFO');
 
       let orderBook = {};
       try {
@@ -1634,6 +1787,11 @@ async function generateSignals(selectedMarkets) {
 
     // Category caps REMOVED - trust LLM confidence entirely
     const categoryKey = getCategoryKey(market.question, market);
+    
+    // DEBUG: Category classification logging
+    log(`[DEBUG] Market: ${market.question}`, 'INFO');
+    log(`[DEBUG] Category: ${categoryKey}`, 'INFO');
+    log(`[DEBUG] In DATA_RICH: ${DATA_RICH_CATEGORIES.includes(categoryKey)}`, 'INFO');
 
     // Get delta adjustment from LLM analysis
     const delta = analysis.llmAnalysis?.delta || analysis.delta || 0;
@@ -1730,14 +1888,19 @@ async function generateSignals(selectedMarkets) {
         continue;
       } else {
         // Reduce exposure by 50% for tail markets with strong edge
-        log(`[WARNING] Tail market with strong edge - reducing exposure by 50%: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%)`);
+        log(`[WARNING] Tail market with strong edge - reducing exposure by 50%: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%)`, 'WARN');
         // Will apply exposure reduction later after intentExposure is calculated
       }
     }
 
     const adaptiveLearning = applyAdaptiveLearning(categoryKey, action, absEdge, confidencePercent);
+    
+    // DEBUG: Adaptive learning logging
+    log(`[DEBUG] Adaptive Learning Input: cat=${categoryKey}, action=${action}, edge=${absEdge}, conf=${confidencePercent}`, 'INFO');
+    log(`[DEBUG] Adaptive Learning Output: ${JSON.stringify(adaptiveLearning)}`, 'INFO');
+    
     if (!adaptiveLearning || typeof adaptiveLearning !== 'object') {
-      log(`[WARNING] Adaptive learning failed for ${market.id}, using raw values`);
+      log(`[WARNING] Adaptive learning failed for ${market.id}, using raw values`, 'WARN');
       adaptiveLearning = { adjustedEdge: rawEdge, adjustedConfidence: confidencePercent };
     }
     const effectiveEdge = typeof adaptiveLearning?.adjustedEdge === 'number' ? adaptiveLearning.adjustedEdge : rawEdge;
@@ -1755,12 +1918,17 @@ async function generateSignals(selectedMarkets) {
     // Step 2: Apply conviction adjustments (before hard cap)
     const liquidity = market.liquidity || 0;
     let convictionBoost = 1.0;
+    
+    // DEBUG: Liquidity and conviction boost logging
+    log(`[DEBUG] Liquidity: ${liquidity}, Threshold: HIGH=${HIGH_LIQUIDITY_THRESHOLD}, LOW=${LOW_LIQUIDITY_THRESHOLD}`, 'INFO');
 
     if (DATA_RICH_CATEGORIES.includes(categoryKey)) {
       if (liquidity > HIGH_LIQUIDITY_THRESHOLD) convictionBoost = CONVICTION_BOOST_HIGH;
       else if (liquidity > LOW_LIQUIDITY_THRESHOLD) convictionBoost = CONVICTION_BOOST_MEDIUM;
       else if (liquidity > LOW_LIQUIDITY_THRESHOLD / 2) convictionBoost = CONVICTION_BOOST_LOW;
     }
+    
+    log(`[DEBUG] Conviction Boost Calculated: ${convictionBoost}`, 'INFO');
 
     let intentExposure = kellyFraction * convictionBoost;
     log(`[POSITION SIZING] Step 2 - After conviction boost (${convictionBoost.toFixed(2)}x): ${(intentExposure * 100).toFixed(2)}%`);
@@ -1780,7 +1948,7 @@ async function generateSignals(selectedMarkets) {
 
     const cluster = getClusterForCategory(market.category);
 
-    // Create signal with CORRECT edge values
+    // Create signal with CORRECT edge values (using adaptive learning adjustments)
     const signal = {
       marketId: market.id,
       marketSlug: market.slug,
@@ -1789,16 +1957,62 @@ async function generateSignals(selectedMarkets) {
       price: yesPrice,
       confidenceClass: normalizedConfidence >= 0.7 ? 'HIGH' : normalizedConfidence >= 0.4 ? 'MEDIUM' : 'LOW',
       intentExposure,
-      edgeScore: rawEdge * 100,              // SIGNED edge (-100 to +100)
-      confidenceScore: Number((normalizedConfidence * 100).toFixed(1)),
+      edgeScore: Math.abs(effectiveEdge) * 100,       // Use adaptive-adjusted edge (absolute)
+      rawEdge: rawEdge * 100,                         // Keep original signed edge for reference
+      confidenceScore: Number((adjustedConfidence * 100).toFixed(1)),
       tradeDecision: action,
-      modelConfidence: Number((normalizedConfidence * 100).toFixed(1)),
-      executionConfidence: Number((normalizedConfidence * 100).toFixed(1)),
-      tradeTier: getTradeTier(netEdge, normalizedConfidence),
-      effectiveEdge: netEdge * 100,          // ABSOLUTE edge after costs
+      modelConfidence: Number((adjustedConfidence * 100).toFixed(1)),
+      executionConfidence: Number((adjustedConfidence * 100).toFixed(1)),
+      tradeTier: getTradeTier(netEdge, adjustedConfidence),
+      effectiveEdge: netEdge * 100,                   // Net edge after costs
+      adaptiveLearning: {
+        applied: true,
+        originalEdge: absEdge,
+        adjustedEdge: Math.abs(effectiveEdge),
+        adjustment: Math.abs(effectiveEdge) - absEdge
+      },
+      structuredAnalysis: {
+        probability: winProb, // Use original LLM probability
+        action,
+        confidence: Number((adjustedConfidence * 100).toFixed(1)),
+        reasoning: '', // Not used in this code
+        kellyFraction: intentExposure,
+        baseEffectiveEdge: netEdge,
+        effectiveEdge: netEdge, // Both point to same netEdge value
+        edge: {
+          marketImplied: yesPrice,
+          zigmaFair: llmProbability,
+          rawEdge: rawEdge,
+          netEdge: netEdge,
+          spreadCost: edgeAnalysis.spreadCost,
+          fees: 0.02, // 2% Polymarket fee
+          slippage: 0.005, // Estimated 0.5% slippage
+          effectiveEdge: netEdge - 0.02 - 0.005 // After fees and slippage
+        },
+        entropy: '', // Not used in this code
+        sentimentScore: '', // Not used in this code
+        adaptiveLearning: adaptiveLearning,
+        calibration: {
+          confidence: Number((adjustedConfidence * 100).toFixed(2)),
+        },
+        directionalBias: {
+          buyNoCount: 0,
+          buyYesCount: 0,
+          totalSignals: 0
+        }
+      },
       cluster
     };
 
+    // Update directional bias tracking
+    if (action === 'EXECUTE BUY NO') {
+      signal.structuredAnalysis.directionalBias.buyNoCount++;
+    } else if (action === 'EXECUTE BUY YES') {
+      signal.structuredAnalysis.directionalBias.buyYesCount++;
+    }
+    signal.structuredAnalysis.directionalBias.totalSignals++;
+
+    // ...
     const signalTimestamp = new Date().toISOString();
 
     // Dynamic confidence threshold based on category and RAW edge (not adjusted)
@@ -1824,7 +2038,7 @@ async function generateSignals(selectedMarkets) {
         `Net ${(netEdge * 100).toFixed(2)}% | ` +
         `Exposure ${(signal.intentExposure * 100).toFixed(2)}% | ` +
         `Conf ${signal.confidenceScore.toFixed(1)}% | ` +
-        `Tier ${signal.tradeTier} → ${debugDecision}`);
+        `Tier ${signal.tradeTier} → ${debugDecision}`, 'DEBUG');
 
     if (process.env.SAFE_MODE !== 'true' && ['STRONG_TRADE', 'SMALL_TRADE', 'PROBE'].includes(signal.tradeTier)) {
       const tweet = ` AGENT ZIGMA SIGNAL
@@ -1962,8 +2176,9 @@ async function runCycle() {
       return;
     }
 
-    updateCategoryPerformance(enriched);
-    dynamicCategoryPriors = buildDynamicCategoryPriors(enriched);
+    // Use safe update function to prevent race conditions
+    safeUpdateCategoryPerformance(enriched);
+    dynamicCategoryPriors = safeBuildDynamicCategoryPriors(enriched);
 
     enriched.forEach(m => {
       const prices = getYesNoPrices(m);
@@ -2020,10 +2235,14 @@ async function runCycle() {
 
     const selectedMarkets = pickHighAlphaMarkets(enriched, marketGroups).filter(m => (m.volume || 0) > 1000);
     log(` Selected ${selectedMarkets.length} markets for deep analysis`);
+    
+    // Apply cluster filtering BEFORE LLM analysis to save costs
+    const clusterFiltered = applyPreAnalysisClusterFilter(selectedMarkets);
+    log(` After cluster filtering: ${clusterFiltered.length} markets remain for LLM analysis`);
 
-    activeGroupSizes = computeGroupSizeMap(selectedMarkets);
+    activeGroupSizes = computeGroupSizeMap(clusterFiltered);
 
-    if (selectedMarkets.length === 0) {
+    if (clusterFiltered.length === 0) {
       noSignalCycles++;
       if (noSignalCycles > 5) isNoSignalMode = true;
     } else {
@@ -2031,7 +2250,7 @@ async function runCycle() {
       isNoSignalMode = false;
     }
 
-    const { executableTrades, outlookSignals, rejectedSignals, signalsGenerated } = await generateSignals(selectedMarkets);
+    const { executableTrades, outlookSignals, rejectedSignals, signalsGenerated } = await generateSignals(clusterFiltered);
 
     const lastRunTimestamp = new Date().toISOString();
 
@@ -2039,6 +2258,7 @@ async function runCycle() {
       cycleSummary: {
         marketsFetched: markets.length,
         marketsEligible: selectedMarkets.length,
+        marketsAnalyzed: clusterFiltered.length,
         signalsGenerated,
         watchlist: executableTrades.length,
         outlook: outlookSignals.length,
@@ -2048,7 +2268,7 @@ async function runCycle() {
       marketOutlook: outlookSignals,
       rejectedSignals,
       lastRun: lastRunTimestamp,
-      marketsMonitored: selectedMarkets.length,
+      marketsMonitored: clusterFiltered.length,
       posts: signalsGenerated
     };
 
@@ -2067,14 +2287,16 @@ async function runCycle() {
 
     updateHealthMetrics({
       lastRun: lastRunTimestamp,
-      marketsMonitored: selectedMarkets.length,
+      marketsMonitored: clusterFiltered.length,
       posts: signalsGenerated
     });
 
     log("✅ Cycle complete");
   } catch (error) {
-    log(`CRITICAL CYCLE ERROR: ${error.message}\n${error.stack}`);
+    log(`CRITICAL CYCLE ERROR: ${error.message}\n${error.stack}`, 'ERROR');
   } finally {
+    // saveCustomSignals function not found - remove or implement
+    // await saveCustomSignals(global.latestData.liveSignals);
     isRunning = false;
   }
 }

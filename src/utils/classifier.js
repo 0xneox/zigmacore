@@ -60,6 +60,7 @@ function classifyMarket(question) {
   if (/\b(world cup|fifa|olympics|wimbledon|us open|french open|australian open|tour de france)\b/i.test(q)) return 'SPORTS_FUTURES';
   if (/\b(championship|title|winner|mvp|cy young|heisman|gold medal)\b/i.test(q)) return 'SPORTS_FUTURES';
   if (/\b(lions|steelers|chiefs|eagles|cowboys|patriots|packers|49ers|bears|broncos)\b/i.test(q)) return 'SPORTS_FUTURES';
+  if (/\b(thunder|lakers|celtics|heat|spurs|warriors|bulls|knicks|nets|bucks|suns|nuggets|mavericks|grizzlies|pelicans|kings|clippers|warriors|cavaliers|pacers|hawks|hornets|magic|wizards|raptors|timberwolves|jazz|blazers)\b/i.test(q)) return 'SPORTS_FUTURES';
 
   // WAR_OUTCOMES - Military conflicts
   if (/\b(war|ceasefire|conflict|invasion|occupation|military strike|missile|troops|deployment)\b/i.test(q)) return 'WAR_OUTCOMES';

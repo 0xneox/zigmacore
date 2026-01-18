@@ -710,9 +710,10 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
     liqNum < 20000 ? 1.0 :
     liqNum >= 100000 ? 1.2 : 1.1;
 
-  // Apply multipliers with 2x Kelly multiplier and 5% max position cap
+  // Apply multipliers with proper order: multiplier first, then cap
   const MAX_POSITION_SIZE = 0.05; // 5% max of bankroll
-  const finalKelly = Math.min(fullKelly * 2.0 * liquidityMultiplier, MAX_POSITION_SIZE);
+  const liquidityScaledKelly = fullKelly * liquidityMultiplier; // Apply multiplier first
+  const finalKelly = Math.min(liquidityScaledKelly * 2.0, MAX_POSITION_SIZE); // Then apply 2x and cap
   
   return Math.max(0, finalKelly); // Return 0 if no valid edge
 }
