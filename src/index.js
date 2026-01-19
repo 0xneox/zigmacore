@@ -1878,7 +1878,7 @@ async function generateSignals(selectedMarkets) {
     const isExecutable = edgeAnalysis.isExecutable;
 
     // Apply category-specific edge adjustment based on historical accuracy
-    const categoryAdjustment = getCategoryEdgeAdjustment(categoryKey);
+    const categoryAdjustment = await getCategoryEdgeAdjustment(categoryKey);
     const adjustedEdge = rawEdge * categoryAdjustment.adjustment;
     rawEdge = adjustedEdge; // Use adjusted edge for all subsequent calculations
     netEdge = Math.abs(adjustedEdge) - edgeAnalysis.executionCost; // Recalculate net edge

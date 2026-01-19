@@ -4,6 +4,7 @@
  */
 
 const { initDb } = require('./db');
+const { supabase } = require('./supabase');
 const axios = require('axios');
 
 const GAMMA_API = 'https://gamma-api.polymarket.com';
@@ -136,40 +137,44 @@ function getAccuracyMetrics() {
 /**
  * Get category-specific edge adjustment based on historical accuracy
  */
-function getCategoryEdgeAdjustment(category) {
-  const db = initDb();
-  
-  const stats = db.prepare(`
-    SELECT 
-      COUNT(*) as total,
-      AVG(CASE WHEN was_correct = 1 THEN 1.0 ELSE 0.0 END) as win_rate,
-      AVG(confidence) as avg_confidence
-    FROM trade_signals
-    WHERE category = ?
-    AND outcome IS NOT NULL
-    AND timestamp > datetime('now', '-30 days')
-  `).get(category);
-  
-  if (!stats || stats.total < 10) {
-    return { adjustment: 1.0, reason: 'Insufficient data' };
+async function getCategoryEdgeAdjustment(category) {
+  try {
+    // Query Supabase instead of local SQLite
+    const { data, error } = await supabase
+      .from('trade_signals')
+      .select('was_correct, confidence, outcome')
+      .eq('category', category)
+      .not('outcome', 'is', null);
+    
+    if (error) {
+      console.error('[RESOLUTION] Supabase query error:', error);
+      return { adjustment: 1.0, sampleSize: 0, category };
+    }
+    
+    if (!data || data.length === 0) {
+      return { adjustment: 1.0, sampleSize: 0, category };
+    }
+    
+    const total = data.length;
+    const correct = data.filter(signal => signal.was_correct === 1).length;
+    const winRate = correct / total;
+    const avgConfidence = data.reduce((sum, s) => sum + (s.confidence || 0), 0) / total;
+    
+    // Apply edge adjustment based on historical performance
+    let adjustment = 1.0;
+    if (total >= 10) {
+      if (winRate < 0.4) adjustment = 0.8;  // Poor performance
+      else if (winRate > 0.6) adjustment = 1.2; // Good performance
+    }
+    
+    console.log(`[RESOLUTION] Category ${category}: ${winRate.toFixed(2)} win rate, ${total} samples, ${adjustment}x adjustment`);
+    
+    return { adjustment, sampleSize: total, category };
+    
+  } catch (error) {
+    console.error('[RESOLUTION] Error getting category edge adjustment:', error);
+    return { adjustment: 1.0, sampleSize: 0, category };
   }
-  
-  const actualWinRate = stats.win_rate;
-  const predictedWinRate = stats.avg_confidence / 100;
-  
-  // If we're overconfident, reduce edge. If underconfident, boost edge.
-  const calibrationRatio = actualWinRate / predictedWinRate;
-  
-  // Clamp between 0.7 and 1.3
-  const adjustment = Math.max(0.7, Math.min(1.3, calibrationRatio));
-  
-  return {
-    adjustment,
-    actualWinRate: (actualWinRate * 100).toFixed(1),
-    predictedWinRate: (predictedWinRate * 100).toFixed(1),
-    sampleSize: stats.total,
-    reason: calibrationRatio > 1 ? 'Underconfident - boosting' : 'Overconfident - reducing'
-  };
 }
 
 /**
