@@ -214,7 +214,7 @@ function calculateTimeAdjustedSize(baseSize, daysRemaining, category) {
  * @param {number} baseMinEdge - Base minimum edge (default 5%)
  * @returns {Object} - Required minimum edge
  */
-function calculateMinimumEdgeRequired(daysRemaining, category, baseMinEdge = 0.05) {
+function calculateMinimumEdgeRequired(daysRemaining, category, baseMinEdge = 0.01) {
   if (daysRemaining === null || daysRemaining === undefined) {
     return {
       minEdge: baseMinEdge,
@@ -333,7 +333,7 @@ function getTimeAnalysis(market, rawEdge, baseSize) {
       adjustments: {
         edge: { adjustedEdge: rawEdge, multiplier: 1.0 },
         size: { adjustedSize: baseSize, multiplier: 1.0 },
-        minEdge: { minEdge: 0.05, shouldTrade: true }
+        minEdge: { minEdge: 0.01, shouldTrade: true }
       },
       timing: { recommendation: 'ENTER_NOW', reason: 'No resolution date' },
       finalDecision: 'ACCEPT',
@@ -342,7 +342,7 @@ function getTimeAnalysis(market, rawEdge, baseSize) {
         adjustedEdge: rawEdge,
         originalSize: baseSize,
         adjustedSize: baseSize,
-        minEdgeRequired: 0.05,
+        minEdgeRequired: 0.02,
         passesMinEdge: true
       }
     };

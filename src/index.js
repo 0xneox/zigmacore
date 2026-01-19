@@ -301,55 +301,40 @@ function getClusterForCategory(category = '') {
   return CATEGORY_CLUSTER_MAP[category.toUpperCase()] || null;
 }
 
-function applyPreAnalysisClusterFilter(markets = []) {
-  const clusters = markets.reduce((acc, market) => {
-    const cluster = getClusterForCategory(market.category);
-    const clusterKey = cluster || 'default';
-    acc[clusterKey] = acc[clusterKey] || [];
-    acc[clusterKey].push(market);
-    return acc;
-  }, {});
-
-  const filteredMarkets = [];
-  
-  Object.values(clusters).forEach(group => {
-    if (group.length === 1) {
-      // Single market in cluster - keep it
-      filteredMarkets.push(group[0]);
-    } else {
-      // Multiple markets in cluster - keep only the best one
-      // Sort by quality score, liquidity, and volume to find the best market
-      group.sort((a, b) => {
-        const scoreA = computeMarketQualityScore(a);
-        const scoreB = computeMarketQualityScore(b);
-        if (scoreB !== scoreA) return scoreB - scoreA;
-        
-        const liquidityA = a.liquidity || 0;
-        const liquidityB = b.liquidity || 0;
-        if (liquidityB !== liquidityA) return liquidityB - liquidityA;
-        
-        const volumeA = a.volume || 0;
-        const volumeB = b.volume || 0;
-        return volumeB - volumeA;
-      });
-      
-      // Keep the best market from each cluster
-      filteredMarkets.push(group[0]);
-      
-      // Log the filtered markets for transparency
-      const filteredOut = group.slice(1);
-      if (filteredOut.length > 0) {
-        log(`[CLUSTER FILTER] Kept best market: ${(group[0].question || '').slice(0, 50)}... (score=${computeMarketQualityScore(group[0]).toFixed(1)})`, 'INFO');
-        filteredOut.forEach((market, idx) => {
-          log(`[CLUSTER FILTER] Filtered: ${(market.question || '').slice(0, 50)}... (score=${computeMarketQualityScore(market).toFixed(1)})`, 'DEBUG');
-        });
-      }
-    }
-  });
-
-  log(`[CLUSTER FILTER] Reduced from ${markets.length} to ${filteredMarkets.length} markets (${((markets.length - filteredMarkets.length) / markets.length * 100).toFixed(1)}% reduction)`, 'INFO');
-  return filteredMarkets;
-}
+// Cluster filtering disabled for consistency
+// function applyPreAnalysisClusterFilter(markets = []) {
+//   const clusters = markets.reduce((acc, market) => {
+//     const cluster = getClusterForCategory(market.category);
+//     const clusterKey = cluster || 'default';
+//     acc[clusterKey] = acc[clusterKey] || [];
+//     acc[clusterKey].push(market);
+//     return acc;
+//   }, {});
+//
+//   const filteredMarkets = [];
+//   
+//   Object.values(clusters).forEach(group => {
+//     if (group.length === 1) {
+//       filteredMarkets.push(group[0]);
+//     } else {
+//       group.sort((a, b) => {
+//         const scoreA = computeMarketQualityScore(a);
+//         const scoreB = computeMarketQualityScore(b);
+//         if (scoreB !== scoreA) return scoreB - scoreA;
+//         const liquidityA = a.liquidity || 0;
+//         const liquidityB = b.liquidity || 0;
+//         if (liquidityB !== liquidityA) return liquidityB - liquidityA;
+//         const volumeA = a.volume || 0;
+//         const volumeB = b.volume || 0;
+//         return volumeB - volumeA;
+//       });
+//       filteredMarkets.push(group[0]);
+//     }
+//   });
+//
+//   log(`[CLUSTER FILTER] Reduced from ${markets.length} to ${filteredMarkets.length} markets (${((markets.length - filteredMarkets.length) / markets.length * 100).toFixed(1)}% reduction)`, 'INFO');
+//   return filteredMarkets;
+// }
 
 function applyClusterDampening(signals = []) {
   const clusters = signals.reduce((acc, s) => {
@@ -2826,8 +2811,9 @@ async function runCycle() {
     log(` Selected ${selectedMarkets.length} markets for deep analysis`);
     
     // Apply cluster filtering BEFORE LLM analysis to save costs
-    const clusterFiltered = applyPreAnalysisClusterFilter(selectedMarkets);
-    log(` After cluster filtering: ${clusterFiltered.length} markets remain for LLM analysis`);
+// Cluster filtering disabled for consistency - use all selected markets
+const clusterFiltered = selectedMarkets;
+log(` Selected ${clusterFiltered.length} markets for LLM analysis (cluster filtering disabled)`);
 
     activeGroupSizes = computeGroupSizeMap(clusterFiltered);
 
