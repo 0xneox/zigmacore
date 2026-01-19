@@ -83,15 +83,17 @@ const CYCLE_HISTORY_FILE = path.join(CACHE_DIR, 'cycle_history.json');
 // Levels: DEBUG (0) < INFO (1) < WARN (2) < ERROR (3)
 // Set LOG_LEVEL=DEBUG for development, LOG_LEVEL=INFO for production
 // Usage: log('message', 'DEBUG') - only executes if level >= current threshold
-const LOG_LEVEL = (process.env.LOG_LEVEL || 'INFO').toUpperCase();
-const LOG_TO_CONSOLE = LOG_LEVEL === 'DEBUG' || process.env.NODE_ENV === 'development' || true;
-
+const RAW_LOG_LEVEL = process.env.LOG_LEVEL || 'INFO';
+const NORMALIZED_LOG_LEVEL = RAW_LOG_LEVEL.split('#')[0].trim().toUpperCase();
 const LOG_LEVEL_NUM = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
-const CURRENT_LOG_LEVEL = LOG_LEVEL_NUM[LOG_LEVEL] || 1;
+const ACTIVE_LOG_LEVEL = LOG_LEVEL_NUM[NORMALIZED_LOG_LEVEL] != null ? NORMALIZED_LOG_LEVEL : 'INFO';
+const CURRENT_LOG_LEVEL = LOG_LEVEL_NUM[ACTIVE_LOG_LEVEL];
 
 const log = (msg, level = 'INFO') => {
-  if (LOG_LEVEL_NUM[level] >= CURRENT_LOG_LEVEL) {
-    const timestamped = `[${new Date().toISOString()}] [${level}] ${msg}`;
+  const normalizedLevel = (level || 'INFO').toUpperCase();
+  const levelValue = LOG_LEVEL_NUM[normalizedLevel] ?? LOG_LEVEL_NUM.INFO;
+  if (levelValue >= CURRENT_LOG_LEVEL) {
+    const timestamped = `[${new Date().toISOString()}] [${normalizedLevel}] ${msg}`;
     // Write to stream instead of appendFile to prevent file descriptor leaks
     consoleLogStream.write(timestamped + '\n');
     // Always output to console immediately for visibility - use original console to avoid circular dependency
