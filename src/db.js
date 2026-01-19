@@ -56,19 +56,32 @@ function repairDatabase(dbPath) {
 // Initialize database connection with retry logic
 function initDb(maxRetries = 3) {
   if (db) return db;
-
+  
   let lastError = null;
+  const dbPath = path.join(__dirname, '..', 'data', 'cache.sqlite');
+  const dir = path.dirname(dbPath);
+  
+  // Clean up any existing WAL files that might interfere
+  try {
+    const walPath = `${dbPath}-wal`;
+    const shmPath = `${dbPath}-shm`;
+    if (fs.existsSync(walPath)) fs.unlinkSync(walPath);
+    if (fs.existsSync(shmPath)) fs.unlinkSync(shmPath);
+    console.log('[DB] Cleaned up WAL files');
+  } catch (error) {
+    console.warn('[DB] Warning: Could not clean WAL files:', error.message);
+  }
+  
+  // Ensure directory exists
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      const dbPath = path.join(__dirname, '..', 'data', 'cache.sqlite');
-      const dir = path.dirname(dbPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
       db = new Database(dbPath);
-      db.pragma('journal_mode = WAL');
-
+      db.pragma('journal_mode = WAL'); // Enable WAL mode explicitly
+      
       // Check database integrity
       if (!checkDatabaseIntegrity(db)) {
         console.error('[DB] Database integrity check failed, attempting repair...');
@@ -82,26 +95,35 @@ function initDb(maxRetries = 3) {
           throw new Error('Database repair failed');
         }
       }
-
-      // Create tables
+      
+      // Create tables with proper error handling
       db.exec(`
-      CREATE TABLE IF NOT EXISTS price_cache (
-        id TEXT PRIMARY KEY,
-        price REAL NOT NULL,
-        timestamp INTEGER NOT NULL
-      );
+        CREATE TABLE IF NOT EXISTS price_cache (
+          id TEXT PRIMARY KEY,
+          price REAL NOT NULL,
+          timestamp INTEGER NOT NULL
+        );
 
-      CREATE TABLE IF NOT EXISTS alert_subscriptions (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        marketId TEXT NOT NULL,
-        condition TEXT NOT NULL,
-        price REAL NOT NULL,
-        alertType TEXT NOT NULL,
-        duration TEXT NOT NULL,
-        createdAt INTEGER NOT NULL,
-        active INTEGER DEFAULT 1
-      );
+        CREATE TABLE IF NOT EXISTS alert_subscriptions (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          marketId TEXT NOT NULL,
+          condition TEXT NOT NULL,
+          price REAL NOT NULL,
+          alertType TEXT NOT NULL,
+          duration TEXT NOT NULL,
+          createdAt INTEGER NOT NULL,
+          active INTEGER DEFAULT 1
+        );
+
+        CREATE TABLE IF NOT EXISTS analysis_cache (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          market_id TEXT UNIQUE,
+          last_price REAL,
+          reasoning TEXT,
+          confidence REAL,
+          timestamp INTEGER
+        );
 
       CREATE TABLE IF NOT EXISTS analysis_cache (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -133,8 +155,11 @@ function initDb(maxRetries = 3) {
         predicted_probability REAL,
         entropy REAL,
         sentiment_score REAL,
+        was_correct INTEGER DEFAULT 0,
+        resolved_at INTEGER,
+        actual_pnl REAL,
         valid INTEGER DEFAULT 1,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        timestamp INTEGER DEFAULT (strftime('%s', 'now'))
       );
 
       CREATE TABLE IF NOT EXISTS user_performance_snapshots (

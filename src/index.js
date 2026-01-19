@@ -114,6 +114,39 @@ const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./
 const { startServer, updateHealthMetrics } = require('../server');
 const { crossReferenceNews } = require('./processor');
 const { startResolutionTracker, getCategoryEdgeAdjustment } = require('./resolution_tracker');
+
+// ============================================================
+// NEW MODULE INTEGRATIONS
+// ============================================================
+const { 
+  generateExitSignal, 
+  scanPositionsForExits, 
+  updatePeakPnL,
+  EXIT_CONFIG 
+} = require('./exit-signals');
+
+const { 
+  fetchMarketOrderBooks, 
+  calculateRealSlippage, 
+  getSpread, 
+  checkTradeLiquidity,
+  getOptimalEntry 
+} = require('./orderbook-integration');
+
+const { 
+  getTimeAnalysis, 
+  calculateTimeAdjustedEdge, 
+  calculateTimeAdjustedSize,
+  filterMarketsByTime 
+} = require('./time-resolution');
+
+const { 
+  scanForArbitrage, 
+  groupRelatedMarkets, 
+  calculateCorrelationAdjustedSize,
+  detectRelationship 
+} = require('./market-arbitrage');
+
 let createClient;
 try {
   createClient = require('@supabase/supabase-js').createClient;
@@ -1980,6 +2013,18 @@ async function generateSignals(selectedMarkets) {
     intentExposure = Math.min(maxExposure, intentExposure);
     log(`[POSITION SIZING] Step 3 - After liquidity cap: ${(intentExposure * 100).toFixed(2)}% (max: ${(maxExposure * 100).toFixed(2)}%)`);
 
+    // ============================================================
+    // CORRELATION-ADJUSTED SIZING INTEGRATION
+    // ============================================================
+    // Apply correlation adjustment if you have existing positions
+    // TODO: Load your actual positions from your position tracking system
+    const existingPositions = []; // Load from your position database
+    if (existingPositions.length > 0) {
+      const correlationAdjustment = getCorrelationAdjustedPosition(market, existingPositions, intentExposure);
+      intentExposure = correlationAdjustment.adjustedSize;
+      log(`[POSITION SIZING] Step 3.5 - After correlation adjustment: ${(intentExposure * 100).toFixed(2)}% (factor: ${correlationAdjustment.correlationFactor}x)`);
+    }
+
     // Step 4: Apply tail market exposure reduction (if applicable)
     if (isTailMarket && Math.abs(rawEdge) >= 0.08) {
       intentExposure *= 0.5; // Reduce exposure by 50% for tail markets with strong edge
@@ -2108,20 +2153,49 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
       }
     }
 
+    // Use enhanced signal generation with all modules
+    // TODO: Load from your position tracking system
+    const currentPositions = existingPositions || []; // Use existing or empty array
+    const enhancedSignal = await generateEnhancedSignal(market, analysis, currentPositions);
+    
+    if (!enhancedSignal.valid) {
+      console.log(`[SIGNAL] Rejected: ${enhancedSignal.reason}`);
+      rejectedSignals.push({
+        marketId: market.id,
+        marketSlug: market.slug,
+        marketQuestion: market.question,
+        action: 'NO_TRADE',
+        price: yesPrice,
+        confidenceScore: confidencePercent,
+        marketOdds: yesPrice * 100,
+        reason: enhancedSignal.reason,
+        timestamp: new Date().toISOString()
+      });
+      continue;
+    }
+    
+    // Update signal with enhanced values
+    signal.adjustedEdge = enhancedSignal.adjustedEdge;
+    signal.adjustedSize = enhancedSignal.adjustedSize;
+    signal.timing = enhancedSignal.timing;
+    signal.slippage = enhancedSignal.slippage;
+    signal.spread = enhancedSignal.spread;
+    signal.correlationFactor = enhancedSignal.correlationFactor;
+    
     const signalWithMarket = {
       ...signal,
+      ...enhancedSignal, // Merge all enhanced properties
       market: market.question || 'Unknown',
       timestamp: signalTimestamp,
       probZigma: winProb * 100,
       probMarket: yesPrice * 100,
-      effectiveEdge: netEdge * 100,
-      rawEdge: rawEdge * 100,
+      effectiveEdge: enhancedSignal.adjustedEdge * 100,
+      rawEdge: enhancedSignal.adjustedEdge * 100,
       link: buildPolymarketUrl(market.slug, market.question),
       cluster: getClusterForCategory(market.category)
     };
 
-    // Use simplified execution logic
-    if (shouldExecuteTrade(signal, market)) {
+    if (shouldExecuteTrade(signalWithMarket, market)) {
       if (signal.tradeTier === 'PROBE' && Math.abs(rawEdge) > PROBE_EDGE_THRESHOLD) {
         signal.tradeTier = 'MEDIUM_TRADE';
       }
@@ -2146,6 +2220,30 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
 function shouldExecuteTrade(signal, market) {
   const categoryKey = getCategoryKey(market.question, market);
   const categoryEdgeThreshold = getCategoryEdgeThreshold(categoryKey);
+
+  // ============================================================
+  // TIME-RESOLUTION INTEGRATION
+  // ============================================================
+  // Apply time-based adjustments before other validations
+  const timeAdjustments = applyTimeAdjustments(
+    market, 
+    signal.edgeScoreDecimal || (Math.abs(signal.edgeScore) / 100), 
+    signal.intentExposure, 
+    categoryKey
+  );
+  
+  if (!timeAdjustments) {
+    console.log(`[TIME] Market rejected by time analysis`);
+    return false;
+  }
+  
+  // Update signal with time-adjusted values
+  signal.timeAdjustedEdge = timeAdjustments.adjustedEdge;
+  signal.timeAdjustedSize = timeAdjustments.adjustedSize;
+  signal.timing = timeAdjustments.timing;
+  
+  console.log(`[TIME] Final adjusted edge: ${(timeAdjustments.adjustedEdge * 100).toFixed(2)}%`);
+  console.log(`[TIME] Final adjusted size: ${(timeAdjustments.adjustedSize * 100).toFixed(2)}%`);
 
   // FIX: Convert edgeScore from percentage to decimal for comparison
   // edgeScore is stored as percentage (0-100), threshold is decimal (0-1)
@@ -2289,6 +2387,298 @@ function trackSpreadOpportunities(arbitrageOpportunities = []) {
     .slice(0, 5); // Top 5 opportunities
 }
 
+// ============================================================
+// COMPLETE ENHANCED SIGNAL GENERATION
+// ============================================================
+async function generateEnhancedSignal(market, llmAnalysis, existingPositions) {
+  const { edge: rawEdge, confidence, action } = llmAnalysis;
+  const category = market.category || 'EVENT';
+  const baseSize = calculateKelly(rawEdge, confidence); // Your existing Kelly function
+  
+  console.log(`\n[ENHANCED] Processing: ${market.question?.slice(0, 50)}...`);
+  console.log(`[ENHANCED] Raw: Edge=${(rawEdge * 100).toFixed(1)}%, Conf=${confidence}%, Kelly=${(baseSize * 100).toFixed(1)}%`);
+  
+  // Step 1: Time adjustments
+  const timeAdj = applyTimeAdjustments(market, rawEdge, baseSize, category);
+  if (!timeAdj) {
+    return { valid: false, reason: 'Failed time filter' };
+  }
+  
+  // Step 2: Correlation adjustment
+  const corrAdj = getCorrelationAdjustedPosition(market, existingPositions, timeAdj.adjustedSize);
+  
+  // Step 3: Order book validation
+  const orderBookCheck = await validateTradeWithOrderBook(
+    market.conditionId,
+    action,
+    corrAdj.adjustedSize * 1000, // Convert to dollars (assuming $1000 bankroll unit)
+    market.outcomePrices?.[0] || 0.5
+  );
+  
+  if (!orderBookCheck.approved) {
+    return { valid: false, reason: `Order book: ${orderBookCheck.reason}` };
+  }
+  
+  // Final signal
+  const finalSize = Math.min(
+    corrAdj.adjustedSize,
+    orderBookCheck.adjustedSize / 1000 // Convert back to fraction
+  );
+  
+  console.log(`[ENHANCED] ✅ Final: Edge=${(timeAdj.adjustedEdge * 100).toFixed(1)}%, Size=${(finalSize * 100).toFixed(2)}%`);
+  console.log(`[ENHANCED] Slippage: ${orderBookCheck.slippage?.toFixed(2)}%, Spread: ${orderBookCheck.spread?.toFixed(2)}%`);
+  
+  return {
+    valid: true,
+    action,
+    adjustedEdge: timeAdj.adjustedEdge,
+    adjustedSize: finalSize,
+    confidence,
+    timing: timeAdj.timing,
+    slippage: orderBookCheck.slippage,
+    spread: orderBookCheck.spread,
+    correlationFactor: corrAdj.correlationFactor
+  };
+}
+
+// ============================================================
+// CORRELATION-ADJUSTED SIZING FUNCTION
+// ============================================================
+function getCorrelationAdjustedPosition(market, existingPositions, baseSize) {
+  // Find related positions
+  const relatedPositions = [];
+  
+  for (const position of existingPositions) {
+    const relationship = detectRelationship(market, { 
+      question: position.title, 
+      conditionId: position.conditionId 
+    });
+    
+    if (relationship) {
+      relatedPositions.push({
+        market: position,
+        size: position.currentValue || position.size,
+        relationship
+      });
+    }
+  }
+  
+  if (relatedPositions.length === 0) {
+    return { adjustedSize: baseSize, correlationFactor: 1.0 };
+  }
+  
+  const adjustment = calculateCorrelationAdjustedSize(market, relatedPositions, baseSize);
+  
+  console.log(`[CORRELATION] Found ${relatedPositions.length} related positions`);
+  console.log(`[CORRELATION] Existing exposure: $${adjustment.relatedExposure}`);
+  console.log(`[CORRELATION] Size adjustment: ${adjustment.correlationFactor}x`);
+  console.log(`[CORRELATION] Final size: $${adjustment.adjustedSize}`);
+  
+  return adjustment;
+}
+
+// ============================================================
+// ARBITRAGE INTEGRATION FUNCTION
+// ============================================================
+async function scanArbitrageOpportunities(markets) {
+  console.log('[ARBITRAGE] Scanning for arbitrage opportunities...');
+  
+  const opportunities = scanForArbitrage(markets);
+  
+  if (opportunities.length === 0) {
+    console.log('[ARBITRAGE] No arbitrage opportunities found');
+    return [];
+  }
+  
+  console.log(`[ARBITRAGE] Found ${opportunities.length} opportunities:`);
+  
+  for (const opp of opportunities.slice(0, 5)) { // Top 5
+    console.log(`[ARBITRAGE] 📈 ${opp.type}: +${opp.expectedProfit.toFixed(1)}% expected`);
+    console.log(`            A: ${opp.marketATitle?.slice(0, 40)}... @ ${(opp.priceA * 100).toFixed(0)}%`);
+    console.log(`            B: ${opp.marketBTitle?.slice(0, 40)}... @ ${(opp.priceB * 100).toFixed(0)}%`);
+    console.log(`            Confidence: ${opp.confidence}%`);
+    
+    for (const trade of opp.trades) {
+      console.log(`            → ${trade.action} @ ${(trade.price * 100).toFixed(0)}%`);
+    }
+  }
+  
+  return opportunities;
+}
+
+// ============================================================
+// TIME-RESOLUTION INTEGRATION FUNCTION
+// ============================================================
+function applyTimeAdjustments(market, rawEdge, baseSize, category) {
+  const timeAnalysis = getTimeAnalysis(
+    { endDate: market.endDate, category },
+    rawEdge,
+    baseSize
+  );
+  
+  console.log(`[TIME] Days to resolution: ${timeAnalysis.daysRemaining || 'unknown'}`);
+  console.log(`[TIME] Profile: ${timeAnalysis.profile}`);
+  
+  // Check if we should even trade this market
+  if (timeAnalysis.finalDecision !== 'ACCEPT') {
+    console.log(`[TIME] ❌ Rejected: ${timeAnalysis.finalDecision}`);
+    console.log(`[TIME] Timing: ${timeAnalysis.timing.recommendation} - ${timeAnalysis.timing.reason}`);
+    return null;
+  }
+  
+  const { adjustments, summary } = timeAnalysis;
+  
+  console.log(`[TIME] Edge: ${(summary.originalEdge * 100).toFixed(1)}% → ${(summary.adjustedEdge * 100).toFixed(1)}% (${adjustments.edge.multiplier}x)`);
+  console.log(`[TIME] Size: ${(summary.originalSize * 100).toFixed(1)}% → ${(summary.adjustedSize * 100).toFixed(1)}% (volatility: ${adjustments.size.volatilityMultiplier}x)`);
+  console.log(`[TIME] Min edge required: ${(summary.minEdgeRequired * 100).toFixed(1)}%`);
+  
+  return {
+    adjustedEdge: summary.adjustedEdge,
+    adjustedSize: summary.adjustedSize,
+    timing: timeAnalysis.timing,
+    passesMinEdge: summary.passesMinEdge
+  };
+}
+
+// ============================================================
+// ORDER BOOK INTEGRATION FUNCTION
+// ============================================================
+async function validateTradeWithOrderBook(marketId, side, size, currentPrice) {
+  console.log(`[ORDERBOOK] Checking liquidity for ${side} $${size}...`);
+  
+  const liquidityCheck = await checkTradeLiquidity(marketId, side, size);
+  
+  if (!liquidityCheck.sufficient) {
+    console.log(`[ORDERBOOK] ❌ Insufficient liquidity: ${liquidityCheck.recommendation}`);
+    return { 
+      approved: false, 
+      reason: liquidityCheck.recommendation,
+      details: liquidityCheck.details 
+    };
+  }
+  
+  // Check if slippage is acceptable
+  if (liquidityCheck.slippage > 3) {
+    console.log(`[ORDERBOOK] ⚠️ High slippage: ${liquidityCheck.slippage.toFixed(2)}%`);
+    
+    // Reduce size to lower slippage
+    const reducedSize = size * 0.5;
+    const recheck = await checkTradeLiquidity(marketId, side, reducedSize);
+    
+    if (recheck.slippage < 2) {
+      console.log(`[ORDERBOOK] Reducing size to $${reducedSize} for acceptable slippage`);
+      return { 
+        approved: true, 
+        adjustedSize: reducedSize,
+        slippage: recheck.slippage,
+        spread: recheck.spread
+      };
+    }
+  }
+  
+  console.log(`[ORDERBOOK] ✅ Trade approved. Slippage: ${liquidityCheck.slippage?.toFixed(2)}%, Spread: ${liquidityCheck.spread?.toFixed(2)}%`);
+  
+  return {
+    approved: true,
+    adjustedSize: size,
+    slippage: liquidityCheck.slippage,
+    spread: liquidityCheck.spread
+  };
+}
+
+// ============================================================
+// EXIT SIGNAL INTEGRATION FUNCTION
+// ============================================================
+async function checkExitSignals(positions, marketDataMap, analysisCache) {
+  console.log('[EXIT] Scanning positions for exit signals...');
+  
+  const exitSignals = scanPositionsForExits(positions, marketDataMap, analysisCache);
+  
+  if (exitSignals.length > 0) {
+    console.log(`[EXIT] Found ${exitSignals.length} exit signals:`);
+    
+    for (const signal of exitSignals) {
+      console.log(`[EXIT] ${signal.urgency} - ${signal.title.slice(0, 40)}...`);
+      console.log(`       Reason: ${signal.recommendation} | P&L: ${signal.currentPnL.toFixed(1)}%`);
+      console.log(`       Action: ${signal.suggestedAction}`);
+      
+      // If critical, execute immediately
+      if (signal.urgency === 'IMMEDIATE') {
+        console.log(`[EXIT] ⚠️ CRITICAL EXIT: ${signal.message}`);
+        // await executeExit(signal.marketId, signal);
+      }
+    }
+  }
+  
+  return exitSignals;
+}
+
+// ============================================================
+// ENHANCED MAIN CYCLE EXAMPLE
+// ============================================================
+async function enhancedMainCycle() {
+  console.log('[CYCLE] Starting enhanced main cycle...');
+  
+  try {
+    // 1. Fetch markets (your existing code)
+    const markets = await fetchMarkets();
+    console.log(`[CYCLE] Fetched ${markets.length} markets`);
+    
+    // 2. Filter by time (NEW)
+    const timeFilteredMarkets = filterMarketsByTime(markets, {
+      minDays: 0.5,    // At least 12 hours
+      maxDays: 180,    // Max 6 months out
+      preferredMin: 3,
+      preferredMax: 60
+    });
+    console.log(`[CYCLE] ${markets.length} → ${timeFilteredMarkets.length} after time filter`);
+    
+    // 3. Check existing positions for exits (NEW)
+    // const positions = await fetchPositions(); // TODO: Implement position fetching
+    const positions = []; // Placeholder for now
+    const exitSignals = await checkExitSignals(positions, new Map(), new Map());
+    
+    // 4. Scan for arbitrage (NEW)
+    const arbOpportunities = await scanArbitrageOpportunities(timeFilteredMarkets);
+    
+    // 5. Process markets for signals (your existing flow, enhanced)
+    const processedCount = Math.min(10, timeFilteredMarkets.length); // Limit for demo
+    let signalsGenerated = 0;
+    
+    for (const market of timeFilteredMarkets.slice(0, processedCount)) {
+      console.log(`\n[CYCLE] Processing market: ${market.question?.slice(0, 50)}...`);
+      
+      // Your existing LLM analysis logic
+      const llmAnalysis = {}; // await analyzeWithLLM(market);
+      llmAnalysis.edge = 0.05; // Example edge
+      llmAnalysis.confidence = 75; // Example confidence
+      
+      if (llmAnalysis.edge > 0.02) {
+        const signal = await generateEnhancedSignal(market, llmAnalysis, positions);
+        
+        if (signal.valid) {
+          console.log(`[SIGNAL] 🎯 ${market.question?.slice(0, 40)}...`);
+          console.log(`         ${signal.action} @ ${(signal.adjustedEdge * 100).toFixed(1)}% edge, ${(signal.adjustedSize * 100).toFixed(2)}% size`);
+          signalsGenerated++;
+          
+          // TODO: Execute trade with order book validation
+          // const validation = await validateTradeWithOrderBook(...);
+          // if (validation.approved) { await executeTrade(...); }
+        }
+      }
+    }
+    
+    console.log(`[CYCLE] Generated ${signalsGenerated} signals, found ${exitSignals.length} exits, discovered ${arbOpportunities.length} arbitrage opportunities`);
+    console.log('[CYCLE] ✅ Enhanced cycle complete');
+    
+  } catch (error) {
+    console.error('[CYCLE] Enhanced cycle failed:', error.message);
+  }
+}
+
+// ============================================================
+// MAIN CYCLE FUNCTION
+// ============================================================
 async function runCycle() {
   if (isRunning) return;
   isRunning = true;
@@ -2331,6 +2721,16 @@ async function runCycle() {
       topArbitrageOpportunities.forEach((opp, i) => {
         log(`  #${i+1} ${opp.marketQuestion.slice(0, 50)}... | Spread: ${opp.spreadPct.toFixed(2)}% | Profit: ${opp.theoreticalProfit.toFixed(2)}% | Liquidity: $${(opp.liquidity/1000).toFixed(0)}K`);
       });
+    }
+    
+    // ============================================================
+    // COMPREHENSIVE ARBITRAGE SCANNING
+    // ============================================================
+    const comprehensiveArbitrage = await scanArbitrageOpportunities(highValueMarkets);
+    
+    // Add comprehensive arbitrage to cycle data for reporting
+    if (comprehensiveArbitrage.length > 0) {
+      log(`[ARBITRAGE] Comprehensive scan found ${comprehensiveArbitrage.length} additional opportunities`);
     }
     
     // Use safe update function to prevent race conditions
@@ -2409,6 +2809,19 @@ async function runCycle() {
 
     const { executableTrades, outlookSignals, rejectedSignals, signalsGenerated } = await generateSignals(clusterFiltered);
 
+    // ============================================================
+    // EXIT SIGNAL INTEGRATION
+    // ============================================================
+    // Check for exit signals on current positions
+    // Note: You would need to track positions separately or load from database
+    const currentPositions = []; // TODO: Load actual positions from your position tracking system
+    const marketDataMap = new Map(clusterFiltered.map(m => [m.id, m]));
+    const analysisCache = {}; // TODO: Load from your analysis cache
+    
+    if (currentPositions.length > 0) {
+      await checkExitSignals(currentPositions, marketDataMap, analysisCache);
+    }
+
     const lastRunTimestamp = new Date().toISOString();
 
     global.latestData = {
@@ -2472,5 +2885,29 @@ async function main() {
     process.exit(1);
   }
 }
+
+// ============================================================
+// EXPORTS - All new integrated functions
+// ============================================================
+module.exports = {
+  // Original exports
+  generateDecrees,
+  generateEnhancedAnalysis,
+  computeNetEdge,
+  
+  // New integrated functions
+  checkExitSignals,
+  validateTradeWithOrderBook,
+  applyTimeAdjustments,
+  scanArbitrageOpportunities,
+  getCorrelationAdjustedPosition,
+  generateEnhancedSignal,
+  enhancedMainCycle,
+  
+  // Existing functions (preserved)
+  applyAdaptiveLearning,
+  calculateKelly,
+  // ... any other existing exports you need
+};
 
 main();
