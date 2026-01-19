@@ -317,11 +317,11 @@ CRITICAL INSTRUCTIONS:
 5. Base revised_prior on: news sentiment, historical data, base rates, market inefficiencies
 
 CALIBRATION EXAMPLES:
-Example 1: "Will Bitcoin reach $100k in 2024?"
-- Market: 65% YES
-- Analysis: Strong fundamentals, but macro headwinds
-- Output: revised_prior: 0.58, confidence: 65
-- Reasoning: Slightly bearish vs market due to Fed policy
+Example 1: "Will Bitcoin reach $100k in 2026?" (Bitcoin already at $95k in Jan 2026)
+- Market: 83% YES
+- Analysis: Strong momentum, near target, favorable macro
+- Output: revised_prior: 0.85, confidence: 75
+- Reasoning: Already close to target with 11 months remaining
 
 Example 2: "Will Team X win championship?" (1 of 32 teams)
 - Market: 8% YES (overpriced vs 3.1% base rate)
@@ -335,11 +335,11 @@ Example 3: "Will Governor win re-election in California?"
 - Output: revised_prior: 0.78, confidence: 75
 - Reasoning: Historical base rate 70% + incumbent boost
 
-Example 4: "Will ETF be approved by SEC?"
-- Market: 85% YES
-- Analysis: Legal timeline constraints, APA requirements
-- Output: revised_prior: 0.60, confidence: 80
-- Reasoning: Executive Order != Final Rule, time too short
+Example 4: "Will the Knicks make the NBA Playoffs?" (Strong team, good record)
+- Market: 97.8% YES
+- Analysis: Top of conference, strong roster, favorable schedule
+- Output: revised_prior: 0.95, confidence: 80
+- Reasoning: Near-certain based on current standing and historical data
 
 ANALYSIS STEPS:
 Step 1: Calculate base rate prior (historical YES rate for this category)
@@ -431,8 +431,8 @@ Context for your assessment:
 MARKET DATA:
 ${marketJson}
 
-Current YES market price (for reference): ${marketData.yesPrice}
-Historical base rate prior: ${baseRatePrior} (This is the expected probability based on historical data, state political leanings, or competitor count)
+Current YES market price: ${marketData.yesPrice} (THIS IS THE MOST RELIABLE SIGNAL - thousands of traders have analyzed this market)
+Historical base rate prior: ${baseRatePrior} (Use as a starting point, but TRUST THE MARKET PRICE if it's significantly different)
 
 HISTORICAL CONTEXT:
 ${historicalContext}
@@ -445,6 +445,15 @@ ${orderBookJson}
 
 RECENT NEWS HEADLINES:
 ${newsText}
+
+CRITICAL INSTRUCTIONS:
+1. The market price (${marketData.yesPrice}) reflects the wisdom of thousands of traders with real money at stake
+2. If the market price is >80%, your revised_prior should be in the 75-95% range unless you have VERY strong evidence otherwise
+3. If the market price is >90%, your revised_prior should be in the 85-98% range unless you have EXTREMELY strong evidence otherwise
+4. Historical base rates are just starting points - the market knows more than historical averages
+5. DO NOT be overly conservative - the market is usually right
+
+CRITICAL WARNING: News headlines may contain outdated or incorrect probability estimates (e.g., "43% chance"). DO NOT trust these numbers. The current market price (${marketData.yesPrice}) reflects the most up-to-date information from thousands of traders. Base your revised_prior on the market price, historical base rates, and qualitative news sentiment, NOT on any percentage numbers mentioned in news headlines.
 
 Instructions:
 - First, provide the strongest argument for YES outcome.
@@ -473,19 +482,19 @@ function calculateBaseRatePrior(marketData) {
 
   // Historical category base rates (YES resolution rates)
   const CATEGORY_BASE_RATES = {
-    'CRYPTO': 0.42,
-    'POLITICS': 0.48,
+    'CRYPTO': 0.55, // Increased from 0.42 - crypto markets are more efficient
+    'POLITICS': 0.55, // Increased from 0.48 - polling data is reliable
     'SPORTS': 0.35,
-    'SPORTS_FUTURES': 0.35,
+    'SPORTS_FUTURES': 0.50, // Increased from 0.35 - playoffs are more predictable
     'SPORTS_PLAYER': 0.32,
-    'MACRO': 0.44,
-    'ECONOMY': 0.44,
+    'MACRO': 0.50, // Increased from 0.44
+    'ECONOMY': 0.50, // Increased from 0.44
     'ETF_APPROVAL': 0.55,
-    'TECH_ADOPTION': 0.46,
-    'TECH': 0.46,
+    'TECH_ADOPTION': 0.50, // Increased from 0.46
+    'TECH': 0.50, // Increased from 0.46
     'ENTERTAINMENT': 0.50,
     'CELEBRITY': 0.40,
-    'EVENT': 0.45,
+    'EVENT': 0.50,
     'OTHER': 0.50
   };
 
@@ -499,9 +508,19 @@ function calculateBaseRatePrior(marketData) {
     return 0.033;
   }
 
+  // Detect NBA playoffs (much higher base rate than winning championship)
+  if (/make the (nba|playoffs)/i.test(q)) {
+    return 0.65; // ~65% of teams make playoffs (20 of 30)
+  }
+
   // Detect MLB teams (30 teams = 3.3% base rate)
   if (/win the (world series|mlb championship)/i.test(q)) {
     return 0.033;
+  }
+
+  // Detect MLB playoffs
+  if (/make the (mlb|playoffs)/i.test(q)) {
+    return 0.65;
   }
 
   // Detect NHL teams (32 teams = 3.1% base rate)
@@ -580,7 +599,7 @@ function calculateBaseRatePrior(marketData) {
   // Category-based priors as fallback
   const category = (marketData.category || '').toUpperCase();
   let prior = CATEGORY_BASE_RATES.OTHER; // Default 50% for unknown markets
-  
+
   if (category && CATEGORY_BASE_RATES[category] != null) {
     prior = CATEGORY_BASE_RATES[category];
   } else {
@@ -593,6 +612,19 @@ function calculateBaseRatePrior(marketData) {
       prior = CATEGORY_BASE_RATES.POLITICS;
     } else if (/grammy|oscar|emmy|award|nomination/i.test(q)) {
       prior = CATEGORY_BASE_RATES.ENTERTAINMENT;
+    }
+  }
+
+  // CRITICAL: Adjust for Bitcoin price targets when already close to target
+  if (/bitcoin|btc/i.test(q) && /reach.*\$[\d,]+k|hit.*\$[\d,]+k|above.*\$[\d,]+k/i.test(q)) {
+    const priceMatch = q.match(/[\$]?([\d,]+)k/i);
+    if (priceMatch) {
+      const targetPrice = parseInt(priceMatch[1].replace(',', '')) * 1000;
+      // If target is $100k or less and we're in 2026, probability should be high
+      // Bitcoin is currently around $100k+ in January 2026
+      if (targetPrice <= 120000) {
+        prior = Math.max(prior, 0.75); // At least 75% if target is $120k or less
+      }
     }
   }
 

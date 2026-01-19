@@ -132,11 +132,11 @@ async function fetchAllMarkets() {
   const baseUrl = `${GAMMA}/markets`;
   const params = {
     closed: 'false',
-    limit: 5500,
+    limit: 7500,
     order: 'startDate',
     sort: 'desc'
   };
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 5500;
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 7500;
   let offset = 0;
   let allMarkets = [];
 

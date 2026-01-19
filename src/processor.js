@@ -125,9 +125,14 @@ async function crossReferenceNews(market = {}) {
     });
 
     if (multiSourceResults.length > 0) {
-      const enriched = multiSourceResults
+      let enriched = multiSourceResults
         .map(hit => enrichNewsResult(hit, market))
-        .filter(Boolean)
+        .filter(Boolean);
+
+      // Filter out news containing probability estimates that contradict market prices
+      enriched = filterProbabilityEstimates(enriched);
+
+      enriched = enriched
         .sort((a, b) => b.relevanceScore - a.relevanceScore)
         .slice(0, MAX_NEWS_RESULTS)
         .map(hit => {
@@ -244,6 +249,27 @@ function dedupeNewsResults(results = []) {
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
+  });
+}
+
+// Filter out news that contains probability estimates (e.g., "43% chance", "50% probability")
+// These can bias the LLM away from market prices
+function filterProbabilityEstimates(results = []) {
+  return results.filter(hit => {
+    const title = (hit.title || hit.name || '').toLowerCase();
+    const snippet = (hit.snippet || hit.content || hit.description || '').toLowerCase();
+    const text = `${title} ${snippet}`;
+
+    // Filter out patterns like "43% chance", "50% probability", "75% likely"
+    // But allow general percentage references like "up 5%", "down 10%"
+    const probPatterns = [
+      /(\d+)%\s*(chance|probability|likely|odds|bet)/i,
+      /chance\s+of\s+(\d+)%/i,
+      /probability\s+of\s+(\d+)%/i,
+      /(\d+)%\s+chance/i,
+    ];
+
+    return !probPatterns.some(pattern => pattern.test(text));
   });
 }
 
