@@ -2504,6 +2504,119 @@ app.get('/backtest', async (req, res) => {
   }
 });
 
+// Historical trades endpoint
+app.get('/api/signals/historical', (req, res) => {
+  try {
+    const historicalTradesPath = path.join(__dirname, 'historical_trades.json');
+    
+    if (!fs.existsSync(historicalTradesPath)) {
+      return res.json([]);
+    }
+
+    const historicalTrades = JSON.parse(fs.readFileSync(historicalTradesPath, 'utf8'));
+    res.json(historicalTrades);
+  } catch (error) {
+    console.error('Error fetching historical trades:', error);
+    res.json([]);
+  }
+});
+
+// Signal performance endpoint
+app.get('/api/signals/performance', (req, res) => {
+  try {
+    // Return mock performance data for now
+    res.json({
+      totalSignals: 0,
+      resolvedSignals: 0,
+      correctSignals: 0,
+      incorrectSignals: 0,
+      pendingSignals: 0,
+      accuracy: 0,
+      avgConfidence: 0,
+      avgEdge: 0,
+      bestSignals: [],
+      worstSignals: []
+    });
+  } catch (error) {
+    console.error('Error fetching signal performance:', error);
+    res.json({
+      totalSignals: 0,
+      resolvedSignals: 0,
+      correctSignals: 0,
+      incorrectSignals: 0,
+      pendingSignals: 0,
+      accuracy: 0,
+      avgConfidence: 0,
+      avgEdge: 0,
+      bestSignals: [],
+      worstSignals: []
+    });
+  }
+});
+
+// Recent signals endpoint
+app.get('/api/signals/recent', (req, res) => {
+  try {
+    // Return empty recent signals for now
+    res.json([]);
+  } catch (error) {
+    console.error('Error fetching recent signals:', error);
+    res.json([]);
+  }
+});
+
+// Aggregate P&L endpoint
+app.get('/api/pnl/aggregate', (req, res) => {
+  try {
+    // Return mock P&L data for now
+    res.json({
+      totalSignals: 0,
+      settledSignals: 0,
+      pendingSignals: 0,
+      totalPnL: 0,
+      totalPnLPercent: 0,
+      winningSignals: 0,
+      losingSignals: 0,
+      winRate: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      profitFactor: 0,
+      maxWin: 0,
+      maxLoss: 0,
+      sharpeRatio: 0
+    });
+  } catch (error) {
+    console.error('Error fetching aggregate P&L:', error);
+    res.json({
+      totalSignals: 0,
+      settledSignals: 0,
+      pendingSignals: 0,
+      totalPnL: 0,
+      totalPnLPercent: 0,
+      winningSignals: 0,
+      losingSignals: 0,
+      winRate: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      profitFactor: 0,
+      maxWin: 0,
+      maxLoss: 0,
+      sharpeRatio: 0
+    });
+  }
+});
+
+// Category P&L endpoint
+app.get('/api/pnl/by-category', (req, res) => {
+  try {
+    // Return empty category P&L data for now
+    res.json({});
+  } catch (error) {
+    console.error('Error fetching category P&L:', error);
+    res.json({});
+  }
+});
+
 // Graceful shutdown handler
 const gracefulShutdown = async (signal) => {
   console.log(`\n${signal} received. Starting graceful shutdown...`);

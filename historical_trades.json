@@ -1,0 +1,152 @@
+[
+  {
+    "timestamp": "2026-01-14T16:52:13.428Z",
+    "marketQuestion": "Will Trump nominate Kevin Warsh as the next Fed chair?",
+    "action": "BUY YES",
+    "price": 0.645,
+    "edge": 10.499999999999998,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Trump%20nominate%20Kevin%20Warsh%20as%20the%20next%20Fed%20chair%3F"
+  },
+  {
+    "timestamp": "2026-01-14T16:52:13.428Z",
+    "marketQuestion": "Will Ken Paxton win the 2026 Texas Republican Primary?",
+    "action": "BUY YES",
+    "price": 0.625,
+    "edge": 5.500000000000005,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Ken%20Paxton%20win%20the%202026%20Texas%20Republican%20Primary%3F"
+  },
+  
+  {
+    "timestamp": "2026-01-14T12:01:23.583Z",
+    "marketQuestion": "Will António José Seguro win the 2026 Portugal presidential election?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.959,
+    "edge": 19.899999999999995,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Ant%C3%B3nio%20Jos%C3%A9%20Seguro%20win%20the%202026%20Portugal%20presidential%20election%3F"
+  },
+  {
+    "timestamp": "2026-01-15T12:01:23.583Z",
+    "marketQuestion": "Will Bitcoin reach $100,000 by December 31, 2026?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.745,
+    "edge": 14.500000000000002,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Bitcoin%20reach%20%24100%2C000%20by%20December%2031%2C%202026%3F"
+  },
+  
+  {
+    "timestamp": "2026-01-15T03:02:30.108Z",
+    "marketQuestion": "Will the New York Knicks make the NBA Playoffs?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.978,
+    "edge": 11.6,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20the%20New%20York%20Knicks%20make%20the%20NBA%20Playoffs%3F"
+  },
+  
+  {
+    "timestamp": "2026-01-15T00:04:27.334Z",
+    "marketQuestion": "MicroStrategy sells any Bitcoin by March 31, 2026?",
+    "action": "EXECUTE BUY NO",
+    "price": 0.048,
+    "edge": 25.2,
+    "confidence": 75,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=MicroStrategy%20sells%20any%20Bitcoin%20by%20March%2031%2C%202026%3F"
+  },
+  
+  {
+    "timestamp": "2026-01-15T20:09:03.138Z",
+    "marketQuestion": "Will J.D. Vance win the 2028 Republican presidential nomination?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.515,
+    "edge": 15.100000000000001,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20J.D.%20Vance%20win%20the%202028%20Republican%20presidential%20nomination%3F"
+  },
+ 
+  {
+    "timestamp": "2026-01-16T20:07:35.266Z",
+    "marketQuestion": "Will the Seattle Seahawks win Super Bowl 2026?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.391,
+    "edge": 17.300000000000004,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20the%20Seattle%20Seahawks%20win%20Super%20Bowl%202026%3F"
+  },
+    {
+    "timestamp": "2026-01-16T18:59:19.344Z",
+    "marketQuestion": "Will China unban Bitcoin by 2027?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.0255,
+    "edge": 11.249999999999998,
+    "confidence": 70,
+    "tradeTier": "SMALL_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20China%20unban%20Bitcoin%20by%202027%3F"
+  },
+  
+  {
+    "timestamp": "2026-01-16T18:33:08.976Z",
+    "marketQuestion": "Will Bitcoin hit $150k by March 31, 2026?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.028,
+    "edge": 32.199999999999996,
+    "confidence": 70,
+    "tradeTier": "SMALL_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Bitcoin%20hit%20%24150k%20by%20March%2031%2C%202026%3F"
+  },
+  {
+    "timestamp": "2026-01-17T18:33:08.976Z",
+    "marketQuestion": "Will Indiana win the 2026 College Football National Championship?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.746,
+    "edge": 8.399999999999997,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Indiana%20win%20the%202026%20College%20Football%20National%20Championship%3F"
+  },
+  {
+    "timestamp": "2026-01-17T17:33:08.976Z",
+    "marketQuestion": "Will Trump nominate Kevin Warsh as the next Fed chair?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.55,
+    "edge": 6.399999999999995,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Trump%20nominate%20Kevin%20Warsh%20as%20the%20next%20Fed%20chair%3F"
+  },
+ 
+  
+  {
+    "timestamp": "2026-01-18T17:59:46.395Z",
+    "marketQuestion": "Will the next Prime Minister of Hungary be Péter Magyar?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.525,
+    "edge": 8.699999999999996,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20the%20next%20Prime%20Minister%20of%20Hungary%20be%20P%C3%A9ter%20Magyar%3F"
+  },
+  
+ 
+  {
+    "timestamp": "2026-01-16T17:44:29.085Z",
+    "marketQuestion": "Will Donald Trump announce a new nominee for Chair of the Federal Reserve by June 30, 2026?",
+    "action": "EXECUTE BUY YES",
+    "price": 0.9835,
+    "edge": 12.150000000000006,
+    "confidence": 85,
+    "tradeTier": "STRONG_TRADE",
+    "link": "https://polymarket.com/search?q=Will%20Donald%20Trump%20announce%20a%20new%20nominee%20for%20Chair%20of%20the%20Federal%20Reserve%20by%20June%2030%2C%202026%3F"
+  }
+]
