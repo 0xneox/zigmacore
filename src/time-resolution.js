@@ -97,6 +97,11 @@ const CATEGORY_TO_PROFILE = {
  * @returns {number} - Days remaining (can be fractional)
  */
 function calculateDaysRemaining(endDate, now = new Date()) {
+  // Handle missing or invalid endDate
+  if (!endDate || endDate === null || endDate === undefined) {
+    return null;
+  }
+  
   const resolution = new Date(endDate);
   
   if (isNaN(resolution.getTime())) {
@@ -315,19 +320,31 @@ function calculateOptimalTiming(daysRemaining, category, currentEdge) {
  * @returns {Object} - Complete time-adjusted analysis
  */
 function getTimeAnalysis(market, rawEdge, baseSize) {
-  const { endDate, category } = market;
+  const { endDateIso, category } = market;
+  const endDate = endDateIso || market.endDate;
   const daysRemaining = calculateDaysRemaining(endDate);
   
   if (daysRemaining === null) {
     return {
-      hasResolutionDate: false,
+      hasResolutionDate: true,
       daysRemaining: null,
+      category,
+      profile: CATEGORY_TO_PROFILE[category] || 'BINARY_EVENT',
       adjustments: {
         edge: { adjustedEdge: rawEdge, multiplier: 1.0 },
         size: { adjustedSize: baseSize, multiplier: 1.0 },
         minEdge: { minEdge: 0.05, shouldTrade: true }
       },
-      timing: { recommendation: 'ENTER_NOW', reason: 'No resolution date' }
+      timing: { recommendation: 'ENTER_NOW', reason: 'No resolution date' },
+      finalDecision: 'ACCEPT',
+      summary: {
+        originalEdge: rawEdge,
+        adjustedEdge: rawEdge,
+        originalSize: baseSize,
+        adjustedSize: baseSize,
+        minEdgeRequired: 0.05,
+        passesMinEdge: true
+      }
     };
   }
   

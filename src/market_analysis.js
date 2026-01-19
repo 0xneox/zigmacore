@@ -689,18 +689,15 @@ function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
   // 1. Safety check: No edge or invalid price
   const edge = p - priceNum;
   if (Math.abs(edge) <= edgeBuffer || priceNum <= 0 || priceNum >= 1) {
+    console.warn('[calculateKelly] Edge too small or invalid price:', { edge, price });
     return 0; 
   }
-
-  // Flip to NO bet when edge is negative
-  const effectiveWinProb = edge > 0 ? p : (1 - p);
-  const effectivePrice = edge > 0 ? priceNum : (1 - priceNum);
-
+  
   // 2. Standard Kelly: (p*b - q) / b
   // b = net odds (e.g., if price is 0.25, b is 3)
-  const b = (1 - effectivePrice) / effectivePrice;
-  const q = 1 - effectiveWinProb;
-  let fullKelly = (effectiveWinProb * b - q) / b;
+  const b = (1 - priceNum) / priceNum;
+  const q = 1 - p;
+  let fullKelly = (p * b - q) / b;
 
   // 3. Liquidity Scaling (More aggressive for MVP)
   // If liquidity < 1000, we don't bet.
