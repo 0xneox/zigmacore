@@ -113,6 +113,7 @@ const { calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./clob_price_cache');
 const { startServer, updateHealthMetrics } = require('../server');
 const { crossReferenceNews } = require('./processor');
+const { startResolutionTracker, getCategoryEdgeAdjustment } = require('./resolution_tracker');
 let createClient;
 try {
   createClient = require('@supabase/supabase-js').createClient;
@@ -213,7 +214,7 @@ const HIGH_EDGE_THRESHOLD = 0.12; // Edge above which conviction doesn't matter
 const MEDIUM_EDGE_THRESHOLD = 0.06; // Edge above which conviction penalty is reduced
 const MIN_LIQUIDITY_THRESHOLD = 7500; // $7.5K minimum liquidity (further reduced for 5000 markets)
 const MIN_VOLUME_VELOCITY = 150; // $150/hour minimum trading activity (further reduced)
-const PRIORITY_CATEGORIES = ['MACRO', 'POLITICS', 'CRYPTO', 'SPORTS_FUTURES'];
+const PRIORITY_CATEGORIES = ['MACRO', 'POLITICS', 'CRYPTO', 'SPORTS_FUTURES','ETF_APPROVAL', 'TECH_ADOPTION', 'TECH', 'ENTERTAINMENT', 'EVENT'];
 const DATA_RICH_CATEGORIES = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
 const CONVICTION_BOOST_HIGH = 1.20; // 20% boost for high liquidity
 const CONVICTION_BOOST_MEDIUM = 1.15; // 15% boost for medium liquidity
@@ -729,9 +730,15 @@ function getStaticBucketPrior(categoryKey) {
   return (bucket[0] + bucket[1]) / 2;
 }
 
+/**
+ * Returns edge threshold as DECIMAL (0.05 = 5%)
+ * Callers must ensure they compare against decimal values, not percentages
+ * @param {string} categoryKey - Market category
+ * @returns {number} Edge threshold as decimal (typically 0.05-0.06)
+ */
 function getCategoryEdgeThreshold(categoryKey) {
   const categoryPerf = categoryPerformance[categoryKey];
-  let edgeThreshold = EDGE_THRESHOLD;
+  let edgeThreshold = EDGE_THRESHOLD; // 0.05 = 5% as decimal
   
   if (categoryPerf && typeof categoryPerf.emaError === 'number') {
     if (categoryPerf.emaError > 0.15) {
@@ -741,7 +748,7 @@ function getCategoryEdgeThreshold(categoryKey) {
     }
   }
   
-  return edgeThreshold;
+  return edgeThreshold; // Returns decimal (0.05-0.06 typically)
 }
 
 function updateCategoryPerformance(markets = []) {
@@ -824,6 +831,12 @@ function buildPolymarketUrl(marketSlug, marketQuestion) {
 function getBaseRate(question, market = null) {
   const q = (question || '').toLowerCase();
   const categoryKey = getCategoryKey(question, market);
+  
+  // Check if dynamicCategoryPriors is actually resolved (not a Promise)
+  if (dynamicCategoryPriors instanceof Promise) {
+    log(`[WARNING] dynamicCategoryPriors is still a Promise, using static priors`, 'WARN');
+    dynamicCategoryPriors = {};
+  }
 
   // General competitor count detection for base rate calibration
   // This makes the system intelligent across all categories, not just sports
@@ -1233,7 +1246,7 @@ function validateLLMAnalysis(analysis, market) {
   const edge = Math.abs(probability - yesPrice);
 
   // 4. Reject if edge is too small (< 3%)
-  if (edge < 0.03) {
+  if (edge < 0.01) {
     return { valid: false, reason: `Edge too small (${(edge * 100).toFixed(1)}%)` };
   }
 
@@ -1245,8 +1258,13 @@ function validateLLMAnalysis(analysis, market) {
     return { valid: false, reason: `Tail market requires confidence > 60% (got ${confidence}%)` };
   }
 
-  // 6. REMOVED: Entropy check (was too restrictive)
+  // 6. Entropy check - only reject extreme cases
   // High entropy markets can still be profitable if LLM has good data
+  // Only reject if entropy > 0.8 (very high uncertainty) AND confidence < 50%
+  const entropy = llmData.entropy || llmData.uncertainty || 0;
+  if (entropy > 0.8 && confidence < 50) {
+    return { valid: false, reason: `Very high entropy (${(entropy * 100).toFixed(1)}%) with low confidence (${confidence}%)` };
+  }
 
   // 7. Sanity check: probability and edge should align
   const expectedEdge = probability - yesPrice;
@@ -1821,16 +1839,27 @@ async function generateSignals(selectedMarkets) {
 
     // Calculate net edge after accounting for spread and fees
     const edgeAnalysis = computeNetEdge(llmProbability, yesPrice, orderBook || {});
-    const rawEdge = edgeAnalysis.rawEdge;        // Signed (-1 to +1)
-    const netEdge = edgeAnalysis.netEdge;        // Absolute, after costs
+    let rawEdge = edgeAnalysis.rawEdge;        // Signed (-1 to +1)
+    let netEdge = edgeAnalysis.netEdge;        // Absolute, after costs
     const direction = edgeAnalysis.direction;    // 'BUY_YES' or 'BUY_NO'
     const isExecutable = edgeAnalysis.isExecutable;
+
+    // Apply category-specific edge adjustment based on historical accuracy
+    const categoryAdjustment = getCategoryEdgeAdjustment(categoryKey);
+    const adjustedEdge = rawEdge * categoryAdjustment.adjustment;
+    rawEdge = adjustedEdge; // Use adjusted edge for all subsequent calculations
+    netEdge = Math.abs(adjustedEdge) - edgeAnalysis.executionCost; // Recalculate net edge
+    netEdge = Math.max(0, netEdge); // Ensure non-negative
+    
+    console.log(`[EDGE] ${categoryKey} adjustment: ${categoryAdjustment.adjustment}x (${categoryAdjustment.reason})`);
+    console.log(`[EDGE] Original: ${(edgeAnalysis.rawEdge * 100).toFixed(2)}% → Adjusted: ${(rawEdge * 100).toFixed(2)}%`);
 
     const categoryEdgeThreshold = getCategoryEdgeThreshold(categoryKey);
 
     // CRITICAL: Set action based on direction
+    // rawEdge and categoryEdgeThreshold are both decimals (0-1 scale)
     let action = 'SKIP_NO_TRADE';
-    if (isExecutable && Math.abs(rawEdge) > categoryEdgeThreshold) {
+    if (isExecutable && Math.abs(rawEdge) >= categoryEdgeThreshold) {
       action = direction === 'BUY_YES' ? 'EXECUTE BUY YES' : 'EXECUTE BUY NO';
     }
 
@@ -1898,15 +1927,23 @@ async function generateSignals(selectedMarkets) {
       }
     }
 
-    const adaptiveLearning = applyAdaptiveLearning(categoryKey, action, absEdge, confidencePercent);
+    let adaptiveLearning = applyAdaptiveLearning(categoryKey, action, absEdge, confidencePercent);
     
     // DEBUG: Adaptive learning logging
-    log(`[DEBUG] Adaptive Learning Input: cat=${categoryKey}, action=${action}, edge=${absEdge}, conf=${confidencePercent}`, 'INFO');
-    log(`[DEBUG] Adaptive Learning Output: ${JSON.stringify(adaptiveLearning)}`, 'INFO');
+    log(`[DEBUG] Adaptive Learning Input: cat=${categoryKey}, action=${action}, edge=${absEdge.toFixed(4)}, conf=${confidencePercent}`, 'DEBUG');
+    log(`[DEBUG] Adaptive Learning Output: ${JSON.stringify(adaptiveLearning)}`, 'DEBUG');
     
-    if (!adaptiveLearning || typeof adaptiveLearning !== 'object') {
+    // Defensive validation of adaptive learning result
+    if (!adaptiveLearning || typeof adaptiveLearning !== 'object' ||
+        typeof adaptiveLearning.adjustedEdge !== 'number' ||
+        typeof adaptiveLearning.adjustedConfidence !== 'number') {
       log(`[WARNING] Adaptive learning failed for ${market.id}, using raw values`, 'WARN');
-      adaptiveLearning = { adjustedEdge: rawEdge, adjustedConfidence: confidencePercent };
+      adaptiveLearning = { 
+        adjustedEdge: absEdge, 
+        adjustedConfidence: confidencePercent,
+        sampleSize: 0,
+        message: 'Fallback - adaptive learning unavailable'
+      };
     }
     const effectiveEdge = typeof adaptiveLearning?.adjustedEdge === 'number' ? adaptiveLearning.adjustedEdge : rawEdge;
     const adjustedConfidence = clamp(
@@ -1954,6 +1991,9 @@ async function generateSignals(selectedMarkets) {
     const cluster = getClusterForCategory(market.category);
 
     // Create signal with CORRECT edge values (using adaptive learning adjustments)
+    // Create signal with CORRECT edge values (using adaptive learning adjustments)
+    // UNITS: edgeScore/rawEdge/effectiveEdge are PERCENTAGES (0-100)
+    // UNITS: edgeScoreDecimal/rawEdgeDecimal are DECIMALS (0-1)
     const signal = {
       marketId: market.id,
       marketSlug: market.slug,
@@ -1962,8 +2002,10 @@ async function generateSignals(selectedMarkets) {
       price: yesPrice,
       confidenceClass: normalizedConfidence >= 0.7 ? 'HIGH' : normalizedConfidence >= 0.4 ? 'MEDIUM' : 'LOW',
       intentExposure,
-      edgeScore: Math.abs(effectiveEdge) * 100,       // Use adaptive-adjusted edge (absolute)
-      rawEdge: rawEdge * 100,                         // Keep original signed edge for reference
+      edgeScore: Math.abs(effectiveEdge) * 100,       // PERCENTAGE (0-100)
+      edgeScoreDecimal: Math.abs(effectiveEdge),      // DECIMAL (0-1) for threshold comparisons
+      rawEdge: rawEdge * 100,                         // PERCENTAGE - signed for reference
+      rawEdgeDecimal: rawEdge,                        // DECIMAL - signed
       confidenceScore: Number((adjustedConfidence * 100).toFixed(1)),
       tradeDecision: action,
       modelConfidence: Number((adjustedConfidence * 100).toFixed(1)),
@@ -2025,17 +2067,21 @@ async function generateSignals(selectedMarkets) {
 
     if (DATA_RICH_CATEGORIES.includes(categoryKey)) {
       // For data-rich categories, reduce threshold based on edge strength
-      // High edge (>5%) allows lower conviction threshold
+      // High edge (>=10%) allows lower conviction threshold
       const edge = absEdge; // Use the already-calculated absolute edge
-      if (edge > EDGE_THRESHOLD_HIGH) confidenceThreshold = 0.35; // 35% threshold
-      else if (edge > EDGE_THRESHOLD_MEDIUM_HIGH) confidenceThreshold = 0.40; // 40% threshold
-      else if (edge > MEDIUM_EDGE_THRESHOLD) confidenceThreshold = 0.45; // 45% threshold
+      if (edge >= EDGE_THRESHOLD_HIGH) confidenceThreshold = 0.35; // 35% threshold
+      else if (edge >= EDGE_THRESHOLD_MEDIUM_HIGH) confidenceThreshold = 0.40; // 40% threshold
+      else if (edge >= MEDIUM_EDGE_THRESHOLD) confidenceThreshold = 0.45; // 45% threshold
       else confidenceThreshold = DEFAULT_CONFIDENCE_THRESHOLD; // Still need 50% for low edge
     }
 
-    const debugDecision = (Math.abs(rawEdge) >= categoryEdgeThreshold) ||
-                          (signal.intentExposure >= 0.01 && boostedConfidenceScore >= confidenceThreshold && Math.abs(rawEdge) >= 0.01)
-                          ? 'EXECUTABLE' : 'DROPPED';
+    // Debug decision should match shouldExecuteTrade logic
+    const edgeDecimal = Math.abs(effectiveEdge);
+    const meetsEdgeThreshold = edgeDecimal >= categoryEdgeThreshold;
+    const meetsNetEdge = netEdge >= MIN_NET_EDGE;
+    const meetsExposure = signal.intentExposure >= PROBE_EXPOSURE;
+    const meetsValidTier = ['STRONG_TRADE', 'SMALL_TRADE', 'PROBE'].includes(signal.tradeTier);
+    const debugDecision = (meetsEdgeThreshold && meetsNetEdge && meetsExposure && meetsValidTier) ? 'EXECUTABLE' : 'DROPPED';
 
     // Debug log with CORRECT values
     log(`[DEBUG] ${market.question.slice(0, 50)} | ` +
@@ -2043,7 +2089,7 @@ async function generateSignals(selectedMarkets) {
         `Net ${(netEdge * 100).toFixed(2)}% | ` +
         `Exposure ${(signal.intentExposure * 100).toFixed(2)}% | ` +
         `Conf ${signal.confidenceScore.toFixed(1)}% | ` +
-        `Tier ${signal.tradeTier} → ${debugDecision}`, 'DEBUG');
+        `Tier ${signal.tradeTier} â†’ ${debugDecision}`, 'DEBUG');
 
     if (process.env.SAFE_MODE !== 'true' && ['STRONG_TRADE', 'SMALL_TRADE', 'PROBE'].includes(signal.tradeTier)) {
       const tweet = ` AGENT ZIGMA SIGNAL
@@ -2101,12 +2147,19 @@ function shouldExecuteTrade(signal, market) {
   const categoryKey = getCategoryKey(market.question, market);
   const categoryEdgeThreshold = getCategoryEdgeThreshold(categoryKey);
 
-  if (Math.abs(signal.edgeScore) < categoryEdgeThreshold) return false;
+  // FIX: Convert edgeScore from percentage to decimal for comparison
+  // edgeScore is stored as percentage (0-100), threshold is decimal (0-1)
+  const edgeScoreDecimal = signal.edgeScoreDecimal ?? (Math.abs(signal.edgeScore) / 100);
+  if (edgeScoreDecimal < categoryEdgeThreshold) {
+    log(`[SKIP] Edge ${(edgeScoreDecimal * 100).toFixed(2)}% below threshold ${(categoryEdgeThreshold * 100).toFixed(2)}%`, 'DEBUG');
+    return false;
+  }
 
-  // Check minimum net edge after costs (5% threshold)
-  const netEdge = signal.effectiveEdge || 0;
-  if (netEdge < MIN_NET_EDGE * 100) {
-    log(`[SKIP] Net edge too small: ${netEdge.toFixed(2)}% (minimum: ${(MIN_NET_EDGE * 100).toFixed(2)}%)`);
+  // Check minimum net edge after costs (1.5% threshold)
+  // effectiveEdge is stored as percentage (0-100)
+  const netEdgePercent = signal.effectiveEdge || 0;
+  if (netEdgePercent < MIN_NET_EDGE * 100) {
+    log(`[SKIP] Net edge too small: ${netEdgePercent.toFixed(2)}% (minimum: ${(MIN_NET_EDGE * 100).toFixed(2)}%)`, 'DEBUG');
     return false;
   }
 
@@ -2258,7 +2311,7 @@ async function runCycle() {
     const enriched = Array.isArray(result) ? result : [];
     log(`FETCH SUMMARY | total=${enriched.length}`);
     if (!enriched.length) {
-      log("No markets fetched — skipping analysis cycle");
+      log("No markets fetched â€” skipping analysis cycle");
       isRunning = false;
       return;
     }
@@ -2281,8 +2334,8 @@ async function runCycle() {
     }
     
     // Use safe update function to prevent race conditions
-    safeUpdateCategoryPerformance(highValueMarkets);
-    dynamicCategoryPriors = safeBuildDynamicCategoryPriors(highValueMarkets);
+    await safeUpdateCategoryPerformance(highValueMarkets);
+    dynamicCategoryPriors = await safeBuildDynamicCategoryPriors(highValueMarkets);
 
     highValueMarkets.forEach(m => {
       const prices = getYesNoPrices(m);
@@ -2293,7 +2346,7 @@ async function runCycle() {
         m.category = classifyMarket(m.question);
 
         if (Math.abs((m.yesPrice + m.noPrice) - 1) > 0.01) {
-          log(`ARBITRAGE ALERT: ${m.question} YES+NO ≠1 (vig: ${Math.abs((m.yesPrice + m.noPrice) - 1).toFixed(4)})`);
+          log(`ARBITRAGE ALERT: ${m.question} YES+NO â‰ 1 (vig: ${Math.abs((m.yesPrice + m.noPrice) - 1).toFixed(4)})`);
         }
 
         if (!m.startDateIso) {
@@ -2395,7 +2448,7 @@ async function runCycle() {
       posts: signalsGenerated
     });
 
-    log("✅ Cycle complete");
+    log("âœ… Cycle complete");
   } catch (error) {
     log(`CRITICAL CYCLE ERROR: ${error.message}\n${error.stack}`, 'ERROR');
   } finally {
@@ -2408,6 +2461,7 @@ async function main() {
     log("Agent Zigma starting...");
     startPolling?.();
     startServer?.();
+    startResolutionTracker(); // Start resolution tracking
     await queuedRunCycle();
 
     const cronExpression = process.env.CRON_SCHEDULE || '0 */6 * * *';

@@ -14,31 +14,54 @@ require('dotenv').config();
 // Utility functions
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-// CORRECT edge calculation with proper direction
+// CORRECT edge calculation with proper direction and ALL costs
 function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
   // Raw edge = your probability - market price
   // Positive = market underpriced (BUY YES)
   // Negative = market overpriced (BUY NO)
   const rawEdge = llmProbability - marketPrice;
 
-  // Polymarket costs:
-  // - Trading fee: 2% on notional trade value (handled separately in Kelly)
-  // - Spread: You cross half the spread when trading
-  const estimatedSpread = orderBook?.spread || 0.01; // 1% default spread
+  // Polymarket costs breakdown:
+  // 1. Spread: You cross half the spread when trading
+  // 2. Slippage: Estimated based on order size vs book depth
+  // 3. Trading fee: ~2% (not included here, handled in Kelly)
+  
+  // Calculate spread from order book if available
+  let estimatedSpread = 0.01; // 1% default spread
+  if (orderBook && orderBook.bids && orderBook.asks && 
+      orderBook.bids.length > 0 && orderBook.asks.length > 0) {
+    const bestBid = parseFloat(orderBook.bids[0]?.price) || 0;
+    const bestAsk = parseFloat(orderBook.asks[0]?.price) || 0;
+    if (bestBid > 0 && bestAsk > 0 && bestAsk > bestBid) {
+      estimatedSpread = bestAsk - bestBid;
+    }
+  } else if (typeof orderBook?.spread === 'number') {
+    estimatedSpread = orderBook.spread;
+  }
+  
   const spreadCost = estimatedSpread / 2; // You only cross half the spread
-
-  // Net edge after spread cost (trading fee handled in Kelly calculation)
-  const netEdge = Math.abs(rawEdge) - spreadCost;
+  const slippageCost = 0.003; // Estimated 0.3% slippage for typical trade sizes
+  
+  // Total execution cost (excluding fee which is handled elsewhere)
+  const executionCost = spreadCost + slippageCost;
+  
+  // Net edge after execution costs
+  const netEdge = Math.abs(rawEdge) - executionCost;
 
   // Determine direction
   const direction = rawEdge > 0 ? 'BUY_YES' : 'BUY_NO';
 
+  // Minimum executable edge: must cover costs + provide profit margin
+  const minExecutableEdge = 0.01; // 1% minimum after costs
+
   return {
     rawEdge,           // Signed edge (-1 to +1)
-    netEdge,           // Absolute edge after costs
+    netEdge: Math.max(0, netEdge), // Absolute edge after costs (floor at 0)
     direction,         // Trade direction
-    isExecutable: netEdge > 0.005, // 0.5% minimum net edge
+    isExecutable: netEdge >= minExecutableEdge,
     spreadCost,
+    slippageCost,
+    executionCost,
     estimatedSpread
   };
 }
@@ -220,12 +243,38 @@ async function getLLMClient() {
 
 // Safe LLM Parse with fallback (NEW: Added to fix conf=0 bug)
 function safeParseLLM(output) {
+  if (!output || typeof output !== 'string') {
+    console.error('[PARSE] Invalid output type:', typeof output);
+    return { revised_prior: 0.5, confidence: 40, narrative: 'Parse error: invalid input' };
+  }
+  
   try {
     // Sanitize input to prevent injection attacks
     const sanitized = output.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
-    const json = JSON.parse(sanitized);
-    if (json.confidence && json.confidence > 0) {
-      console.log(`[PARSE] Successful JSON parse: confidence=${json.confidence}`);
+    
+    // Try to extract JSON from markdown code blocks if present
+    let jsonStr = sanitized;
+    const codeBlockMatch = sanitized.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (codeBlockMatch) {
+      jsonStr = codeBlockMatch[1].trim();
+    }
+    
+    // Try to find JSON object in the response
+    const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonStr = jsonMatch[0];
+    }
+    
+    const json = JSON.parse(jsonStr);
+    
+    // Validate required fields
+    if (typeof json.confidence === 'number' && json.confidence > 0) {
+      console.log(`[PARSE] Successful JSON parse: confidence=${json.confidence}, revised_prior=${json.revised_prior}`);
+      return json;
+    } else if (json.revised_prior !== undefined) {
+      // Has probability but missing/invalid confidence
+      console.log(`[PARSE] JSON has revised_prior but invalid confidence, using default`);
+      json.confidence = 50;
       return json;
     }
   } catch (e) {
@@ -253,7 +302,7 @@ function safeParseLLM(output) {
     }
   }
 
-  const rawConf = confMatch ? parseInt(confMatch[1]) : 60;
+  const rawConf = confMatch ? parseInt(confMatch[1]) : 40; // Conservative default
   const parsed = {
     revised_prior: priorMatch ? parseFloat(priorMatch[1]) : 0.5,
     confidence: Math.max(1, Math.min(100, rawConf)), // Enforce [1, 100]
@@ -344,7 +393,7 @@ Example 4: "Will the Knicks make the NBA Playoffs?" (Strong team, good record)
 ANALYSIS STEPS:
 Step 1: Calculate base rate prior (historical YES rate for this category)
 Step 2: Analyze news headlines for bullish/bearish signals
-Step 3: Adjust base rate by news sentiment (max ±20%)
+Step 3: Adjust base rate by news sentiment (max Â±20%)
 Step 4: Compare to market price - if significantly different, explain why
 Step 5: Set confidence based on evidence quality (high evidence = high confidence)
 
@@ -373,7 +422,7 @@ function buildEnhancedSystemPrompt(context = {}) {
     .replace('[insert market.resolutionCriteria]', context.resolutionCriteria ?? 'No resolution criteria available.');
 }
 
-const BASIC_SYSTEM_PROMPT = `You are the Agent Zigma — a neutral, analytical observer of prediction market price and volume movement. Your purpose is to summarize market movement and liquidity signals; you must NOT make forecasts, probabilities, or predictions about future outcomes. Use only data provided in the input. Output short, factual, consistent lines that are easily readable on X and in an on-chain Deep Dive.
+const BASIC_SYSTEM_PROMPT = `You are the Agent Zigma â€” a neutral, analytical observer of prediction market price and volume movement. Your purpose is to summarize market movement and liquidity signals; you must NOT make forecasts, probabilities, or predictions about future outcomes. Use only data provided in the input. Output short, factual, consistent lines that are easily readable on X and in an on-chain Deep Dive.
 
 Rules:
 - Do NOT predict future outcomes.
@@ -383,7 +432,7 @@ Rules:
 - Prefer concise bullet-style sentences for X, and a multi-paragraph expanded explanation for the Deep Dive.
 
 Output formats:
-- X (tweet): A single line that starts with an emoji status (e.g., 🟢/🟡/🔴), a one-sentence title (market), then 1-2 fact phrases (e.g., "YES up 9.6% in 1h | Volume spike: $1.2M"). End with Polymarket link.
+- X (tweet): A single line that starts with an emoji status (e.g., ðŸŸ¢/ðŸŸ¡/ðŸ”´), a one-sentence title (market), then 1-2 fact phrases (e.g., "YES up 9.6% in 1h | Volume spike: $1.2M"). End with Polymarket link.
 - Deep Dive: JSON object with keys: marketId, title, summary, metrics, contextNotes, timestamp.`;
 
 function buildDecreePrompt(markets) {
@@ -466,7 +515,7 @@ Instructions:
 - Keep narrative concise (<100 words), citing specific news or data points.
 - Extract 3-5 most relevant news sources with titles, sources, dates, and relevance levels.
 
-Return ONLY the JSON object—no prose or extra text.`;
+Return ONLY the JSON objectâ€”no prose or extra text.`;
 }
 
 // Calculate base rate prior for LLM context
@@ -747,7 +796,7 @@ async function generateDecrees(markets) {
     if (USE_MOCK || PROVIDER === 'mock') {
       console.log('[MOCK] Generating mock decrees for testing');
       const topMarket = markets[0] || {};
-      const mockXDecree = `🟢 ${topMarket.question?.substring(0, 50) || 'Market'}: YES up ${(Math.random() * 10).toFixed(1)}% | Volume: $${(Math.random() * 1000000).toLocaleString()} | Polymarket link`;
+      const mockXDecree = `ðŸŸ¢ ${topMarket.question?.substring(0, 50) || 'Market'}: YES up ${(Math.random() * 10).toFixed(1)}% | Volume: $${(Math.random() * 1000000).toLocaleString()} | Polymarket link`;
 
       const mockDeepDive = markets.slice(0, 5).map((market, i) => ({
         marketId: market.id || `market_${i}`,
@@ -827,7 +876,10 @@ async function generateEnhancedAnalysis(marketData) {
     (orderBook.asks?.slice(0, 10).reduce((sum, a) => sum + (parseFloat(a.size) || 0), 0) || 0)
   : 0;
   const liquidityScore = spreadPercentage > 0 ? Math.max(0, Math.round(100 - spreadPercentage * 2)) : 50; // Simple score
-  const kellyFraction = calculateKelly(marketData.yesPrice || 0.5, marketData.liquidity || 0); // Assume from market_analysis.js
+  // Kelly calculation: (prob, price, edge, liquidity)
+  // Use market price as both prob and price for initial structural estimate
+  const marketPriceForKelly = marketData.yesPrice || 0.5;
+  const kellyFraction = calculateKelly(marketPriceForKelly, marketPriceForKelly, 0, marketData.liquidity || 10000);
 
   // Generate LLM prompt
   const systemPrompt = buildEnhancedSystemPrompt({
@@ -879,7 +931,7 @@ async function generateEnhancedAnalysis(marketData) {
 
         // Adjust probability based on sentiment
         // Positive sentiment = more likely YES, Negative = more likely NO
-        const sentimentAdjustment = sentimentScore * 0.1; // Max ±10% adjustment
+        const sentimentAdjustment = sentimentScore * 0.1; // Max Â±10% adjustment
         fallbackProbability = Math.max(0.05, Math.min(0.95, basePrior + sentimentAdjustment));
 
         fallbackReasoning += `. News sentiment: ${sentimentScore > 0.3 ? 'bullish' : sentimentScore < -0.3 ? 'bearish' : 'neutral'} (${sentimentScore.toFixed(2)})`;
@@ -914,18 +966,36 @@ async function generateEnhancedAnalysis(marketData) {
     if (liquidityUsd > 50000) fallbackConfidence += 5;
     if (spread < 0.02) fallbackConfidence += 5;
 
+    // Calculate edge for fallback
+    const fallbackEdge = fallbackProbability - (marketData.yesPrice || 0.5);
+    const fallbackNetEdge = Math.max(0, Math.abs(fallbackEdge) - 0.01); // Account for spread
+    
     return {
       marketId: marketData.id,
       question: marketData.question,
       confidence: fallbackConfidence,
       action: fallbackAction,
       probability: fallbackProbability,
+      originalProbability: fallbackProbability,
+      adjustedProbability: fallbackProbability,
       revised_prior: fallbackProbability,
       reasoning: fallbackReasoning,
-      sentimentScore: news && news.length > 0 ? (fallbackProbability - basePrior) * 10 : 0,
+      sentimentScore: news && news.length > 0 ? Math.max(-1, Math.min(1, (fallbackProbability - basePrior) * 5)) : 0,
       uncertainty: 0.5,
       generatedAt: Date.now(),
-      fallback: true
+      fallback: true,
+      kellyFraction: 0.01, // Conservative for fallback
+      baseEffectiveEdge: fallbackNetEdge * 100,
+      effectiveEdge: fallbackNetEdge * 100,
+      entropy: 0.5,
+      edge: {
+        raw: fallbackEdge,
+        rawPercent: fallbackEdge * 100,
+        net: fallbackNetEdge,
+        netPercent: fallbackNetEdge * 100,
+        direction: fallbackEdge > 0 ? 'BUY_YES' : 'BUY_NO',
+        isExecutable: fallbackNetEdge >= 0.01
+      }
     };
   };
 
@@ -1020,25 +1090,46 @@ async function generateEnhancedAnalysis(marketData) {
       return fallback;
     };
 
-    // Extract probability (revised_prior) from LLM - TRUST LLM's value
-    const llmProbability = clamp(
-      ensureNumber(result.revised_prior, marketData.yesPrice),
-      0.01,
-      0.99
-    );
+    // Extract probability (revised_prior) from LLM - TRUST LLM's value but validate
+    let rawLlmProb = ensureNumber(result.revised_prior, null);
+    
+    // Validate LLM probability is reasonable
+    if (rawLlmProb === null || rawLlmProb <= 0 || rawLlmProb >= 1) {
+      // LLM returned invalid probability, use market price as fallback
+      console.log(`[WARNING] Invalid LLM probability: ${rawLlmProb}, falling back to market price`);
+      rawLlmProb = marketData.yesPrice || 0.5;
+    }
+    
+    // Check for extreme divergence from market (potential hallucination)
+    const marketPrice = marketData.yesPrice || 0.5;
+    const divergence = Math.abs(rawLlmProb - marketPrice);
+    if (divergence > 0.4) {
+      // LLM probability diverges >40% from market - likely hallucination
+      // Dampen towards market price
+      console.log(`[WARNING] Large divergence (${(divergence * 100).toFixed(1)}%) from market - dampening`);
+      rawLlmProb = marketPrice + (rawLlmProb - marketPrice) * 0.5; // 50% dampen
+    }
+    
+    const llmProbability = clamp(rawLlmProb, 0.01, 0.99);
 
     // Extract confidence (certainty) from LLM - normalize to 0-1 scale
     let llmConfidence = result.confidence;
-    if (typeof llmConfidence === 'number') {
+    if (typeof llmConfidence === 'number' && Number.isFinite(llmConfidence)) {
       if (llmConfidence > 1) {
         // Confidence is in percentage (1-100), convert to decimal
         llmConfidence = Math.min(100, Math.max(1, llmConfidence)) / 100;
+      } else if (llmConfidence > 0) {
+        // Already in decimal scale (0-1), ensure bounds
+        llmConfidence = Math.min(1, Math.max(0.01, llmConfidence));
       } else {
-        // Already in decimal scale, ensure bounds
-        llmConfidence = Math.min(1, Math.max(0, llmConfidence));
+        // Zero or negative - invalid, use conservative default
+        console.log(`[WARNING] Invalid LLM confidence: ${llmConfidence}, using 0.4`);
+        llmConfidence = 0.4;
       }
     } else {
-      llmConfidence = 0.5; // Default fallback
+      // Non-numeric - use conservative default
+      console.log(`[WARNING] Non-numeric LLM confidence: ${typeof llmConfidence}, using 0.4`);
+      llmConfidence = 0.4; // Conservative default (was 0.5)
     }
 
     // Extract sentiment score from LLM result or calculate from news
@@ -1051,28 +1142,41 @@ async function generateEnhancedAnalysis(marketData) {
     // DO NOT recalculate probability - trust LLM's revised_prior
     const winProb = llmProbability;
 
-    // Reduced sentiment adjustment to prevent systematic bias - more conservative thresholds
+    // Sentiment adjustment - ONLY for position sizing, NOT for edge calculation
+    // Guard: only apply if sentiment is strong AND consistent across multiple sources
     let adjustedWinProb = winProb;
-    if (Math.abs(sentimentScore) > 0.5 && news.length >= 5) { // Higher threshold, more news required
-      const sentimentAdjustment = sentimentScore * 0.02; // Reduced from 0.05 to 0.02 (max ±2%)
+    const strongSentiment = Math.abs(sentimentScore) > 0.6;
+    const sufficientSources = news.length >= 3;
+    const sentimentConsistent = news.length > 0 && 
+      news.filter(n => {
+        const text = ((n.title || '') + ' ' + (n.snippet || '')).toLowerCase();
+        const positive = /surge|rise|gain|bullish|positive|win|success/i.test(text);
+        const negative = /fall|drop|crash|bearish|negative|lose|fail/i.test(text);
+        return (sentimentScore > 0 && positive) || (sentimentScore < 0 && negative);
+      }).length >= Math.ceil(news.length * 0.6); // 60% of sources must agree
+    
+    if (strongSentiment && sufficientSources && sentimentConsistent) {
+      const sentimentAdjustment = sentimentScore * 0.015; // Max ±1.5% adjustment
       adjustedWinProb = Math.max(0.01, Math.min(0.99, winProb + sentimentAdjustment));
+      console.log(`[SENTIMENT] Applied ${(sentimentAdjustment * 100).toFixed(2)}% adjustment (score=${sentimentScore.toFixed(2)}, sources=${news.length})`);
     }
 
     // Calculate edge with spread and fee adjustments
     const pMarket = marketData.yesPrice || 0.5;
-    const edgeAnalysis = computeNetEdge(adjustedWinProb, pMarket, orderBook || {});
+    const edgeAnalysis = computeNetEdge(winProb, pMarket, orderBook || {}); // Use RAW probability for edge
     const rawEdge = edgeAnalysis.rawEdge;
     const netEdge = edgeAnalysis.netEdge; // Use net edge consistently throughout
     const direction = edgeAnalysis.direction;
 
     // Set action based on direction
     let action = 'HOLD';
-    if (netEdge > 0.005) { // Use netEdge for execution decision
+    if (netEdge >= 0.01) { // Use netEdge for execution decision (1% minimum)
       action = direction === 'BUY_YES' ? 'BUY YES' : 'BUY NO';
     }
 
-    // Position sizing
-    const baseKelly = calculateKelly(adjustedWinProb, pMarket, 0.01, marketData.liquidity || 10000);
+    // Position sizing - use RAW probability, not sentiment-adjusted
+    // Kelly formula: f* = (bp - q) / b where b=odds, p=win prob, q=1-p
+    const baseKelly = calculateKelly(winProb, pMarket, 0.01, marketData.liquidity || 10000);
     const exposure = Math.min(0.05, Math.max(0, baseKelly));
 
     // Calculate entropy for additional context
@@ -1122,8 +1226,9 @@ async function generateEnhancedAnalysis(marketData) {
     const baseEffectiveEdge = Number((netEdge * 100).toFixed(2)); // Use netEdge for consistency
 
     const structuredAnalysis = {
-      probability: adjustedWinProb, // Use sentiment-adjusted probability
-      originalProbability: winProb, // Preserve original LLM probability
+      probability: winProb, // Use RAW LLM probability for edge calculation
+      adjustedProbability: adjustedWinProb, // Sentiment-adjusted for reference only
+      originalProbability: winProb, // Preserve original LLM probability (same as probability)
       action,
       confidence: Math.round(finalConfidence),
       reasoning,
@@ -1140,15 +1245,34 @@ async function generateEnhancedAnalysis(marketData) {
         calibrationSampleSize: adaptiveLearning.sampleSize || 0,
         message: 'Calibration skipped (adaptive learning in control)'
       },
-      revised_prior: ensureNumber(result.revised_prior, llmProbability),
+      revised_prior: llmProbability, // Use validated LLM probability
       uncertainty: ensureNumber(result.uncertainty, entropy),
       newsSources: Array.isArray(result.newsSources) && result.newsSources.length > 0
         ? result.newsSources
-        : extractNewsSourcesFromNews(news)
+        : extractNewsSourcesFromNews(news),
+      // Edge fields - all in percentage for display, decimal for calculation
+      edge: {
+        raw: rawEdge,                    // Decimal, signed (-1 to 1)
+        rawPercent: rawEdge * 100,       // Percentage, signed
+        net: netEdge,                    // Decimal, absolute
+        netPercent: netEdge * 100,       // Percentage, absolute
+        direction: direction,
+        spreadCost: edgeAnalysis.spreadCost,
+        executionCost: edgeAnalysis.executionCost || edgeAnalysis.spreadCost,
+        isExecutable: edgeAnalysis.isExecutable
+      }
     };
     structuredAnalysis.baseEffectiveEdge = baseEffectiveEdge;
     structuredAnalysis.effectiveEdge = baseEffectiveEdge;
     structuredAnalysis.reasoning += ` Recommended Position: ${(exposure * 100).toFixed(1)}% of bankroll.`;
+    
+    // Log key metrics for debugging
+    console.log(`[ANALYSIS] ${marketData.question?.slice(0, 40)}... | ` +
+      `LLM=${(llmProbability * 100).toFixed(1)}% | ` +
+      `Market=${(pMarket * 100).toFixed(1)}% | ` +
+      `Edge=${(rawEdge * 100).toFixed(2)}% (${direction}) | ` +
+      `Net=${(netEdge * 100).toFixed(2)}% | ` +
+      `Conf=${Math.round(finalConfidence)}%`);
 
     return structuredAnalysis;
 }
