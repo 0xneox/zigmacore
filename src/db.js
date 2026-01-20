@@ -412,8 +412,8 @@ function getDbStats() {
 function saveAnalysisCache(marketId, lastPrice, reasoning, confidence) {
   try {
     const db = initDb();
-    const insert = db.prepare('INSERT OR REPLACE INTO analysis_cache (market_id, last_price, reasoning, confidence) VALUES (?, ?, ?, ?)');
-    insert.run(marketId, lastPrice, reasoning, confidence);
+    const insert = db.prepare('INSERT OR REPLACE INTO analysis_cache (market_id, last_price, reasoning, confidence, timestamp) VALUES (?, ?, ?, ?, ?)');
+    insert.run(marketId, lastPrice, reasoning, confidence, Date.now());
   } catch (error) {
     console.error('[DB] Failed to save analysis cache:', error.message);
   }

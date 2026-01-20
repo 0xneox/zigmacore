@@ -11,11 +11,19 @@ const { getUserBenchmark } = require('./benchmarking');
 
 // Create a custom axios instance with retry logic
 const http = axios.create({
-  timeout: parseInt(process.env.REQUEST_TIMEOUT) || 20000,  // Increased timeout to 20 seconds
+  timeout: parseInt(process.env.REQUEST_TIMEOUT) || 30000,  // Increased timeout to 30 seconds
   headers: {
-    'User-Agent': 'Oracle-of-Poly/1.0',
-    'Accept': 'application/json',
-    'Cache-Control': 'no-cache'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-site',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
   }
 });
 
@@ -37,6 +45,8 @@ axiosRetry(http, {
 
 const GAMMA = process.env.GAMMA_API_URL || 'https://gamma-api.polymarket.com';
 const DATA_API = process.env.DATA_API_URL || 'https://data-api.polymarket.com';
+const CLOB_API = process.env.CLOB_API_URL || 'https://clob.polymarket.com';
+const TOKEN_API = process.env.TOKEN_API_URL || 'https://api.polymarket.com/auth/token';
 const POLYMARKET_FEE = parseFloat(process.env.POLYMARKET_FEE) || 0.02;
 const TIMESTAMP_SECONDS_THRESHOLD = 10000000000;
 const MAX_ACTIVITY_ITEMS = 20000;
@@ -219,6 +229,98 @@ async function fetchTags() {
     console.error('❌ Error fetching tags:', err.message);
     return [];
   }
+}
+
+/**
+ * Get authentication token for CLOB API
+ */
+async function getAuthToken() {
+  try {
+    console.log('[AUTH] CLOB API temporarily disabled to focus on mid-range market discovery');
+    console.log('[AUTH] Using demo mode for development');
+    return 'demo-token-for-development';
+  } catch (error) {
+    console.error('❌ Failed to get auth token:', error.message);
+    return 'demo-token-for-development';
+  }
+}
+
+/**
+ * Fetch order book for specific market from CLOB API
+ */
+async function fetchOrderBook(marketId) {
+  try {
+    const token = await getAuthToken();
+    if (!token) {
+      console.error('❌ No auth token available');
+      return null;
+    }
+
+    const response = await http.get(`${CLOB_API}/books/${marketId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error(`❌ Error fetching order book for ${marketId}:`, error.message);
+    return null;
+  }
+}
+
+/**
+ * Calculate mid price from order book
+ */
+function calculateMidPrice(orders, outcome) {
+  if (!orders || orders.length === 0) return null;
+  
+  const relevantOrders = orders.filter(order => 
+    order.outcome === outcome || 
+    (order.token && order.token.outcome === outcome)
+  );
+  
+  if (relevantOrders.length === 0) return null;
+  
+  // Use best bid/ask for mid price
+  const bestOrder = relevantOrders[0];
+  return parseFloat(bestOrder.price);
+}
+
+/**
+ * Calculate spread from order book
+ */
+function calculateSpread(orderBook) {
+  if (!orderBook || !orderBook.bids || !orderBook.asks) return null;
+  
+  const bestBid = orderBook.bids[0]?.price;
+  const bestAsk = orderBook.asks[0]?.price;
+  
+  if (!bestBid || !bestAsk) return null;
+  
+  return parseFloat(bestAsk) - parseFloat(bestBid);
+}
+
+/**
+ * Calculate liquidity from order book depth
+ */
+function calculateLiquidity(orderBook, depth = 5) {
+  if (!orderBook) return 0;
+  
+  let totalLiquidity = 0;
+  
+  // Sum liquidity from top N levels of bids and asks
+  if (orderBook.bids) {
+    for (let i = 0; i < Math.min(depth, orderBook.bids.length); i++) {
+      totalLiquidity += parseFloat(orderBook.bids[i].size || 0);
+    }
+  }
+  
+  if (orderBook.asks) {
+    for (let i = 0; i < Math.min(depth, orderBook.asks.length); i++) {
+      totalLiquidity += parseFloat(orderBook.asks[i].size || 0);
+    }
+  }
+  
+  return totalLiquidity;
 }
 
 /**
@@ -825,6 +927,11 @@ module.exports = {
   fetchMarketById,
   fetchUserPositions,
   fetchUserActivity,
+  fetchOrderBook,
+  getAuthToken,
+  calculateMidPrice,
+  calculateSpread,
+  calculateLiquidity,
   fetchPublicProfile,
   fetchHoldingsValue,
   fetchUserProfile

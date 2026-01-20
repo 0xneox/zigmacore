@@ -113,7 +113,7 @@ const { calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./clob_price_cache');
 const { startServer, updateHealthMetrics } = require('../server');
 const { crossReferenceNews } = require('./processor');
-const { startResolutionTracker, getCategoryEdgeAdjustment } = require('./resolution_tracker');
+const { startResolutionTracker } = require('./resolution_tracker');
 
 // ============================================================
 // NEW MODULE INTEGRATIONS
@@ -230,18 +230,18 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PROBABILITY_FLOOR = 0.0001;
 const POLYMARKET_BASE_URL = 'https://polymarket.com';
 
-const EDGE_THRESHOLD = 0.05; // 5% edge threshold (decimal)
+const EDGE_THRESHOLD = 0.02; // 2% edge threshold (decimal)
 
 const UNCERTAINTY_MARGIN = 0.15; // Margin for confidence intervals
-const LOW_LIQUIDITY_THRESHOLD = 50000; // Below this is considered low liquidity
-const HIGH_LIQUIDITY_THRESHOLD = 100000; // Above this is considered high liquidity
-const MAX_EXPOSURE_LOW_LIQUIDITY = 0.03; // 3% max exposure for low liquidity
-const MAX_EXPOSURE_HIGH_LIQUIDITY = 0.05; // 5% max exposure for high liquidity
+const LOW_LIQUIDITY_THRESHOLD = 20000;   // was 50000
+const HIGH_LIQUIDITY_THRESHOLD = 50000;  // was 100000
+const MAX_EXPOSURE_LOW_LIQUIDITY = 0.02; // was 0.03
+const MAX_EXPOSURE_HIGH_LIQUIDITY = 0.04; // was 0.05
 const PROBE_EDGE_THRESHOLD = 0.02; // Minimum edge for probe trades
 const STRONG_TRADE_EXPOSURE = 0.02; // Minimum exposure for strong trades
 const SMALL_TRADE_EXPOSURE = 0.005; // Minimum exposure for small trades
 const PROBE_EXPOSURE = 0.001; // Minimum exposure for probe trades (INCREASED from 0.0005)
-const MIN_NET_EDGE = 0.008; // 0.8% minimum net edge after costs (REDUCED from 1.5%)
+const MIN_NET_EDGE = 0.005; // 0.5% minimum net edge (was 0.8%)
 const CONVICTION_MULTIPLIER_MIN = 0.85; // Minimum conviction multiplier
 const HIGH_EDGE_THRESHOLD = 0.12; // Edge above which conviction doesn't matter
 const MEDIUM_EDGE_THRESHOLD = 0.06; // Edge above which conviction penalty is reduced
@@ -470,20 +470,20 @@ const PROBABILITY_CAPS = {
 };
 
 const CATEGORY_EDGE_CONFIG = {
-  SPORTS_FUTURES: { base: 0.01, low: 0.008, hiLiquidity: 150000 },
-  POLITICS: { base: 0.015, low: 0.01, hiLiquidity: 120000 },
-  MACRO: { base: 0.015, low: 0.01, hiLiquidity: 100000 },
-  CRYPTO: { base: 0.015, low: 0.01, hiLiquidity: 90000 },
-  TECH: { base: 0.015, low: 0.01, hiLiquidity: 80000 },
-  TECH_ADOPTION: { base: 0.015, low: 0.01, hiLiquidity: 80000 },
-  ETF_APPROVAL: { base: 0.015, low: 0.01, hiLiquidity: 80000 },
-  ENTERTAINMENT: { base: 0.02, low: 0.015, hiLiquidity: 60000 },
-  CELEBRITY: { base: 0.02, low: 0.015, hiLiquidity: 40000 },
-  WAR_OUTCOMES: { base: 0.02, low: 0.015, hiLiquidity: 70000 },
-  EVENT: { base: 0.02, low: 0.015, hiLiquidity: 60000 },
-  OTHER: { base: 0.02, low: 0.015, hiLiquidity: 60000 }
+  SPORTS_FUTURES: { base: 0.015, low: 0.01, hiLiquidity: 50000 },  // Reduced from 150000
+  POLITICS: { base: 0.02, low: 0.015, hiLiquidity: 50000 },       // Reduced
+  MACRO: { base: 0.02, low: 0.015, hiLiquidity: 50000 },          // Reduced
+  CRYPTO: { base: 0.02, low: 0.015, hiLiquidity: 40000 },
+  TECH: { base: 0.02, low: 0.015, hiLiquidity: 40000 },
+  TECH_ADOPTION: { base: 0.02, low: 0.015, hiLiquidity: 40000 },
+  ETF_APPROVAL: { base: 0.02, low: 0.015, hiLiquidity: 40000 },
+  ENTERTAINMENT: { base: 0.025, low: 0.02, hiLiquidity: 30000 },
+  CELEBRITY: { base: 0.03, low: 0.025, hiLiquidity: 20000 },
+  WAR_OUTCOMES: { base: 0.025, low: 0.02, hiLiquidity: 40000 },
+  EVENT: { base: 0.025, low: 0.02, hiLiquidity: 30000 },
+  OTHER: { base: 0.025, low: 0.02, hiLiquidity: 30000 }
 };
-const DEFAULT_EDGE_CONFIG = { base: 0.02, low: 0.015, hiLiquidity: 60000 };
+const DEFAULT_EDGE_CONFIG = { base: 0.025, low: 0.02, hiLiquidity: 30000 };
 
 // Meme/joke market patterns to filter out
 const MEME_MARKET_PATTERNS = [
@@ -749,24 +749,53 @@ function getStaticBucketPrior(categoryKey) {
 }
 
 /**
- * Returns edge threshold as DECIMAL (0.05 = 5%)
+ * Returns edge threshold as DECIMAL (0.02 = 2%, 0.03 = 3%)
  * Callers must ensure they compare against decimal values, not percentages
  * @param {string} categoryKey - Market category
- * @returns {number} Edge threshold as decimal (typically 0.05-0.06)
+ * @returns {number} Edge threshold as decimal (0.02-0.0345 typically)
  */
 function getCategoryEdgeThreshold(categoryKey) {
-  const categoryPerf = categoryPerformance[categoryKey];
-  let edgeThreshold = EDGE_THRESHOLD; // 0.05 = 5% as decimal
+  // Base threshold: 2% for data-rich, 3% for others
+  let edgeThreshold = DATA_RICH_CATEGORIES.includes(categoryKey) ? 0.02 : 0.03;
   
+  // Adjust based on historical performance (if available)
+  const categoryPerf = categoryPerformance[categoryKey];
   if (categoryPerf && typeof categoryPerf.emaError === 'number') {
     if (categoryPerf.emaError > 0.15) {
-      edgeThreshold *= 1.2;
-    } else if (categoryPerf.emaError > 0.10) {
-      edgeThreshold *= 1.1;
+      edgeThreshold *= 1.15; // Slightly increase for high-error categories
+    } else if (categoryPerf.emaError < 0.08) {
+      edgeThreshold *= 0.9; // Decrease for well-calibrated categories
     }
   }
   
-  return edgeThreshold; // Returns decimal (0.05-0.06 typically)
+  return edgeThreshold;
+}
+
+/**
+ * Returns edge adjustment multiplier based on historical accuracy
+ * @param {string} category - Market category
+ * @returns {number} Adjustment multiplier (0.9-1.1)
+ */
+function getCategoryEdgeAdjustment(category) {
+  const perf = categoryPerformance[category];
+  if (!perf || perf.emaError === undefined) {
+    console.log(`[EDGE] No performance data for ${category}, using 1.0x adjustment`);
+    return 1.0;
+  }
+  
+  // Dynamic adjustment based on historical accuracy
+  let adjustment = 1.0;
+  if (perf.emaError > 0.15) {
+    adjustment = 0.9; // Reduce for high-error categories
+    console.log(`[EDGE] ${category} adjustment: 0.9x (high error: ${perf.emaError.toFixed(3)})`);
+  } else if (perf.emaError < 0.08) {
+    adjustment = 1.1; // Boost for well-calibrated categories
+    console.log(`[EDGE] ${category} adjustment: 1.1x (low error: ${perf.emaError.toFixed(3)})`);
+  } else {
+    console.log(`[EDGE] ${category} adjustment: 1.0x (moderate error: ${perf.emaError?.toFixed(3) || 'undefined'})`);
+  }
+  
+  return adjustment;
 }
 
 function updateCategoryPerformance(markets = []) {
@@ -1249,12 +1278,12 @@ function validateLLMAnalysis(analysis, market) {
   const confidence = llmData.confidence || 0;
   const probability = llmData.revised_prior ?? llmData.probability ?? 0.5;
 
-  // 1. Reject if confidence is too low (but not too strict)
-  if (confidence < 20) {
+  // 1. Very low confidence is suspicious
+  if (confidence < 15) {
     return { valid: false, reason: `Confidence too low (${confidence}%)` };
   }
 
-  // 2. Validate probability is in valid range
+  // 2. Validate probability range
   if (typeof probability !== 'number' || probability < 0.01 || probability > 0.99) {
     return { valid: false, reason: 'Invalid probability value' };
   }
@@ -1263,31 +1292,20 @@ function validateLLMAnalysis(analysis, market) {
   const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
   const edge = Math.abs(probability - yesPrice);
 
-  // 4. Reject if edge is too small (< 3%)
-  if (edge < 0.01) {
+  // 4. REDUCED minimum edge for insights platform (was 1%, now 0.5%)
+  if (edge < 0.005) {
     return { valid: false, reason: `Edge too small (${(edge * 100).toFixed(1)}%)` };
   }
 
-  // 5. Check for tail markets (extreme odds) - require strong evidence
-  const evidenceCount = (llmData.evidence?.length || 0) +
-                       (llmData.newsSources?.length || 0);
-
-  if ((yesPrice > 0.95 || yesPrice < 0.05) && confidence < 60) {
-    return { valid: false, reason: `Tail market requires confidence > 60% (got ${confidence}%)` };
+  // 5. Tail markets with low confidence - warn but don't reject
+  if ((yesPrice > 0.95 || yesPrice < 0.05) && confidence < 50) {
+    return { valid: true, warning: `Tail market with moderate confidence` };
   }
 
   // 6. Entropy check - only reject extreme cases
-  // High entropy markets can still be profitable if LLM has good data
-  // Only reject if entropy > 0.8 (very high uncertainty) AND confidence < 50%
   const entropy = llmData.entropy || llmData.uncertainty || 0;
-  if (entropy > 0.8 && confidence < 50) {
-    return { valid: false, reason: `Very high entropy (${(entropy * 100).toFixed(1)}%) with low confidence (${confidence}%)` };
-  }
-
-  // 7. Sanity check: probability and edge should align
-  const expectedEdge = probability - yesPrice;
-  if (Math.abs(expectedEdge) < 0.01) {
-    return { valid: false, reason: 'Probability too close to market price' };
+  if (entropy > 0.9 && confidence < 40) {
+    return { valid: false, reason: `Very high entropy with low confidence` };
   }
 
   return { valid: true };
@@ -1379,6 +1397,12 @@ function decideAction(probZigma, probMarket, effectiveEdge, market) {
   const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
   const threshold = 0.05;
 
+  // AVOID HIGH-PROBABILITY BONDING MARKETS (>90%)
+  if (yesPrice > 0.90) {
+    console.log(`[BOND_FILTER] Skipping high-probability market: ${(yesPrice * 100).toFixed(1)}% - Avoiding sure shots`);
+    return 'NO_TRADE';
+  }
+
   if (probZigma > yesPrice + threshold) {
     return 'BUY YES';
   } else if (probZigma < yesPrice - threshold) {
@@ -1389,13 +1413,12 @@ function decideAction(probZigma, probMarket, effectiveEdge, market) {
 }
 
 function getTradeTier(netEdge, confidence) {
-  // Use net edge (after costs) and confidence (certainty)
   const absNetEdge = Math.abs(netEdge);
 
-  // Thresholds based on NET edge
-  if (absNetEdge > 0.03 && confidence > 0.70) return 'STRONG_TRADE';   // 3%+ net edge, high certainty
-  else if (absNetEdge > 0.015 && confidence > 0.60) return 'SMALL_TRADE'; // 1.5%+ net edge
-  else if (absNetEdge > 0.005 && confidence > 0.50) return 'PROBE';       // 0.5%+ net edge
+  if (absNetEdge > 0.03 && confidence > 0.65) return 'STRONG_TRADE';
+  else if (absNetEdge > 0.02 && confidence > 0.55) return 'SMALL_TRADE';
+  else if (absNetEdge > 0.01 && confidence > 0.45) return 'PROBE';
+  else if (absNetEdge > 0.005 && confidence > 0.40) return 'SCOUT';  // NEW TIER
   return 'NO_TRADE';
 }
 
@@ -1422,19 +1445,42 @@ function computeMarketQualityScore(market) {
   const priceHistory = market.priceHistory || [];
   const marketAgeDays = (Date.now() - new Date(getMarketStartDate(market) || Date.now())) / (1000 * 60 * 60 * 24);
 
+  // PRIORITY BOOST FOR MID-RANGE MARKETS (20c-80c)
+  let priceRangeBonus = 1.0;
+  if (yesPrice >= 0.2 && yesPrice <= 0.8) {
+    priceRangeBonus = 2.0; // 2x boost for mid-range markets
+    console.log(`[MID_RANGE] Found mid-range market: ${(yesPrice * 100).toFixed(0)}% - Applying 2x priority boost`);
+  } else if (yesPrice > 0.9) {
+    priceRangeBonus = 0.1; // Heavy penalty for >90% markets
+    console.log(`[BOND_FILTER] Penalizing high-probability market: ${(yesPrice * 100).toFixed(1)}%`);
+  }
+
   let score = 0;
 
-  // Liquidity score (0-30 points)
-  if (liquidity >= 50000) score += 30;
-  else if (liquidity >= 20000) score += 20;
-  else if (liquidity >= 10000) score += 10;
-  else if (liquidity >= 5000) score += 5;
+  // Liquidity scoring (logarithmic scale)
+  if (liquidity > 0) {
+    score += Math.log10(liquidity + 1) * 10;
+  }
 
-  // Volume score (0-20 points)
-  if (volume >= 100000) score += 20;
-  else if (volume >= 50000) score += 15;
-  else if (volume >= 20000) score += 10;
-  else if (volume >= 10000) score += 5;
+  // Volume scoring
+  if (volume > 0) {
+    score += Math.log10(volume + 1) * 5;
+  }
+
+  // Price volatility bonus (higher volatility = more opportunity)
+  if (priceVolatility > 0) {
+    score += priceVolatility * 20;
+  }
+
+  // Market age preference (not too new, not too old)
+  if (marketAgeDays >= 1 && marketAgeDays <= 30) {
+    score += 10;
+  } else if (marketAgeDays > 30 && marketAgeDays <= 90) {
+    score += 5;
+  }
+
+  // Apply price range bonus
+  score *= priceRangeBonus;
 
   // Price history depth (0-15 points)
   if (priceHistory.length >= 50) score += 15;
@@ -1544,8 +1590,19 @@ function enforceCategoryDiversity(selected, universe) {
   log(`DIVERSITY: Category mix -> ${Object.entries(categorySummary).map(([cat, count]) => `${cat}:${count}`).join(', ')}`);
 
   topSlice.slice(0, 5).forEach((market, idx) => {
-    const score = scored[idx]?.score ?? computeSelectionScore(market);
-    log(`SCOREBOARD [${idx + 1}]: ${(market.question || '').slice(0, 50)}... score=${score.toFixed(3)} edge=${(computeEdgeScore(market)*100).toFixed(1)}% liq=$${(market.liquidity||0).toLocaleString()} vol=${(market.priceVolatility||0).toFixed(3)}`);
+    const score = computeSelectionScore(market);
+    const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
+    const pricePercent = (yesPrice * 100).toFixed(0);
+    
+    // Log price range for debugging
+    let priceRangeTag = '';
+    if (yesPrice >= 0.2 && yesPrice <= 0.8) {
+      priceRangeTag = '[MID-RANGE]';
+    } else if (yesPrice > 0.9) {
+      priceRangeTag = '[BOND]';
+    }
+    
+    log(`SCOREBOARD [${idx + 1}]: ${(market.question || '').slice(0, 50)}... score=${score.toFixed(3)} edge=${(computeEdgeScore(market)*100).toFixed(1)}% price=${pricePercent}%${priceRangeTag} liq=$${(market.liquidity||0).toLocaleString()} vol=${(market.priceVolatility||0).toFixed(3)}`);
   });
 
   return topSlice;
@@ -1558,8 +1615,61 @@ function pickHighAlphaMarkets(data, marketGroups) {
     const group = marketGroups[category].sort((a,b) => computeEdgeScore(b) - computeEdgeScore(a));
     cappedMarkets.push(...group.slice(0, maxPerCat));
   });
-  const marketList = cappedMarkets.filter(m => m && m.question);
 
+  // PRIORITY FILTER: Boost mid-range markets (20c-80c)
+  const midRangeBoosted = cappedMarkets.map(market => {
+    const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
+    let boost = 1.0;
+    
+    if (yesPrice >= 0.2 && yesPrice <= 0.8) {
+      boost = 2.0; // 2x boost for mid-range markets
+      console.log(`[MID_RANGE] Priority boost: ${(yesPrice * 100).toFixed(0)}% - ${(market.question || '').slice(0, 40)}...`);
+    } else if (yesPrice > 0.9) {
+      boost = 0.1; // Heavy penalty for >90% markets
+      console.log(`[BOND_FILTER] Heavy penalty: ${(yesPrice * 100).toFixed(1)}% - ${(market.question || '').slice(0, 40)}...`);
+    }
+    
+    return { market, boost };
+  });
+
+  // Sort by boosted score and take top 50
+  const sorted = midRangeBoosted
+    .sort((a, b) => (computeEdgeScore(b.market) * b.boost) - (computeEdgeScore(a.market) * a.boost))
+    .slice(0, 50)
+    .map(item => item.market);
+
+  // Simple diversity calculation
+  const diversity = sorted.length > 0 ? 0.8 : 0.5;
+  log(`DIVERSITY: Score=${diversity.toFixed(3)} | Top 50 edge avg=${sorted.slice(0, 50).reduce((sum, m) => sum + computeEdgeScore(m), 0) / Math.min(50, sorted.length)}`);
+
+  const categorySummary = sorted.reduce((acc, market) => {
+    const cat = getCategoryKey(market.question, market);
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {});
+
+  log(`DIVERSITY: Category mix -> ${Object.entries(categorySummary).map(([cat, count]) => `${cat}:${count}`).join(', ')}`);
+
+  sorted.slice(0, 5).forEach((market, idx) => {
+    const score = computeSelectionScore(market);
+    const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
+    const pricePercent = (yesPrice * 100).toFixed(0);
+    
+    // Log price range for debugging
+    let priceRangeTag = '';
+    if (yesPrice >= 0.2 && yesPrice <= 0.8) {
+      priceRangeTag = '[MID-RANGE]';
+    } else if (yesPrice > 0.9) {
+      priceRangeTag = '[BOND]';
+    }
+    
+    log(`SCOREBOARD [${idx + 1}]: ${(market.question || '').slice(0, 50)}... score=${score.toFixed(3)} edge=${(computeEdgeScore(market)*100).toFixed(1)}% price=${pricePercent}%${priceRangeTag} liq=$${(market.liquidity||0).toLocaleString()} vol=${(market.priceVolatility||0).toFixed(3)}`);
+  });
+
+  return sorted;
+}
+
+function filterHighValueMarkets(marketList) {
   const filteredList = marketList.filter(m => {
     const yesPrice = getYesNoPrices(m)?.yes || m.yesPrice || 0.5;
     return yesPrice <= 0.995 && yesPrice >= 0.005;
@@ -1586,10 +1696,26 @@ function pickHighAlphaMarkets(data, marketGroups) {
     const pPrior = getBaseRate(m.question, m);
     const edge = Math.abs(pPrior - yesPrice);
     const category = getCategoryKey(m.question, m);
-    const edgeThreshold = getCategoryEdgeThreshold(category) / 100; // Convert percentage to decimal
+    const categoryAdjustment = getCategoryEdgeAdjustment(category);
+    const adjustedEdge = edge * categoryAdjustment;
+    
+    // Base threshold: 2% for data-rich, 3% for others
+    const dataRichCategories = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
+    let edgeThreshold = dataRichCategories.includes(category) ? 0.02 : 0.03;
+    
+    // Adjust based on historical performance (if available)
+    const categoryPerf = categoryPerformance[category];
+    if (categoryPerf && typeof categoryPerf.emaError === 'number') {
+      if (categoryPerf.emaError > 0.15) {
+        edgeThreshold *= 1.15; // Slightly increase for high-error categories
+      } else if (categoryPerf.emaError < 0.08) {
+        edgeThreshold *= 0.9; // Decrease for well-calibrated categories
+      }
+    }
+    
     const liquidityFloor = computeCategoryLiquidityFloor(category, m);
-    return edge > edgeThreshold && (m.liquidity || 0) > liquidityFloor;
-  }).slice(0, 50);
+    return adjustedEdge > edgeThreshold && (m.liquidity || 0) > liquidityFloor;
+  });
 
   const priceSpikes = dedupedList
     .map(m => ({ market: m, drift: Math.abs(computePriceDrift(m)) }))
@@ -1863,35 +1989,38 @@ async function generateSignals(selectedMarkets) {
     const isExecutable = edgeAnalysis.isExecutable;
 
     // Apply category-specific edge adjustment based on historical accuracy
-    const categoryAdjustment = await getCategoryEdgeAdjustment(categoryKey);
-    const adjustedEdge = rawEdge * categoryAdjustment.adjustment;
+    const categoryAdjustment = getCategoryEdgeAdjustment(categoryKey);
+    const adjustedEdge = rawEdge * categoryAdjustment;
     rawEdge = adjustedEdge; // Use adjusted edge for all subsequent calculations
     netEdge = Math.abs(adjustedEdge) - edgeAnalysis.executionCost; // Recalculate net edge
     netEdge = Math.max(0, netEdge); // Ensure non-negative
     
-    console.log(`[EDGE] ${categoryKey} adjustment: ${categoryAdjustment.adjustment}x (${categoryAdjustment.reason})`);
+    console.log(`[EDGE] ${categoryKey} adjustment: ${categoryAdjustment}x (${categoryAdjustment >= 1.1 ? 'boosted' : categoryAdjustment <= 0.9 ? 'penalized' : 'neutral'})`);
     console.log(`[EDGE] Original: ${(edgeAnalysis.rawEdge * 100).toFixed(2)}% → Adjusted: ${(rawEdge * 100).toFixed(2)}%`);
 
     const categoryEdgeThreshold = getCategoryEdgeThreshold(categoryKey);
 
-    // CRITICAL: Set action based on direction
-    // rawEdge and categoryEdgeThreshold are both decimals (0-1 scale)
-    let action = 'SKIP_NO_TRADE';
-    if (isExecutable && Math.abs(rawEdge) >= categoryEdgeThreshold) {
-      action = direction === 'BUY_YES' ? 'EXECUTE BUY YES' : 'EXECUTE BUY NO';
-    }
-
-    // Calculate winProb and betPrice BASED ON ACTION
+    // FIRST: Calculate winProb and betPrice based on DIRECTION (not action)
     let winProb, betPrice;
-    if (action === 'EXECUTE BUY YES') {
-      winProb = llmProbability;      // Probability YES wins
-      betPrice = yesPrice;            // Price you pay for YES
-    } else if (action === 'EXECUTE BUY NO') {
-      winProb = 1 - llmProbability;   // Probability NO wins (YES loses)
-      betPrice = 1 - yesPrice;        // Price you pay for NO
-    } else {
+    if (direction === 'BUY_YES') {
       winProb = llmProbability;
       betPrice = yesPrice;
+    } else { // BUY_NO
+      winProb = 1 - llmProbability;  // Probability NO wins
+      betPrice = 1 - yesPrice;        // Price for NO
+    }
+
+    // SECOND: Calculate Kelly with correct parameters
+    let kellyFraction = calculateKelly(winProb, betPrice, 0, market.liquidity || 10000);
+    log(`[POSITION SIZING] Step 1 - Base Kelly: ${(kellyFraction * 100).toFixed(2)}%`);
+
+    // THIRD: Determine action based on edge AND Kelly
+    const meetsEdgeThreshold = Math.abs(rawEdge) >= categoryEdgeThreshold;
+    const hasPositiveKelly = kellyFraction > 0;
+    
+    let action = 'SKIP_NO_TRADE';
+    if (isExecutable && (meetsEdgeThreshold || hasPositiveKelly)) {
+      action = direction === 'BUY_YES' ? 'EXECUTE BUY YES' : 'EXECUTE BUY NO';
     }
 
     const absEdge = Math.abs(rawEdge);
@@ -1971,9 +2100,8 @@ async function generateSignals(selectedMarkets) {
     );
 
     // POSITION SIZING HIERARCHY
-    // Step 1: Calculate base Kelly fraction based on ACTUAL bet
-    let kellyFraction = calculateKelly(winProb, betPrice, 0, market.liquidity || 10000);
-    log(`[POSITION SIZING] Step 1 - Base Kelly: ${(kellyFraction * 100).toFixed(2)}%`);
+    // Step 1: Kelly already calculated above
+    log(`[POSITION SIZING] Step 1 - Using existing Kelly: ${(kellyFraction * 100).toFixed(2)}%`);
 
     // Step 2: Apply conviction adjustments (before hard cap)
     const liquidity = market.liquidity || 0;
@@ -2029,6 +2157,7 @@ async function generateSignals(selectedMarkets) {
       marketSlug: market.slug,
       marketQuestion: market.question,
       action,
+      direction,  // 'BUY_YES' or 'BUY_NO' - for frontend display
       price: yesPrice,
       confidenceClass: normalizedConfidence >= 0.7 ? 'HIGH' : normalizedConfidence >= 0.4 ? 'MEDIUM' : 'LOW',
       intentExposure,
@@ -2049,7 +2178,7 @@ async function generateSignals(selectedMarkets) {
         adjustment: Math.abs(effectiveEdge) - absEdge
       },
       structuredAnalysis: {
-        probability: winProb, // Use original LLM probability
+        probability: llmProbability, // Use original LLM probability
         action,
         confidence: Number((adjustedConfidence * 100).toFixed(1)),
         reasoning: '', // Not used in this code
@@ -2107,11 +2236,11 @@ async function generateSignals(selectedMarkets) {
 
     // Debug decision should match shouldExecuteTrade logic
     const edgeDecimal = Math.abs(effectiveEdge);
-    const meetsEdgeThreshold = edgeDecimal >= categoryEdgeThreshold;
+    const debugMeetsEdgeThreshold = edgeDecimal >= categoryEdgeThreshold;
     const meetsNetEdge = netEdge >= MIN_NET_EDGE;
     const meetsExposure = signal.intentExposure >= PROBE_EXPOSURE;
     const meetsValidTier = ['STRONG_TRADE', 'SMALL_TRADE', 'PROBE'].includes(signal.tradeTier);
-    const debugDecision = (meetsEdgeThreshold && meetsNetEdge && meetsExposure && meetsValidTier) ? 'EXECUTABLE' : 'DROPPED';
+    const debugDecision = (debugMeetsEdgeThreshold && meetsNetEdge && meetsExposure && meetsValidTier) ? 'EXECUTABLE' : 'DROPPED';
 
     // Debug log with CORRECT values
     log(`[DEBUG] ${market.question.slice(0, 50)} | ` +
@@ -2139,11 +2268,15 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
     }
 
     // Use enhanced signal generation with all modules
-    // TODO: Load from your position tracking system
-    const currentPositions = existingPositions || []; // Use existing or empty array
-    const enhancedSignal = await generateEnhancedSignal(market, analysis, currentPositions);
+    const currentPositions = existingPositions || [];
+    const enhancedSignal = await generateEnhancedSignal(market, analysis, currentPositions, intentExposure);
     
-    if (!enhancedSignal.valid) {
+    // MORE PERMISSIVE: Only reject for critical failures
+    if (!enhancedSignal.valid && enhancedSignal.reason !== 'CRITICAL_REJECTION') {
+      // Log but don't reject - use base signal instead
+      console.log(`[SIGNAL] Warning: ${enhancedSignal.reason} - using base signal`);
+      // Continue with base signal instead of rejecting
+    } else if (!enhancedSignal.valid) {
       console.log(`[SIGNAL] Rejected: ${enhancedSignal.reason}`);
       rejectedSignals.push({
         marketId: market.id,
@@ -2172,7 +2305,7 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
       ...enhancedSignal, // Merge all enhanced properties
       market: market.question || 'Unknown',
       timestamp: signalTimestamp,
-      probZigma: winProb * 100,
+      probZigma: llmProbability * 100,
       probMarket: yesPrice * 100,
       effectiveEdge: enhancedSignal.adjustedEdge * 100,
       rawEdge: enhancedSignal.adjustedEdge * 100,
@@ -2206,10 +2339,7 @@ function shouldExecuteTrade(signal, market) {
   const categoryKey = getCategoryKey(market.question, market);
   const categoryEdgeThreshold = getCategoryEdgeThreshold(categoryKey);
 
-  // ============================================================
-  // TIME-RESOLUTION INTEGRATION
-  // ============================================================
-  // Apply time-based adjustments before other validations
+  // Time adjustments - but don't block for unknown dates
   const timeAdjustments = applyTimeAdjustments(
     market, 
     signal.edgeScoreDecimal || (Math.abs(signal.edgeScore) / 100), 
@@ -2217,39 +2347,39 @@ function shouldExecuteTrade(signal, market) {
     categoryKey
   );
   
-  if (!timeAdjustments) {
-    console.log(`[TIME] Market rejected by time analysis`);
+  // PERMISSIVE: Only block if time analysis explicitly rejects
+  if (timeAdjustments && timeAdjustments.timing?.recommendation === 'DO_NOT_ENTER') {
+    console.log(`[TIME] Market rejected: too close to resolution`);
     return false;
   }
   
-  // Update signal with time-adjusted values
-  signal.timeAdjustedEdge = timeAdjustments.adjustedEdge;
-  signal.timeAdjustedSize = timeAdjustments.adjustedSize;
-  signal.timing = timeAdjustments.timing;
-  
-  console.log(`[TIME] Final adjusted edge: ${(timeAdjustments.adjustedEdge * 100).toFixed(2)}%`);
-  console.log(`[TIME] Final adjusted size: ${(timeAdjustments.adjustedSize * 100).toFixed(2)}%`);
+  if (timeAdjustments) {
+    signal.timeAdjustedEdge = timeAdjustments.adjustedEdge;
+    signal.timeAdjustedSize = timeAdjustments.adjustedSize;
+    signal.timing = timeAdjustments.timing;
+  }
 
-  // FIX: Convert edgeScore from percentage to decimal for comparison
-  // edgeScore is stored as percentage (0-100), threshold is decimal (0-1)
-  const edgeScoreDecimal = signal.edgeScoreDecimal ?? (Math.abs(signal.edgeScore) / 100);
-  if (edgeScoreDecimal < categoryEdgeThreshold) {
-    log(`[SKIP] Edge ${(edgeScoreDecimal * 100).toFixed(2)}% below threshold ${(categoryEdgeThreshold * 100).toFixed(2)}%`, 'DEBUG');
+  // Edge check - use EITHER raw edge OR time-adjusted edge
+  const effectiveEdge = signal.timeAdjustedEdge ?? signal.edgeScoreDecimal ?? (Math.abs(signal.edgeScore) / 100);
+  if (effectiveEdge < categoryEdgeThreshold * 0.8) {  // 20% tolerance
+    log(`[SKIP] Edge ${(effectiveEdge * 100).toFixed(2)}% below threshold`, 'DEBUG');
     return false;
   }
 
-  // Check minimum net edge after costs (1.5% threshold)
-  // effectiveEdge is stored as percentage (0-100)
+  // Net edge check - more permissive
   const netEdgePercent = signal.effectiveEdge || 0;
-  if (netEdgePercent < MIN_NET_EDGE * 100) {
-    log(`[SKIP] Net edge too small: ${netEdgePercent.toFixed(2)}% (minimum: ${(MIN_NET_EDGE * 100).toFixed(2)}%)`, 'DEBUG');
+  if (netEdgePercent < MIN_NET_EDGE * 80) {  // 20% tolerance
+    log(`[SKIP] Net edge too small: ${netEdgePercent.toFixed(2)}%`, 'DEBUG');
     return false;
   }
 
-  if (signal.intentExposure < PROBE_EXPOSURE) return false;
+  // Exposure check - allow smaller positions
+  if (signal.intentExposure < PROBE_EXPOSURE * 0.5) return false;
 
-  if (!['STRONG_TRADE', 'SMALL_TRADE', 'PROBE'].includes(signal.tradeTier)) return false;
+  // Tier check - allow SCOUT tier for insights platform
+  if (!['STRONG_TRADE', 'SMALL_TRADE', 'PROBE', 'SCOUT'].includes(signal.tradeTier)) return false;
 
+  // Expired market check
   const now = Date.now();
   const endDate = Date.parse(market.endDateIso || market.endDate || '');
   if (endDate && endDate <= now) return false;
@@ -2375,86 +2505,103 @@ function trackSpreadOpportunities(arbitrageOpportunities = []) {
 // ============================================================
 // COMPLETE ENHANCED SIGNAL GENERATION
 // ============================================================
-async function generateEnhancedSignal(market, llmAnalysis, existingPositions) {
+async function generateEnhancedSignal(market, llmAnalysis, existingPositions, existingKelly = null) {
   // Extract edge properly from LLM analysis
   let rawEdge = llmAnalysis.edge;
   if (typeof rawEdge === 'object' && rawEdge !== null) {
-    rawEdge = rawEdge.raw || rawEdge.edge || 0;
+    rawEdge = rawEdge.raw || rawEdge.rawEdge || rawEdge.edge || 0;
   }
   
-  // Fix edge calculation for BUY_NO trades (should be positive)
-  if (llmAnalysis.action === 'BUY_NO' && rawEdge < 0) {
-    rawEdge = Math.abs(rawEdge); // Convert to positive for Kelly calculation
+  // Ensure rawEdge is a number
+  if (typeof rawEdge !== 'number' || !Number.isFinite(rawEdge)) {
+    rawEdge = llmAnalysis.effectiveEdge || llmAnalysis.baseEffectiveEdge || 0;
+    if (typeof rawEdge !== 'number') rawEdge = 0;
   }
   
   const confidence = llmAnalysis.confidence || 50;
   const action = llmAnalysis.action || 'NO_TRADE';
   const category = market.category || 'EVENT';
   
-  // Safeguard: Skip invalid edges
-  if (!Number.isFinite(rawEdge) || Math.abs(rawEdge) < 0.001) {
-    console.log(`[ENHANCED] Invalid edge: ${rawEdge}, skipping market`);
-    return { valid: false, reason: `Invalid edge: ${rawEdge}` };
+  // Extract LLM probability and market price
+  const llmProb = llmAnalysis.revised_prior || llmAnalysis.probability || 0.5;
+  const yesPrice = market.yesPrice || 0.5;
+  
+  // Determine direction
+  const direction = rawEdge > 0 ? 'BUY_YES' : 'BUY_NO';
+  
+  // Calculate winProb and betPrice based on DIRECTION
+  let winProb, betPrice;
+  if (direction === 'BUY_YES') {
+    winProb = llmProb;
+    betPrice = yesPrice;
+  } else {
+    winProb = 1 - llmProb;
+    betPrice = 1 - yesPrice;
   }
   
-  // Extract winProb from LLM analysis (not edge!)
-  const winProb = llmAnalysis.revised_prior || llmAnalysis.probability || 0.5;
-  const marketPrice = market.yesPrice || 0.5;
+  // Use existing Kelly if passed, else calculate correctly
+  let baseSize;
+  if (existingKelly !== null && existingKelly > 0) {
+    baseSize = existingKelly;
+  } else {
+    baseSize = calculateKelly(winProb, betPrice, 0.005, market.liquidity || 10000);
+  }
   
-  // Call Kelly with correct parameters: winProb (decimal), market price (decimal)
-  const baseSize = calculateKelly(winProb, marketPrice);
+  // Use absolute edge for calculations
+  const absEdge = Math.abs(rawEdge);
   
   console.log(`\n[ENHANCED] Processing: ${market.question?.slice(0, 50)}...`);
   console.log(`[ENHANCED] Raw: Edge=${(rawEdge * 100).toFixed(1)}%, Conf=${confidence}%, Kelly=${(baseSize * 100).toFixed(1)}%`);
   
   // Step 1: Time adjustments
-  const timeAdj = applyTimeAdjustments(market, rawEdge, baseSize, category);
+  const timeAdj = applyTimeAdjustments(market, absEdge, baseSize, category);
   if (!timeAdj) {
-    console.log(`[TIME] Market rejected by time analysis - missing endDate field`);
-    return { valid: false, reason: 'Failed time filter' };
+    // Don't reject - use defaults for unknown dates
+    console.log(`[TIME] No time data - using defaults`);
   }
   
-  // Step 2: Correlation adjustment
-  const corrAdj = getCorrelationAdjustedPosition(market, existingPositions, timeAdj.adjustedSize);
+  const adjustedEdge = timeAdj?.adjustedEdge ?? absEdge;
+  const adjustedSize = timeAdj?.adjustedSize ?? baseSize;
   
-  // Step 3: Order book validation (DISABLED TEMPORARILY - blocking all trades)
-  // TODO: Fix token_id extraction from market object
+  // Step 2: Correlation adjustment
+  const corrAdj = getCorrelationAdjustedPosition(market, existingPositions, adjustedSize);
+  
+  // Step 3: Order book validation (DISABLED - using default approval)
   const orderBookCheck = { approved: true, adjustedSize: corrAdj.adjustedSize * 1000 };
   console.log(`[ORDERBOOK] Skipping validation - using default approval`);
-  
-  /*
-  const tokenId = market.tokens?.[0]?.token_id || market.id;
-  const orderBookCheck = await validateTradeWithOrderBook(
-    tokenId, // Use token_id instead of market.id
-    action,
-    corrAdj.adjustedSize * 1000, // Convert to dollars (assuming $1000 bankroll unit)
-    market.yesPrice || 0.5
-  );
-  */
   
   if (!orderBookCheck.approved) {
     return { valid: false, reason: `Order book: ${orderBookCheck.reason}` };
   }
   
-  // Final signal
-  const finalSize = Math.min(
+  // Final signal - ensure minimum size for valid trades
+  let finalSize = Math.min(
     corrAdj.adjustedSize,
-    orderBookCheck.adjustedSize / 1000 // Convert back to fraction
+    orderBookCheck.adjustedSize / 1000
   );
   
-  console.log(`[ENHANCED] ✅ Final: Edge=${(timeAdj.adjustedEdge * 100).toFixed(1)}%, Size=${(finalSize * 100).toFixed(2)}%`);
-  console.log(`[ENHANCED] Slippage: ${orderBookCheck.slippage?.toFixed(2)}%, Spread: ${orderBookCheck.spread?.toFixed(2)}%`);
+  // ============================================================
+  // CRITICAL FIX: Ensure minimum exposure for executable signals
+  // ============================================================
+  if (finalSize < 0.001 && absEdge >= 0.01) {
+    finalSize = 0.005; // 0.5% minimum for signals with 1%+ edge
+    console.log(`[ENHANCED] Applied minimum exposure floor: ${(finalSize * 100).toFixed(2)}%`);
+  }
+  
+  console.log(`[ENHANCED] ✅ Final: Edge=${(adjustedEdge * 100).toFixed(1)}%, Size=${(finalSize * 100).toFixed(2)}%`);
+  console.log(`[ENHANCED] Slippage: ${orderBookCheck.slippage?.toFixed(2) || 'N/A'}%, Spread: ${orderBookCheck.spread?.toFixed(2) || 'N/A'}%`);
   
   return {
-    valid: true,
+    valid: finalSize > 0.0001, // Valid if any exposure
     action,
-    adjustedEdge: timeAdj.adjustedEdge,
+    adjustedEdge,
     adjustedSize: finalSize,
     confidence,
-    timing: timeAdj.timing,
+    timing: timeAdj?.timing || { recommendation: 'ENTER_NOW' },
     slippage: orderBookCheck.slippage,
     spread: orderBookCheck.spread,
-    correlationFactor: corrAdj.correlationFactor
+    correlationFactor: corrAdj.correlationFactor,
+    direction
   };
 }
 
@@ -2807,13 +2954,17 @@ async function runCycle() {
     isVolatilityLock = avgVolatility > 0.1;
     isLiquidityShock = avgLiquidity < 50000;
 
-    const selectedMarkets = pickHighAlphaMarkets(highValueMarkets, marketGroups).filter(m => (m.volume || 0) > 1000);
+    const selectedMarkets = pickHighAlphaMarkets(highValueMarkets, marketGroups);
     log(` Selected ${selectedMarkets.length} markets for deep analysis`);
     
+    // Filter by volume AFTER mid-range prioritization
+    const volumeFiltered = selectedMarkets.filter(m => (m.volume || 0) > 1000);
+    log(` Volume filtered: ${volumeFiltered.length}/${selectedMarkets.length} markets remain`);
+    
     // Apply cluster filtering BEFORE LLM analysis to save costs
-// Cluster filtering disabled for consistency - use all selected markets
-const clusterFiltered = selectedMarkets;
-log(` Selected ${clusterFiltered.length} markets for LLM analysis (cluster filtering disabled)`);
+    // Cluster filtering disabled for consistency - use all selected markets
+    const clusterFiltered = volumeFiltered;
+    log(` Selected ${clusterFiltered.length} markets for LLM analysis (cluster filtering disabled)`);
 
     activeGroupSizes = computeGroupSizeMap(clusterFiltered);
 

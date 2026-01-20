@@ -350,11 +350,43 @@ function generateCalibrationRecommendations(stats, problematicBins) {
   return recommendations;
 }
 
+/**
+ * Calibrate signal based on historical win rate by category
+ * @param {Object} signal - Signal object with edge and confidence
+ * @param {Object} categoryStats - Category performance statistics
+ * @returns {Object} - Calibrated signal
+ */
+function calibrateForWinRate(signal, categoryStats) {
+  // If historical win rate is below 60%, increase edge threshold
+  // If historical win rate is above 70%, can be more aggressive
+  
+  const winRate = categoryStats?.winRate || 0.5;
+  const sampleSize = categoryStats?.sampleSize || 0;
+  
+  if (sampleSize < 20) {
+    // Not enough data - be conservative
+    return { ...signal, calibrationNote: 'Insufficient data' };
+  }
+  
+  if (winRate < 0.55) {
+    // Poor historical performance - require higher edge
+    signal.edgeScoreDecimal *= 1.25; // 25% higher bar
+    signal.calibrationNote = `Calibration: +25% edge required (${(winRate*100).toFixed(0)}% historical win rate)`;
+  } else if (winRate > 0.70) {
+    // Good historical performance - can accept lower edge
+    signal.edgeScoreDecimal *= 0.9; // 10% lower bar
+    signal.calibrationNote = `Calibration: Category performing well (${(winRate*100).toFixed(0)}% win rate)`;
+  }
+  
+  return signal;
+}
+
 module.exports = {
   calculateCalibrationMetrics,
   getCalibrationAdjustment,
   applyCalibration,
   getCalibrationStats,
   checkCalibrationNeeded,
-  generateCalibrationReport
+  generateCalibrationReport,
+  calibrateForWinRate
 };

@@ -1,6 +1,7 @@
 // CLOB Price Cache - Polls CLOB every 3-5 seconds for faster price truth
 const axios = require('axios');
 const axiosRetry = require('axios-retry').default || require('axios-retry');
+const { fetchOrderBook, getAuthToken } = require('./fetcher');
 require('dotenv').config();
 
 // CLOB API configuration
@@ -29,14 +30,23 @@ const POLL_INTERVAL = 4000;
 let isPolling = false;
 
 /**
- * Fetch order book from CLOB API
+ * Enhanced order book fetching with authentication
  */
-async function fetchOrderBook(marketId, tokenId) {
+async function fetchClobOrderBook(marketId, tokenId) {
   try {
-    const url = tokenId ? `${CLOB_BASE}/book?token_id=${tokenId}` : `${CLOB_BASE}/order-book/${marketId}`;
-    const response = await clobHttp.get(url);
+    const token = await getAuthToken();
+    if (!token) {
+      console.log(`[CLOB] No auth token available for ${marketId}`);
+      return null;
+    }
+
+    const url = tokenId ? `${CLOB_BASE}/book?token_id=${tokenId}` : `${CLOB_BASE}/books/${marketId}`;
+    const response = await clobHttp.get(url, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
 
     if (response.data && response.data.bids && response.data.asks) {
+      console.log(`[CLOB] ✅ Fetched order book for ${marketId}: ${response.data.bids.length} bids, ${response.data.asks.length} asks`);
       return {
         bids: response.data.bids,
         asks: response.data.asks
@@ -44,7 +54,7 @@ async function fetchOrderBook(marketId, tokenId) {
     }
     return null;
   } catch (error) {
-    // Silently fail - fallback to Gamma
+    console.error(`[CLOB] ❌ Error fetching order book for ${marketId}:`, error.message);
     return null;
   }
 }
@@ -55,12 +65,50 @@ async function fetchOrderBook(marketId, tokenId) {
 function calculateMidPrice(orderBook) {
   if (!orderBook || !orderBook.bids || !orderBook.asks) return null;
 
-  const bestBid = orderBook.bids[0]?.price;
-  const bestAsk = orderBook.asks[0]?.price;
+  const bestBid = parseFloat(orderBook.bids[0]?.price || 0);
+  const bestAsk = parseFloat(orderBook.asks[0]?.price || 0);
 
   if (!bestBid || !bestAsk) return null;
 
-  return (parseFloat(bestBid) + parseFloat(bestAsk)) / 2;
+  return (bestBid + bestAsk) / 2;
+}
+
+/**
+ * Calculate spread from order book
+ */
+function calculateSpread(orderBook) {
+  if (!orderBook || !orderBook.bids || !orderBook.asks) return null;
+  
+  const bestBid = parseFloat(orderBook.bids[0]?.price || 0);
+  const bestAsk = parseFloat(orderBook.asks[0]?.price || 0);
+  
+  if (!bestBid || !bestAsk) return null;
+  
+  return bestAsk - bestBid;
+}
+
+/**
+ * Calculate liquidity from order book depth
+ */
+function calculateLiquidity(orderBook, depth = 5) {
+  if (!orderBook) return 0;
+  
+  let totalLiquidity = 0;
+  
+  // Sum liquidity from top N levels of bids and asks
+  if (orderBook.bids) {
+    for (let i = 0; i < Math.min(depth, orderBook.bids.length); i++) {
+      totalLiquidity += parseFloat(orderBook.bids[i].size || 0);
+    }
+  }
+  
+  if (orderBook.asks) {
+    for (let i = 0; i < Math.min(depth, orderBook.asks.length); i++) {
+      totalLiquidity += parseFloat(orderBook.asks[i].size || 0);
+    }
+  }
+  
+  return totalLiquidity;
 }
 
 /**
@@ -71,7 +119,7 @@ async function pollPrices(marketIds) {
 
   const promises = marketIds.map(async (marketId) => {
     try {
-      const orderBook = await fetchOrderBook(marketId);
+      const orderBook = await fetchClobOrderBook(marketId);
       if (orderBook) {
         const mid = calculateMidPrice(orderBook);
         if (mid) {
@@ -79,6 +127,8 @@ async function pollPrices(marketIds) {
             mid: mid,
             bid: parseFloat(orderBook.bids[0]?.price || 0),
             ask: parseFloat(orderBook.asks[0]?.price || 0),
+            spread: calculateSpread(orderBook),
+            liquidity: calculateLiquidity(orderBook),
             bids: orderBook.bids,
             asks: orderBook.asks,
             ts: Date.now()
@@ -133,21 +183,38 @@ function getClobPrice(marketId, gammaPrice = null) {
   const age = cached ? (Date.now() - cached.ts) : Infinity;
 
   if (cached && age < 5000) { // Reduced to 5 seconds
-    return cached.mid;
+    console.log(`[CLOB] ✅ Using fresh cached price for ${marketId}: ${cached.mid}`);
+    return {
+      mid: cached.mid,
+      bid: cached.bid,
+      ask: cached.ask,
+      spread: cached.spread,
+      liquidity: cached.liquidity,
+      orderBook: cached
+    };
   }
 
   if (age >= 5000 && cached) {
-    console.warn(`Stale CLOB price for ${marketId}: ${age}ms old`);
+    console.warn(`[CLOB] ⚠️ Stale CLOB price for ${marketId}: ${age}ms old`);
   }
 
-  return gammaPrice;
+  console.log(`[CLOB] Using fallback gamma price for ${marketId}: ${gammaPrice}`);
+  return {
+    mid: gammaPrice,
+    bid: null,
+    ask: null,
+    spread: null,
+    liquidity: null,
+    orderBook: null
+  };
 }
 
 /**
  * Get full order book data
  */
 function getOrderBook(marketId) {
-  return clobPriceCache.get(marketId) || null;
+  const cached = clobPriceCache.get(marketId);
+  return cached || null;
 }
 
 module.exports = {
@@ -155,6 +222,9 @@ module.exports = {
   stopPolling,
   getClobPrice,
   getOrderBook,
-  fetchOrderBook,
+  fetchOrderBook: fetchClobOrderBook,
+  calculateMidPrice,
+  calculateSpread,
+  calculateLiquidity,
   clobPriceCache
 };

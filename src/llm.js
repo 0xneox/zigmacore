@@ -355,7 +355,8 @@ MANDATORY OUTPUT SCHEMA:
   "reasoning": string (explain your analysis in 2-3 sentences),
   "sentimentScore": number between -1 and 1 (news sentiment),
   "newsSources": array of {"title": string, "source": string, "relevance": "high"|"medium"|"low"},
-  "uncertainty": number between 0 and 1 (data quality and time risk)
+  "uncertainty": number between 0 and 1 (data quality and time risk),
+  "direction": string ("OVERPRICED" if market price > your probability, "UNDERPRICED" if market price < your probability, "FAIR" if within 2%)
 }
 
 CRITICAL INSTRUCTIONS:
@@ -365,29 +366,41 @@ CRITICAL INSTRUCTIONS:
 4. confidence is how CERTAIN you are (1-100), NOT the probability
 5. Base revised_prior on: news sentiment, historical data, base rates, market inefficiencies
 
+DECISIVE PROBABILITY INSTRUCTIONS:
+1. Markets are often WRONG. Your probability should differ from market price when evidence supports it.
+2. If evidence strongly supports YES, output probability > market price (even 10-20% higher)
+3. If evidence strongly supports NO, output probability < market price (even 10-20% lower)
+4. Do NOT anchor to market price. Calculate independent probability from evidence.
+5. Confidence should reflect your certainty in the probability estimate, not how close you are to market.
+
+Edge Detection Rules:
+- If your analysis shows market is mispriced by 3%+, be confident in your assessment
+- Sports/Crypto/Politics markets are often inefficient - look for edges
+- Recent news not reflected in price = opportunity
+
 CALIBRATION EXAMPLES:
 Example 1: "Will Bitcoin reach $100k in 2026?" (Bitcoin already at $95k in Jan 2026)
 - Market: 83% YES
 - Analysis: Strong momentum, near target, favorable macro
-- Output: revised_prior: 0.85, confidence: 75
+- Output: revised_prior: 0.85, confidence: 75, direction: "UNDERPRICED"
 - Reasoning: Already close to target with 11 months remaining
 
 Example 2: "Will Team X win championship?" (1 of 32 teams)
 - Market: 8% YES (overpriced vs 3.1% base rate)
 - Analysis: Recent injuries, tough schedule
-- Output: revised_prior: 0.02, confidence: 70
+- Output: revised_prior: 0.02, confidence: 70, direction: "OVERPRICED"
 - Reasoning: Market inefficiency detected, strong edge
 
 Example 3: "Will Governor win re-election in California?"
 - Market: 72% YES
 - Analysis: Incumbent advantage in blue state, strong polling
-- Output: revised_prior: 0.78, confidence: 75
+- Output: revised_prior: 0.78, confidence: 75, direction: "UNDERPRICED"
 - Reasoning: Historical base rate 70% + incumbent boost
 
 Example 4: "Will the Knicks make the NBA Playoffs?" (Strong team, good record)
 - Market: 97.8% YES
 - Analysis: Top of conference, strong roster, favorable schedule
-- Output: revised_prior: 0.95, confidence: 80
+- Output: revised_prior: 0.95, confidence: 80, direction: "FAIR"
 - Reasoning: Near-certain based on current standing and historical data
 
 ANALYSIS STEPS:

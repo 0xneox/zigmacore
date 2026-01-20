@@ -99,13 +99,15 @@ const CATEGORY_TO_PROFILE = {
 function calculateDaysRemaining(endDate, now = new Date()) {
   // Handle missing or invalid endDate
   if (!endDate || endDate === null || endDate === undefined) {
-    return null;
+    console.log(`[TIME] No end date provided, using default 30 days`);
+    return 30; // Default to 30 days for unknown dates
   }
   
   const resolution = new Date(endDate);
   
   if (isNaN(resolution.getTime())) {
-    return null;
+    console.log(`[TIME] Invalid end date: ${endDate}, using default 30 days`);
+    return 30; // Default to 30 days for invalid dates
   }
   
   const msRemaining = resolution.getTime() - now.getTime();
@@ -211,14 +213,14 @@ function calculateTimeAdjustedSize(baseSize, daysRemaining, category) {
  * Near-resolution trades need higher edge to compensate for risk
  * @param {number} daysRemaining - Days until resolution
  * @param {string} category - Market category
- * @param {number} baseMinEdge - Base minimum edge (default 5%)
+ * @param {number} baseMinEdge - Base minimum edge (default 1.5%)
  * @returns {Object} - Required minimum edge
  */
-function calculateMinimumEdgeRequired(daysRemaining, category, baseMinEdge = 0.01) {
+function calculateMinimumEdgeRequired(daysRemaining, category, baseMinEdge = 0.015) {
   if (daysRemaining === null || daysRemaining === undefined) {
     return {
       minEdge: baseMinEdge,
-      reason: 'No resolution date - using base minimum'
+      reason: 'No resolution date - using permissive minimum (1.5%)'
     };
   }
   
@@ -306,7 +308,7 @@ function calculateOptimalTiming(daysRemaining, category, currentEdge) {
   
   return {
     recommendation: 'SKIP',
-    reason: `Insufficient edge and limited time - skip this market`,
+    reason: `Insufficient edge and Limited time - skip this market`,
     edgeEfficiency: Number(edgeEfficiency.toFixed(2)),
     daysRemaining
   };
@@ -320,30 +322,34 @@ function calculateOptimalTiming(daysRemaining, category, currentEdge) {
  * @returns {Object} - Complete time-adjusted analysis
  */
 function getTimeAnalysis(market, rawEdge, baseSize) {
-  const { endDateIso, category } = market;
-  const endDate = endDateIso || market.endDate;
-  const daysRemaining = calculateDaysRemaining(endDate);
+  const { endDateIso, endDate, category } = market;
+  const finalEndDate = endDateIso || endDate;
+  const daysRemaining = calculateDaysRemaining(finalEndDate);
   
+  // CRITICAL FIX: For markets without resolution dates, be PERMISSIVE not restrictive
   if (daysRemaining === null) {
     return {
-      hasResolutionDate: true,
+      hasResolutionDate: false,
       daysRemaining: null,
       category,
       profile: CATEGORY_TO_PROFILE[category] || 'BINARY_EVENT',
       adjustments: {
         edge: { adjustedEdge: rawEdge, multiplier: 1.0 },
         size: { adjustedSize: baseSize, multiplier: 1.0 },
-        minEdge: { minEdge: 0.01, shouldTrade: true }
+        minEdge: { minEdge: 0.015, shouldTrade: true }  // Low bar for unknown dates
       },
-      timing: { recommendation: 'ENTER_NOW', reason: 'No resolution date' },
-      finalDecision: 'ACCEPT',
+      timing: { 
+        recommendation: 'ENTER_NOW', 
+        reason: 'No resolution date - standard entry conditions apply' 
+      },
+      finalDecision: 'ACCEPT',  // ACCEPT by default for unknown dates
       summary: {
         originalEdge: rawEdge,
         adjustedEdge: rawEdge,
         originalSize: baseSize,
         adjustedSize: baseSize,
-        minEdgeRequired: 0.02,
-        passesMinEdge: true
+        minEdgeRequired: 0.015,
+        passesMinEdge: Math.abs(rawEdge) >= 0.015
       }
     };
   }
@@ -404,7 +410,7 @@ function filterMarketsByTime(markets, config = {}) {
   
   return markets
     .map(market => {
-      const daysRemaining = calculateDaysRemaining(market.endDate);
+      const daysRemaining = calculateDaysRemaining(market.endDateIso || market.endDate);
       return { ...market, daysRemaining };
     })
     .filter(market => {
