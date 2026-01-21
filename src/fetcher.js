@@ -146,11 +146,11 @@ async function fetchAllMarkets() {
   const baseUrl = `${GAMMA}/markets`;
   const params = {
     closed: 'false',
-    limit: 700,
+    limit: 1700,
     order: 'startDate',
     sort: 'desc'
   };
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 700;
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 1700;
   let offset = 0;
   let allMarkets = [];
 
@@ -891,7 +891,7 @@ async function fetchUserProfile(maker) {
     try {
       const userProfileData = { maker, metrics, analysis, trend };
       benchmark = await getUserBenchmark(userProfileData);
-      console.log(`[USER PROFILE] Benchmark loaded: Rank ${benchmark.rank}, Percentile ${benchmark.percentile?.toFixed(1)}%`);
+console.log(`[USER PROFILE] Benchmark loaded: Rank ${benchmark?.rank ?? 'N/A'}, Percentile ${(benchmark?.percentile ?? 0).toFixed(1)}%`);
     } catch (err) {
       console.warn(`[USER PROFILE] Failed to load benchmark:`, err.message);
     }

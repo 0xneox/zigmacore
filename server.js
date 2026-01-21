@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const app = express();
 const http = require('http');
 const PORT = process.env.PORT || 3001;
@@ -1346,7 +1347,7 @@ app.post('/chat', validateInput, async (req, res) => {
         `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
       ].join('\n');
 
-      const responseId = incomingContextId || randomUUID();
+      const responseId = incomingContextId || crypto.randomUUID();
 
       res.json({
         contextId: responseId,
@@ -1616,7 +1617,7 @@ ${aiAnalysis}`;
         { role: 'assistant', content: profileMessage, userProfile, aiRecommendations }
       ].filter((msg) => msg.content);
 
-      const responseId = incomingContextId || randomUUID();
+      const responseId = incomingContextId || crypto.randomUUID();
 
       res.json({
         contextId: responseId,
@@ -1674,7 +1675,7 @@ ${aiAnalysis}`;
       volume24hr: matchedMarket.volume24hr
     });
 
-    const responseId = incomingContextId || randomUUID();
+    const responseId = incomingContextId || crypto.randomUUID();
     const assistantMessage = buildAssistantMessage({
       analysis,
       matchedMarket,
@@ -1721,7 +1722,14 @@ ${aiAnalysis}`;
       timestamp: Date.now()
     });
   } catch (error) {
-    console.error('Chat endpoint error:', error);
+    console.error('[ERROR] Chat endpoint error:', {
+      message: error?.message || 'Unknown',
+      name: error?.name,
+      code: error?.code,
+      status: error?.response?.status,
+      data: error?.response?.data,
+      stack: error?.stack?.split('\n').slice(0, 3).join('\n')
+    });
     // Don't expose internal error details in production
     const isDevelopment = process.env.NODE_ENV === 'development';
     res.status(500).json({ 
