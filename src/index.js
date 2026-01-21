@@ -2162,6 +2162,29 @@ async function generateSignals(selectedMarkets) {
     let kellyFraction = calculateKelly(winProb, betPrice, 0, market.liquidity || 10000);
     log(`[POSITION SIZING] Step 1 - Base Kelly: ${(kellyFraction * 100).toFixed(2)}%`);
 
+    // CRITICAL: BOND MARKET FILTER - Never bet against near-certain outcomes
+    if (yesPrice > 0.90 && direction === 'BUY_NO') {
+      log(`[BOND_FILTER] Rejecting BUY NO on ${(yesPrice * 100).toFixed(1)}% market - catastrophic risk/reward`);
+      rejectedSignals.push({
+        marketId: market.id,
+        marketQuestion: market.question,
+        reason: 'BOND_MARKET_NO_BET',
+        details: `Cannot bet NO against ${(yesPrice * 100).toFixed(1)}% YES market - risk:reward = ${((1-yesPrice) * 100).toFixed(1)}¢ gain vs ${yesPrice * 100}% loss`
+      });
+      continue; // Skip this market entirely
+    }
+
+    if (yesPrice < 0.10 && direction === 'BUY_YES') {
+      log(`[BOND_FILTER] Rejecting BUY YES on ${(yesPrice * 100).toFixed(1)}% market - inverse bonding risk`);
+      rejectedSignals.push({
+        marketId: market.id,
+        marketQuestion: market.question,
+        reason: 'BOND_MARKET_NO_BET',
+        details: `Cannot bet YES against ${((1-yesPrice) * 100).toFixed(1)}% NO market - risk:reward = ${(yesPrice * 100).toFixed(1)}¢ gain vs ${((1-yesPrice) * 100)}% loss`
+      });
+      continue; // Skip this market entirely
+    }
+
     // THIRD: Determine action based on edge AND Kelly
     const meetsEdgeThreshold = Math.abs(rawEdge) >= categoryEdgeThreshold;
     const hasPositiveKelly = kellyFraction > 0;

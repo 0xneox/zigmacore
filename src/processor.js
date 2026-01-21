@@ -184,7 +184,7 @@ async function crossReferenceNews(market = {}) {
     const multiSourceResults = await searchNewsMultiple(queries, market, {
       maxResults: MAX_NEWS_RESULTS,
       days: 7,
-      sources: ['tavily', 'openai', 'google', 'bing'] // Try all sources
+      sources: ['google', 'openai'] // Free sources only - Google News RSS + OpenAI LLM
     });
 
     if (multiSourceResults.length > 0) {
