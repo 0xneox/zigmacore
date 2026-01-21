@@ -31,6 +31,10 @@ function classifyMarket(question) {
   if (/\b(election|president|trump|biden|harris|senate|congress|parliament|vote|primary|ballot|campaign|democrat|republican)\b/i.test(q)) return 'POLITICS';
   if (/\b(president|prime minister|chancellor|pm|mp|senator|governor|mayor)\b/i.test(q)) return 'POLITICS';
   if (/\b(rob jetten|dick schoof|péter magyar|geert wilders|marine le pen|olaf scholz|emmanuel macron)\b/i.test(q)) return 'POLITICS';
+  // 2028 election specific patterns
+  if (/2028.*(republican|democratic|presidential|nomination)/i.test(q)) return 'POLITICS';
+  if (/win.*2028.*(republican|democratic)/i.test(q)) return 'POLITICS';
+  if (/(vance|newsom|desantis|haley).*2028/i.test(q)) return 'POLITICS';
 
   // MACRO - Economic indicators
   if (/\b(recession|inflation|fed|federal reserve|interest rate|cpi|ppi|gdp|unemployment|jobs report|nfp|payroll)\b/i.test(q)) return 'MACRO';

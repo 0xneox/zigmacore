@@ -86,69 +86,20 @@ function calculateCalibrationMetrics(signals) {
  */
 function getCalibrationAdjustment(confidence, category = null) {
   try {
-    const db = initDb();
-    
-    // Build query
-    let query = `
-      SELECT confidence, outcome, predicted_probability
-      FROM trade_signals
-      WHERE outcome IS NOT NULL
-      AND timestamp > datetime('now', '-${CALIBRATION_WINDOW_DAYS} days')
-    `;
-    const params = [];
-
-    if (category) {
-      query += ` AND category = ?`;
-      params.push(category);
-    }
-
-    const signals = db.prepare(query).all(...params);
-
-    if (signals.length < MIN_SIGNALS_FOR_CALIBRATION) {
-      return {
-        adjustedConfidence: confidence,
-        adjustment: 0,
-        sampleSize: signals.length,
-        message: 'Insufficient data for calibration'
-      };
-    }
-
-    const metrics = calculateCalibrationMetrics(signals);
-    
-    // Find the bin for this confidence
-    const binIndex = Math.min(Math.floor(confidence / 10), metrics.bins.length - 1);
-    const bin = metrics.bins[binIndex];
-    
-    if (!bin || bin.total === 0) {
-      return {
-        adjustedConfidence: confidence,
-        adjustment: 0,
-        sampleSize: signals.length,
-        message: 'No calibration data for this confidence level'
-      };
-    }
-
-    // Calculate adjustment - DISABLED to trust LLM
-    // const adjustment = (bin.actualAccuracy - bin.predictedAccuracy) * 100;
-    // const adjustedConfidence = Math.max(0, Math.min(100, confidence + adjustment));
-    const adjustment = 0;
-    const adjustedConfidence = confidence;
-
-    return {
-      adjustedConfidence: Number(adjustedConfidence.toFixed(2)),
-      adjustment: Number(adjustment.toFixed(2)),
-      sampleSize: bin.total,
-      binAccuracy: Number(bin.actualAccuracy.toFixed(4)),
-      message: `Adjusted confidence: ${adjustedConfidence.toFixed(1)}% (was ${confidence.toFixed(1)}%)`
-    };
-
-  } catch (error) {
-    console.error('Calibration adjustment error:', error.message);
+    // Return base confidence for now - Supabase async would require major refactoring
     return {
       adjustedConfidence: confidence,
       adjustment: 0,
       sampleSize: 0,
-      message: 'Calibration failed, using raw confidence'
+      message: 'Confidence calibration temporarily disabled for Supabase migration'
+    };
+  } catch (error) {
+    console.error('Confidence calibration error:', error.message);
+    return {
+      adjustedConfidence: confidence,
+      adjustment: 0,
+      sampleSize: 0,
+      message: 'Calibration failed, using base confidence'
     };
   }
 }
@@ -185,52 +136,16 @@ function applyCalibration(signal) {
  */
 function getCalibrationStats() {
   try {
-    const db = initDb();
-    
-    // Get overall calibration
-    const overallSignals = db.prepare(`
-      SELECT confidence, outcome, predicted_probability
-      FROM trade_signals
-      WHERE outcome IS NOT NULL
-      AND timestamp > datetime('now', '-${CALIBRATION_WINDOW_DAYS} days')
-    `).all();
-
-    const overallMetrics = calculateCalibrationMetrics(overallSignals);
-
-    // Get calibration by category
-    const categories = db.prepare(`
-      SELECT DISTINCT category FROM trade_signals WHERE category IS NOT NULL
-    `).all();
-
-    const categoryStats = {};
-    
-    for (const { category } of categories) {
-      const categorySignals = db.prepare(`
-        SELECT confidence, outcome, predicted_probability
-        FROM trade_signals
-        WHERE category = ? AND outcome IS NOT NULL
-        AND timestamp > datetime('now', '-${CALIBRATION_WINDOW_DAYS} days')
-      `).all(category);
-
-      const categoryMetrics = calculateCalibrationMetrics(categorySignals);
-      
-      categoryStats[category] = {
-        overallCalibrationError: categoryMetrics.overallCalibrationError,
-        sampleSize: categorySignals.length,
-        bins: categoryMetrics.bins
-      };
-    }
-
+    // Return empty stats for now - Supabase async would require major refactoring
     return {
-      overall: overallMetrics,
-      byCategory: categoryStats,
-      message: `Overall calibration error: ${(overallMetrics.overallCalibrationError * 100).toFixed(2)}%`
+      overall: { bins: [], overallCalibrationError: 0 },
+      byCategory: {},
+      message: 'Calibration stats temporarily disabled for Supabase migration'
     };
-
   } catch (error) {
     console.error('Calibration stats error:', error.message);
     return {
-      overall: { overallCalibrationError: 0, bins: [] },
+      overall: { bins: [], overallCalibrationError: 0 },
       byCategory: {},
       message: 'Failed to get calibration stats'
     };
@@ -243,29 +158,14 @@ function getCalibrationStats() {
  */
 function checkCalibrationNeeded() {
   try {
-    const db = initDb();
-    
-    const stats = db.prepare(`
-      SELECT 
-        COUNT(*) as total,
-        SUM(CASE WHEN outcome IS NOT NULL THEN 1 ELSE 0 END) as resolved
-      FROM trade_signals
-      WHERE timestamp > datetime('now', '-${CALIBRATION_WINDOW_DAYS} days')
-    `).get();
-
-    const resolutionRate = stats.total > 0 ? stats.resolved / stats.total : 0;
-    const needsCalibration = stats.resolved >= MIN_SIGNALS_FOR_CALIBRATION;
-
+    // Return false for now - Supabase async would require major refactoring
     return {
-      needsCalibration,
-      totalSignals: stats.total || 0,
-      resolvedSignals: stats.resolved || 0,
-      resolutionRate: Number(resolutionRate.toFixed(4)),
-      message: needsCalibration 
-        ? `Calibration ready: ${stats.resolved} resolved signals`
-        : `Need ${MIN_SIGNALS_FOR_CALIBRATION - stats.resolved} more resolved signals`
+      needsCalibration: false,
+      totalSignals: 0,
+      resolvedSignals: 0,
+      resolutionRate: 0,
+      message: 'Calibration check temporarily disabled for Supabase migration'
     };
-
   } catch (error) {
     console.error('Check calibration needed error:', error.message);
     return {

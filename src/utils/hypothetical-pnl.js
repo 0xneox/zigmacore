@@ -20,7 +20,8 @@ function calculateSignalPnL(signal, positionSize = 100, side = null) {
       pnl: 0,
       pnlPercent: 0,
       outcome: 'UNKNOWN',
-      settled: false
+      settled: false,
+      brierScore: null
     };
   }
 
@@ -29,6 +30,13 @@ function calculateSignalPnL(signal, positionSize = 100, side = null) {
   
   // Entry price (market odds at signal time)
   const entryPrice = signal.marketOdds;
+  
+  // Calculate Brier score (probability calibration metric)
+  let brierScore = null;
+  if (signal.outcome && typeof signal.predictedProbability === 'number') {
+    const actualOutcome = signal.outcome === 'YES' ? 1 : 0;
+    brierScore = Math.pow(signal.predictedProbability - actualOutcome, 2);
+  }
   
   // If not settled, return pending
   if (!signal.outcome) {
@@ -40,7 +48,8 @@ function calculateSignalPnL(signal, positionSize = 100, side = null) {
       pnl: 0,
       pnlPercent: 0,
       outcome: 'PENDING',
-      settled: false
+      settled: false,
+      brierScore
     };
   }
 
@@ -78,7 +87,8 @@ function calculateSignalPnL(signal, positionSize = 100, side = null) {
     pnlPercent: Number(pnlPercent.toFixed(2)),
     outcome: signal.outcome,
     settled: true,
-    correct: (tradeSide === 'YES' && signal.outcome === 'YES') || (tradeSide === 'NO' && signal.outcome === 'NO')
+    correct: (tradeSide === 'YES' && signal.outcome === 'YES') || (tradeSide === 'NO' && signal.outcome === 'NO'),
+    brierScore: Number(brierScore?.toFixed(4) || 0)
   };
 }
 
@@ -138,6 +148,12 @@ function calculateAggregatePnL(signals, positionSize = 100) {
     : 0;
   const maxLoss = losingTrades.length > 0 
     ? Math.min(...losingTrades.map(t => t.pnl)) 
+    : 0;
+
+  // Calculate aggregate Brier score (lower is better, <0.2 is excellent)
+  const validBrierScores = settledTrades.map(t => t.brierScore).filter(score => score !== null && !isNaN(score));
+  const avgBrierScore = validBrierScores.length > 0 
+    ? validBrierScores.reduce((sum, score) => sum + score, 0) / validBrierScores.length 
     : 0;
 
   // Calculate Sharpe Ratio
@@ -255,6 +271,7 @@ function calculateAggregatePnL(signals, positionSize = 100) {
     maxWin: Number(maxWin.toFixed(2)),
     maxLoss: Number(maxLoss.toFixed(2)),
     sharpeRatio: Number(sharpeRatio.toFixed(3)),
+    avgBrierScore: Number(avgBrierScore.toFixed(4)),
     rollingMetrics,
     benchmark,
     trades: detailedTrades

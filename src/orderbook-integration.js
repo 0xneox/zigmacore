@@ -63,40 +63,74 @@ async function fetchOrderBook(tokenId) {
 }
 
 /**
- * Fetch order book by market condition ID
- * @param {string} conditionId - Market condition ID
+ * Fetch order book by market slug or condition ID
+ * @param {string} marketIdOrSlug - Market slug or condition ID
  * @returns {Object} - Order books for YES and NO tokens
  */
-async function fetchMarketOrderBooks(conditionId) {
+async function fetchMarketOrderBooks(marketIdOrSlug) {
   try {
-    // First get token IDs from market info
-    const marketResponse = await axios.get(`${GAMMA_API}/markets/${conditionId}`, {
+    // First get market details from Gamma to extract token IDs
+    const marketResponse = await axios.get(`${GAMMA_API}/markets?slug=${marketIdOrSlug}`, {
       timeout: 5000
     });
     
-    const market = marketResponse.data;
-    const tokens = market.tokens || [];
+    let market = marketResponse.data;
     
-    const yesToken = tokens.find(t => t.outcome === 'Yes');
-    const noToken = tokens.find(t => t.outcome === 'No');
+    // If array returned, take first result
+    if (Array.isArray(market)) {
+      market = market[0];
+    }
+    
+    if (!market) {
+      // Try by condition ID
+      const byIdResponse = await axios.get(`${GAMMA_API}/markets/${marketIdOrSlug}`, {
+        timeout: 5000
+      });
+      market = byIdResponse.data;
+    }
+    
+    if (!market) {
+      console.error(`[ORDERBOOK] Market not found: ${marketIdOrSlug}`);
+      return { yes: { bids: [], asks: [] }, no: { bids: [], asks: [] }, error: 'Market not found' };
+    }
+    
+    // Parse clobTokenIds if it's a JSON string
+    let tokens = market.clobTokenIds || market.tokens || [];
+    if (typeof tokens === 'string') {
+      try {
+        tokens = JSON.parse(tokens);
+      } catch (e) {
+        console.error(`[ORDERBOOK] Failed to parse clobTokenIds: ${tokens}`);
+        tokens = [];
+      }
+    }
+    
+    // Polymarket tokens: index 0 = YES, index 1 = NO
+    const yesTokenId = tokens[0]?.token_id || tokens[0];
+    const noTokenId = tokens[1]?.token_id || tokens[1];
+    
+    if (!yesTokenId) {
+      console.error(`[ORDERBOOK] No token IDs for market: ${marketIdOrSlug}`);
+      return { yes: { bids: [], asks: [] }, no: { bids: [], asks: [] }, error: 'No token IDs' };
+    }
     
     const [yesBook, noBook] = await Promise.all([
-      yesToken ? fetchOrderBook(yesToken.token_id) : { bids: [], asks: [] },
-      noToken ? fetchOrderBook(noToken.token_id) : { bids: [], asks: [] }
+      yesTokenId ? fetchOrderBook(yesTokenId) : { bids: [], asks: [] },
+      noTokenId ? fetchOrderBook(noTokenId) : { bids: [], asks: [] }
     ]);
     
     return {
       yes: yesBook,
       no: noBook,
       market: {
-        conditionId,
+        conditionId: market.conditionId,
         question: market.question,
-        tokens: tokens.map(t => ({ outcome: t.outcome, tokenId: t.token_id }))
+        tokens: [yesTokenId, noTokenId]
       }
     };
     
   } catch (error) {
-    console.error(`[ORDERBOOK] Failed to fetch market ${conditionId}:`, error.message);
+    console.error(`[ORDERBOOK] Failed to fetch market ${marketIdOrSlug}:`, error.message);
     return {
       yes: { bids: [], asks: [] },
       no: { bids: [], asks: [] },

@@ -36,6 +36,10 @@ axiosRetry(http, {
     return delay;
   },
   retryCondition: (error) => {
+    // Skip retries for CLOB authentication errors (403, timeout)
+    if (error.config?.url?.includes('/auth/token')) {
+      return false;
+    }
     // Retry on network errors, timeouts, and 5xx responses
     return axiosRetry.isNetworkOrIdempotentRequestError(error) || 
            (error.code === 'ECONNABORTED') ||
@@ -142,11 +146,11 @@ async function fetchAllMarkets() {
   const baseUrl = `${GAMMA}/markets`;
   const params = {
     closed: 'false',
-    limit: 3000,
+    limit: 700,
     order: 'startDate',
     sort: 'desc'
   };
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 3000;
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 700;
   let offset = 0;
   let allMarkets = [];
 
@@ -235,14 +239,8 @@ async function fetchTags() {
  * Get authentication token for CLOB API
  */
 async function getAuthToken() {
-  try {
-    console.log('[AUTH] CLOB API temporarily disabled to focus on mid-range market discovery');
-    console.log('[AUTH] Using demo mode for development');
-    return 'demo-token-for-development';
-  } catch (error) {
-    console.error('❌ Failed to get auth token:', error.message);
-    return 'demo-token-for-development';
-  }
+  // CLOB authentication disabled - return null immediately
+  return null;
 }
 
 /**
@@ -252,7 +250,7 @@ async function fetchOrderBook(marketId) {
   try {
     const token = await getAuthToken();
     if (!token) {
-      console.error('❌ No auth token available');
+      // Silently skip when auth is disabled
       return null;
     }
 

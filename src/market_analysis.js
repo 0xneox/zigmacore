@@ -671,48 +671,46 @@ class MarketAnalyzer {
 
 // Kelly Criterion calculation for optimal bet sizing
 function calculateKelly(winProb, price, edgeBuffer = 0.01, liquidity = 10000) {
-  // Validate inputs before type coercion
-  if (typeof winProb !== 'number' || typeof price !== 'number' || typeof liquidity !== 'number') {
-    console.warn('[calculateKelly] Invalid input types:', { winProb, price, liquidity });
+  // PATCH: Coerce all inputs to numbers with defensive validation
+  const p = typeof winProb === 'string' ? parseFloat(winProb) : winProb;
+  const priceNum = typeof price === 'string' ? parseFloat(price) : price;
+  const liqNum = typeof liquidity === 'string' ? parseFloat(liquidity) : liquidity;
+
+  // Validate after coercion
+  if (!Number.isFinite(p) || !Number.isFinite(priceNum) || !Number.isFinite(liqNum)) {
+    console.warn('[calculateKelly] Non-finite inputs after coercion:', { 
+      winProb: p, 
+      price: priceNum, 
+      liquidity: liqNum,
+      original: { winProb, price, liquidity }
+    });
     return 0;
   }
-  
-  if (!Number.isFinite(winProb) || !Number.isFinite(price) || !Number.isFinite(liquidity)) {
-    console.warn('[calculateKelly] Non-finite inputs:', { winProb, price, liquidity });
-    return 0;
-  }
-  
-  const p = winProb;
-  const priceNum = price;
-  const liqNum = liquidity;
 
   // 1. Safety check: No edge or invalid price
   const edge = p - priceNum;
   if (Math.abs(edge) <= edgeBuffer || priceNum <= 0 || priceNum >= 1) {
-    console.warn('[calculateKelly] Edge too small or invalid price:', { edge, price });
+    console.warn('[calculateKelly] Edge too small or invalid price:', { edge, price: priceNum });
     return 0; 
   }
   
   // 2. Standard Kelly: (p*b - q) / b
-  // b = net odds (e.g., if price is 0.25, b is 3)
   const b = (1 - priceNum) / priceNum;
   const q = 1 - p;
   let fullKelly = (p * b - q) / b;
 
-  // 3. Liquidity Scaling (More aggressive for MVP)
-  // If liquidity < 1000, we don't bet.
+  // 3. Liquidity Scaling
   const liquidityMultiplier =
     liqNum < 1000 ? 0 :
     liqNum < 5000 ? 0.9 :
     liqNum < 20000 ? 1.0 :
     liqNum >= 100000 ? 1.2 : 1.1;
 
-  // Apply multipliers with proper order: multiplier first, then cap
   const MAX_POSITION_SIZE = 0.05; // 5% max of bankroll
-  const liquidityScaledKelly = fullKelly * liquidityMultiplier; // Apply multiplier first
-  const finalKelly = Math.min(liquidityScaledKelly * 2.0, MAX_POSITION_SIZE); // Then apply 2x and cap
+  const liquidityScaledKelly = fullKelly * liquidityMultiplier;
+  const finalKelly = Math.min(liquidityScaledKelly * 2.0, MAX_POSITION_SIZE);
   
-  return Math.max(0, finalKelly); // Return 0 if no valid edge
+  return Math.max(0, finalKelly);
 }
 
 // Simple in-memory cache for Tavily searches (expires after configured TTL)

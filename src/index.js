@@ -69,6 +69,9 @@ console.warn = function(...args) {
 
 const { BoundedMap } = require('./utils/bounded-map');
 
+// Add URL parser for market identification
+const { parsePolymarketUrl, normalizeSlug } = require('./utils/url-parser');
+
 const CACHE_DIR = path.join(__dirname, '..', 'cache');
 const INSIGHTS_FILE = path.join(__dirname, '..', 'oracle_insights.txt');
 const PERSONAL_TRADES_FILE = path.join(__dirname, '..', 'personal_trades.txt');
@@ -106,8 +109,10 @@ const cron = require('node-cron');
 const { fetchAllMarkets, fetchTags, fetchSearchMarkets } = require('./fetcher');
 const { computeMetrics } = require('./utils/metrics');
 const { savePriceCache, loadCache, saveAnalysisCache, getAnalysisCache, saveTradeSignal } = require('./db');
+const { recordCycle } = require('./monitoring');
 const { generateDecrees, generateEnhancedAnalysis, computeNetEdge } = require('./llm');
 const { applyAdaptiveLearning } = require('./adaptive-learning');
+const { calibrateForWinRate } = require('./confidence-calibration');
 const { postToX } = require('./poster');
 const { calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./clob_price_cache');
@@ -193,6 +198,37 @@ const ensureCacheDir = async () => {
     console.error('Failed to ensure cache directory:', err.message);
   }
 };
+
+/**
+ * Safely parse liquidity from API response
+ * Polymarket API sometimes returns strings, sometimes numbers
+ */
+function parseLiquidity(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+}
+
+/**
+ * Normalize market data from API
+ */
+function normalizeMarketData(market) {
+  return {
+    ...market,
+    liquidity: parseLiquidity(market.liquidity),
+    volume24hr: parseLiquidity(market.volume24hr || market.volume_24hr || 0),
+    yesPrice: typeof market.yesPrice === 'number' ? market.yesPrice : 
+              parseFloat(market.outcomePrices?.[0]) || 0.5,
+    noPrice: typeof market.noPrice === 'number' ? market.noPrice :
+             parseFloat(market.outcomePrices?.[1]) || 0.5
+  };
+}
+
 ensureCacheDir().catch(console.error);
 
 const loadJsonFile = (filePath, fallback) => {
@@ -299,6 +335,56 @@ function computeCorrelation(seriesA = [], seriesB = []) {
 function getClusterForCategory(category = '') {
   if (!category) return null;
   return CATEGORY_CLUSTER_MAP[category.toUpperCase()] || null;
+}
+
+// Add new helper function for market expiration check
+function isMarketExpired(market) {
+  const endDateStr = market.endDateIso || market.endDate || market.end_date_iso || market.end_date;
+  if (!endDateStr) return false; // Unknown expiration = assume active
+  
+  const endMs = Date.parse(endDateStr);
+  if (Number.isNaN(endMs)) return false;
+  
+  const now = Date.now();
+  const isExpired = endMs <= now;
+  
+  if (isExpired) {
+    const expiredDate = new Date(endMs).toLocaleDateString('en-US');
+    console.log(`[EXPIRED] Market ${market.id} expired on ${expiredDate}`);
+  }
+  
+  return isExpired;
+}
+
+// Helper to create expired market response
+function createExpiredMarketResponse(market) {
+  const endDateStr = market.endDateIso || market.endDate;
+  const endMs = Date.parse(endDateStr);
+  const expiredDate = new Date(endMs).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  return {
+    marketId: market.id,
+    marketSlug: market.slug,
+    marketQuestion: market.question,
+    status: 'EXPIRED',
+    action: 'NO_TRADE',
+    message: `This market resolved on ${expiredDate}. No trading possible.`,
+    recommendation: {
+      action: 'NO_TRADE',
+      confidence: 100,
+      reasoning: `Market expired on ${expiredDate}. The outcome has already been determined.`,
+      tradeTier: 'NO_TRADE',
+      effectiveEdge: 0,
+      intentExposure: 0
+    },
+    price: market.yesPrice || 0,
+    endDate: expiredDate,
+    daysRemaining: 0
+  };
 }
 
 // Cluster filtering disabled for consistency
@@ -1093,9 +1179,9 @@ async function safeBuildDynamicCategoryPriors(markets = []) {
 }
 
 function getYesNoPrices(market) {
-  const clobPrice = getClobPrice(market.id);
-  if (clobPrice && clobPrice > 0 && clobPrice < 1) {
-    return { yes: clobPrice, no: 1 - clobPrice };
+  const clobData = getClobPrice(market.id);
+  if (clobData && clobData.mid && clobData.mid > 0 && clobData.mid < 1) {
+    return { yes: clobData.mid, no: 1 - clobData.mid };
   }
 
   if (market.outcomePrices && market.outcomePrices.length >= 2) {
@@ -1364,13 +1450,46 @@ function parseAnalysis(llmOutput, market) {
   if (!llmOutput) return null;
 
   if (typeof llmOutput === 'string') {
+    // PATCH: Clean up truncated JSON before parsing
+    let cleanedOutput = llmOutput.trim();
+    
+    // Remove any trailing incomplete elements
+    const lastValidBrace = cleanedOutput.lastIndexOf('}');
+    const lastValidBracket = cleanedOutput.lastIndexOf(']');
+    
+    if (lastValidBrace > 0 || lastValidBracket > 0) {
+      // Find the last complete JSON structure
+      let cutPoint = Math.max(lastValidBrace, lastValidBracket) + 1;
+      cleanedOutput = cleanedOutput.substring(0, cutPoint);
+      
+      // Try to close any open structures
+      const openBraces = (cleanedOutput.match(/{/g) || []).length;
+      const closeBraces = (cleanedOutput.match(/}/g) || []).length;
+      const openBrackets = (cleanedOutput.match(/\[/g) || []).length;
+      const closeBrackets = (cleanedOutput.match(/]/g) || []).length;
+      
+      // Add missing closing brackets/braces
+      for (let i = 0; i < openBrackets - closeBrackets; i++) {
+        cleanedOutput += ']';
+      }
+      for (let i = 0; i < openBraces - closeBraces; i++) {
+        cleanedOutput += '}';
+      }
+    }
+    
     try {
-      return JSON.parse(llmOutput);
+      return JSON.parse(cleanedOutput);
     } catch (e) {
-      // Use market price instead of defaulting to 0.5 to avoid incorrect bets
+      // PATCH: Use market price instead of 0.5 to avoid bad bets
       const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
       console.warn(`[PARSE] JSON parse failed for ${market?.id}, using market price ${yesPrice}: ${e.message}`);
-      return { probability: yesPrice, confidence: 50, reasoning: llmOutput };
+      console.warn(`[PARSE] Truncated content: ...${llmOutput.slice(-100)}`);
+      return { 
+        probability: yesPrice, 
+        confidence: 30, // Lower confidence for fallback
+        reasoning: 'Analysis parsing failed - using conservative estimate',
+        parseError: true
+      };
     }
   }
 
@@ -1850,6 +1969,21 @@ async function generateSignals(selectedMarkets) {
   let signalsGenerated = 0;
 
   for (const market of selectedMarkets) {
+    // PATCH: Early exit for expired markets - saves LLM costs
+    if (isMarketExpired(market)) {
+      rejectedSignals.push({
+        marketId: market.id,
+        marketSlug: market.slug,
+        marketQuestion: market.question,
+        action: 'NO_TRADE',
+        price: market.yesPrice || 0,
+        reason: 'MARKET_EXPIRED',
+        details: `Market expired on ${market.endDateIso || market.endDate}`,
+        timestamp: new Date().toISOString()
+      });
+      continue; // Skip to next market - don't waste LLM call
+    }
+
     // Filter out meme/joke markets
     if (isMemeMarket(market.question)) {
       log(`[FILTER] Skipping meme market: ${market.question}`, 'DEBUG');
@@ -1872,7 +2006,8 @@ async function generateSignals(selectedMarkets) {
     //   continue;
     // }
 
-    const livePrice = getClobPrice(market.id) || market.yesPrice || 0.5;
+    const clobPrice = getClobPrice(market.id);
+    const livePrice = clobPrice?.mid || market.yesPrice || 0.5;
     const cached = getAnalysisCache(market.id);
     let analysis = null;
 
@@ -1913,7 +2048,20 @@ async function generateSignals(selectedMarkets) {
 
       const enhanced = await generateEnhancedAnalysis(market, orderBook, news);
       analysis = enhanced;
-      saveAnalysisCache(market.id, livePrice, JSON.stringify(analysis.llmAnalysis || {}), analysis.llmAnalysis?.confidence || 50);
+      
+      // Extract numeric confidence value
+      let confidenceValue = analysis.llmAnalysis?.confidence || 50;
+      if (typeof confidenceValue === 'object' && confidenceValue !== null) {
+        confidenceValue = confidenceValue.confidence || confidenceValue.value || confidenceValue.score || 50;
+      }
+      if (typeof confidenceValue !== 'number' || isNaN(confidenceValue)) {
+        confidenceValue = 50;
+      }
+      
+      // Debug log to ensure confidence is numeric
+      log(`[DEBUG] Saving confidence for ${market.id}: ${typeof confidenceValue} = ${confidenceValue}`);
+      
+      saveAnalysisCache(market.id, livePrice, JSON.stringify(analysis.llmAnalysis || {}), confidenceValue);
     }
 
     // Validate LLM analysis to prevent hallucinations and extreme predictions
@@ -2092,8 +2240,8 @@ async function generateSignals(selectedMarkets) {
         message: 'Fallback - adaptive learning unavailable'
       };
     }
-    const effectiveEdge = typeof adaptiveLearning?.adjustedEdge === 'number' ? adaptiveLearning.adjustedEdge : rawEdge;
-    const adjustedConfidence = clamp(
+    let effectiveEdge = typeof adaptiveLearning?.adjustedEdge === 'number' ? adaptiveLearning.adjustedEdge : rawEdge;
+    let finalConfidence = clamp(
       typeof adaptiveLearning?.adjustedConfidence === 'number' ? adaptiveLearning.adjustedConfidence / 100 : normalizedConfidence,
       0.01,
       0.99
@@ -2148,6 +2296,27 @@ async function generateSignals(selectedMarkets) {
 
     const cluster = getClusterForCategory(market.category);
 
+    // Apply confidence calibration based on category performance
+    const categoryStats = categoryPerformance[categoryKey];
+    let calibratedSignal = {
+      action,
+      confidence: finalConfidence * 100, // Convert to percentage
+      edge: effectiveEdge * 100 // Convert to percentage
+    };
+    
+    if (categoryStats) {
+      calibratedSignal = calibrateForWinRate(calibratedSignal, {
+        winRate: categoryStats.winRate || 0.5,
+        sampleSize: categoryStats.sampleSize || 0
+      });
+      
+      // Update confidence with calibrated value
+      finalConfidence = Math.min(0.99, Math.max(0.01, calibratedSignal.confidence / 100));
+      effectiveEdge = calibratedSignal.edge / 100;
+      
+      log(`[CALIBRATION] ${categoryKey}: winRate=${(categoryStats.winRate || 0.5).toFixed(3)}, sampleSize=${categoryStats.sampleSize || 0}, adjustedConf=${finalConfidence.toFixed(3)}`);
+    }
+
     // Create signal with CORRECT edge values (using adaptive learning adjustments)
     // Create signal with CORRECT edge values (using adaptive learning adjustments)
     // UNITS: edgeScore/rawEdge/effectiveEdge are PERCENTAGES (0-100)
@@ -2165,12 +2334,12 @@ async function generateSignals(selectedMarkets) {
       edgeScoreDecimal: Math.abs(effectiveEdge),      // DECIMAL (0-1) for threshold comparisons
       rawEdge: rawEdge * 100,                         // PERCENTAGE - signed for reference
       rawEdgeDecimal: rawEdge,                        // DECIMAL - signed
-      confidenceScore: Number((adjustedConfidence * 100).toFixed(1)),
+      confidenceScore: Number((finalConfidence * 100).toFixed(1)),
       tradeDecision: action,
-      modelConfidence: Number((adjustedConfidence * 100).toFixed(1)),
-      executionConfidence: Number((adjustedConfidence * 100).toFixed(1)),
-      tradeTier: getTradeTier(netEdge, adjustedConfidence),
-      effectiveEdge: netEdge * 100,                   // Net edge after costs
+      modelConfidence: Number((finalConfidence * 100).toFixed(1)),
+      executionConfidence: Number((finalConfidence * 100).toFixed(1)),
+      tradeTier: getTradeTier(netEdge, finalConfidence),
+      netEdge: netEdge * 100,                   // Net edge after costs
       adaptiveLearning: {
         applied: true,
         originalEdge: absEdge,
@@ -2180,7 +2349,7 @@ async function generateSignals(selectedMarkets) {
       structuredAnalysis: {
         probability: llmProbability, // Use original LLM probability
         action,
-        confidence: Number((adjustedConfidence * 100).toFixed(1)),
+        confidence: Number((finalConfidence * 100).toFixed(1)),
         reasoning: '', // Not used in this code
         kellyFraction: intentExposure,
         baseEffectiveEdge: netEdge,
@@ -2199,7 +2368,7 @@ async function generateSignals(selectedMarkets) {
         sentimentScore: '', // Not used in this code
         adaptiveLearning: adaptiveLearning,
         calibration: {
-          confidence: Number((adjustedConfidence * 100).toFixed(2)),
+          confidence: Number((finalConfidence * 100).toFixed(2)),
         },
         directionalBias: {
           buyNoCount: 0,
@@ -2318,6 +2487,20 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
         signal.tradeTier = 'MEDIUM_TRADE';
       }
       executableTrades.push(signalWithMarket);
+      
+      // Save executable trade to database for UI display
+      try {
+        await saveTradeSignal({
+          marketId: market.id,
+          action: signalWithMarket.action,
+          price: signalWithMarket.price,
+          confidence: signalWithMarket.confidence,
+          edge: signalWithMarket.edgeScoreDecimal || signalWithMarket.edgeScore / 100,
+          category: market.category
+        });
+      } catch (e) {
+        console.error('[SIGNAL] Failed to save executable trade:', e.message);
+      }
     } else {
       outlookSignals.push(signalWithMarket);
     }
@@ -2566,9 +2749,47 @@ async function generateEnhancedSignal(market, llmAnalysis, existingPositions, ex
   // Step 2: Correlation adjustment
   const corrAdj = getCorrelationAdjustedPosition(market, existingPositions, adjustedSize);
   
-  // Step 3: Order book validation (DISABLED - using default approval)
-  const orderBookCheck = { approved: true, adjustedSize: corrAdj.adjustedSize * 1000 };
-  console.log(`[ORDERBOOK] Skipping validation - using default approval`);
+  // Step 3: Order book validation
+  let orderBookCheck;
+  try {
+    // Determine trade side based on signal direction
+    const tradeSide = adjustedEdge > 0 ? 'BUY_YES' : 'BUY_NO';
+    const tradeSize = corrAdj.adjustedSize * 1000; // Convert to dollars
+    
+    console.log(`[ORDERBOOK] Validating ${tradeSide} for $${tradeSize.toFixed(2)}`);
+    
+    // Use conditionId for CLOB lookups (Polymarket's order book uses conditionId)
+    const marketIdentifier = market.conditionId || market.condition_id || market.id;
+    const liquidityCheck = await checkTradeLiquidity(marketIdentifier, tradeSide, tradeSize);
+    
+    if (liquidityCheck.sufficient) {
+      orderBookCheck = { 
+        approved: true, 
+        adjustedSize: tradeSize,
+        slippage: liquidityCheck.slippage,
+        recommendation: liquidityCheck.recommendation
+      };
+      console.log(`[ORDERBOOK] ✅ Approved - Slippage: ${liquidityCheck.slippage?.toFixed(2)}%, Rec: ${liquidityCheck.recommendation}`);
+    } else {
+      orderBookCheck = { 
+        approved: false, 
+        adjustedSize: 0,
+        reason: `Insufficient liquidity: ${liquidityCheck.recommendation}`,
+        slippage: liquidityCheck.slippage,
+        spread: liquidityCheck.spread
+      };
+      console.log(`[ORDERBOOK] ❌ Rejected - ${liquidityCheck.recommendation}, Slippage: ${liquidityCheck.slippage}%, Spread: ${liquidityCheck.spread?.toFixed(2)}%`);
+    }
+  } catch (error) {
+    console.error(`[ORDERBOOK] Validation error: ${error.message}`);
+    // REJECT on validation failure - don't approve blindly
+    orderBookCheck = { 
+      approved: false, 
+      adjustedSize: 0,
+      reason: `Validation error: ${error.message}` 
+    };
+    console.log(`[ORDERBOOK] ❌ Validation failed - rejecting trade`);
+  }
   
   if (!orderBookCheck.approved) {
     return { valid: false, reason: `Order book: ${orderBookCheck.reason}` };
@@ -2846,11 +3067,14 @@ async function enhancedMainCycle() {
 async function runCycle() {
   if (isRunning) return;
   isRunning = true;
+  const cycleStartTime = Date.now(); // Track cycle start time
   let markets = [];
   try {
     // ...
     const rawMarkets = await fetchAllMarkets();
-    markets = rawMarkets;
+
+    // PATCH: Normalize all market data to prevent type errors
+    const markets = rawMarkets.map(normalizeMarketData);
 
     let lastSnapshot = {};
     if (fsSync.existsSync(SNAPSHOT_FILE)) {
@@ -2873,6 +3097,13 @@ async function runCycle() {
     // POLYMARKET PRO MOVE: Filter for high-value markets first
     const highValueMarkets = filterHighValueMarkets(enriched);
     log(`HIGH-VALUE FILTER: ${highValueMarkets.length}/${enriched.length} markets meet liquidity thresholds`);
+    
+    // Start polling for high-value markets
+    const marketIds = highValueMarkets.map(m => m.conditionId || m.id).filter(Boolean);
+    if (marketIds.length > 0) {
+      startPolling(marketIds);
+      log(`[CLOB] Started polling for ${marketIds.length} high-value markets`);
+    }
     
     // POLYMARKET PRO MOVE: Detect spread arbitrage opportunities
     const arbitrageOpportunities = highValueMarkets
@@ -2918,6 +3149,15 @@ async function runCycle() {
           if (fallbackStart) m.startDateIso = fallbackStart;
         }
 
+        if (!m.endDateIso) {
+          m.endDateIso = m.endDate || m.end_date_iso || m.end_date || m.resolutionTime || m.resolution_time || null;
+        }
+
+        // Also extract from nested event data if available
+        if (!m.endDateIso && m.event?.endDate) {
+          m.endDateIso = m.event.endDate;
+        }
+
         const snapshotEntry = lastSnapshot?.[m.id];
         if (snapshotEntry) {
           if ((!Array.isArray(m.priceHistory) || m.priceHistory.length === 0) && Array.isArray(snapshotEntry.priceHistory)) {
@@ -2934,6 +3174,9 @@ async function runCycle() {
           }
           if (!m.startDateIso && snapshotEntry.startDateIso) {
             m.startDateIso = snapshotEntry.startDateIso;
+          }
+          if (!m.endDateIso && snapshotEntry.endDateIso) {
+            m.endDateIso = snapshotEntry.endDateIso;
           }
         } else {
           m.priceHistory = m.priceHistory || [];
@@ -3030,8 +3273,16 @@ async function runCycle() {
       posts: signalsGenerated
     });
 
+    // Record cycle completion with timing
+    const cycleDuration = Date.now() - cycleStartTime;
+    recordCycle(cycleDuration, true); // Record successful cycle
+
     log("âœ… Cycle complete");
   } catch (error) {
+    // Record failed cycle
+    const cycleDuration = Date.now() - cycleStartTime;
+    recordCycle(cycleDuration, false); // Record failed cycle
+    
     log(`CRITICAL CYCLE ERROR: ${error.message}\n${error.stack}`, 'ERROR');
   } finally {
     isRunning = false;
@@ -3041,7 +3292,6 @@ async function runCycle() {
 async function main() {
   try {
     log("Agent Zigma starting...");
-    startPolling?.();
     startServer?.();
     startResolutionTracker(); // Start resolution tracking
     await queuedRunCycle();

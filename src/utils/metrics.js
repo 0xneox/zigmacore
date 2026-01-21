@@ -255,7 +255,7 @@ async function computeMetrics(markets, cache) {
       // Keep only last 60 minutes of history (for Delta Sniper)
       const sixtyMinutesAgo = Date.now() - (60 * 60 * 1000);
       const recentPriceHistory = (last.priceHistory || []).filter(entry => entry.timestamp > sixtyMinutesAgo);
-      const recentVolumeHistory = getVolumeSnapshots(m.id, sixtyMinutesAgo);
+      const recentVolumeHistory = getVolumeSnapshots(m.id, sixtyMinutesAgo); // Now synchronous
 
       // Calculate Volume Velocity
       let avgVvel = 0;
@@ -328,7 +328,7 @@ async function computeMetrics(markets, cache) {
   }
 
   /* ---- update cache ---- */
-  validMarkets.forEach(m => {
+  for (const m of validMarkets) {
     const marketId = m.id;
     const currentPrice = m.yesPrice;
     const currentTime = Date.now();
@@ -350,7 +350,7 @@ async function computeMetrics(markets, cache) {
     const priceVolatility = calculateStdDev(recentPriceHistory.map(p => p.price));
 
     // Save volume snapshot to database
-    saveVolumeSnapshot(marketId, m.volume, currentTime);
+    saveVolumeSnapshot(marketId, m.volume, currentTime); // Now synchronous
 
     cache[marketId] = {
       price: currentPrice,
@@ -362,7 +362,7 @@ async function computeMetrics(markets, cache) {
       vVel: m.vVel,
       startDateIso: m.startDateIso || null
     };
-  });
+  }
 
   saveCache(cache);
   return validMarkets;

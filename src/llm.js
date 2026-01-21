@@ -917,8 +917,11 @@ async function generateEnhancedAnalysis(marketData) {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 800,
-        temperature: 0
+        // PATCH: Increase max_tokens to prevent truncation
+        max_tokens: 2000,  // INCREASED from 800
+        temperature: 0,
+        // PATCH: Add response_format for reliable JSON
+        response_format: { type: "json_object" }
       });
     } finally {
       clearTimeout(timeoutId);

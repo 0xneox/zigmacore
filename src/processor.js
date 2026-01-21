@@ -11,17 +11,80 @@ const log = (msg) => { if (LOG_LEVEL === 'DEBUG') console.log(msg); };
 
 const GAMMA = process.env.GAMMA_API_URL || 'https://gamma-api.polymarket.com';
 const CACHE_FILE = path.join(__dirname, '..', 'cache', 'last_snapshot.json');
-
 const { getVolumeSnapshots, saveVolumeSnapshot } = require('./db');
 const { searchTavily, searchLLMNews } = require('./market_analysis');
 const { searchNewsMultiple } = require('./news-search-multi');
-
 const NEWS_CACHE_TTL_MS = 2 * 60 * 1000; // Reduced to 2 minutes
 const MAX_NEWS_RESULTS = 12;
 const HIGH_CRED_SOURCES = ['reuters', 'bloomberg', 'financial times', 'wall street journal', 'wsj', 'ap', 'associated press', 'ft'];
 const POSITIVE_TERMS = ['approval', 'surge', 'record', 'beats', 'wins', 'launch', 'uphold', 'favorable', 'sec clears', 'momentum', 'support'];
 const NEGATIVE_TERMS = ['probe', 'lawsuit', 'decline', 'drop', 'sell-off', 'delay', 'ban', 'halt', 'investigation', 'bearish', 'recession', 'cuts'];
 const newsCache = new BoundedMap(1000);
+
+// Add relevance scoring function:
+
+function scoreNewsRelevance(headline, marketQuestion) {
+  const headlineLower = (headline.title || '').toLowerCase();
+  const questionLower = (marketQuestion || '').toLowerCase();
+  
+  // Extract key entities from market question
+  const questionWords = questionLower
+    .replace(/[?.,!]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 3);
+  
+  // Check for entity matches
+  let matchScore = 0;
+  const matchedTerms = [];
+  
+  for (const word of questionWords) {
+    if (headlineLower.includes(word)) {
+      matchScore += 1;
+      matchedTerms.push(word);
+    }
+  }
+  
+  // Bonus for specific entities
+  const entities = extractKeyEntities(marketQuestion);
+  for (const entity of entities) {
+    if (headlineLower.includes(entity.toLowerCase())) {
+      matchScore += 2;
+      matchedTerms.push(entity);
+    }
+  }
+  
+  // Penalty for generic news
+  const genericTerms = ['trump', 'biden', 'markets', 'economy', 'news'];
+  const uniqueMatches = matchedTerms.filter(t => !genericTerms.includes(t.toLowerCase()));
+  
+  const relevanceScore = uniqueMatches.length > 0 ? matchScore : matchScore * 0.3;
+  
+  return {
+    score: relevanceScore,
+    matchedTerms,
+    isRelevant: relevanceScore >= 2
+  };
+}
+
+function extractKeyEntities(question) {
+  const entities = [];
+  
+  // Location extraction
+  const locationMatch = question.match(/(?:in|to|visit|acquire)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+  if (locationMatch) entities.push(locationMatch[1]);
+  
+  // Date extraction
+  const dateMatch = question.match(/(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}|\d{4}/i);
+  if (dateMatch) entities.push(dateMatch[0]);
+  
+  // Person extraction
+  const personPatterns = ['Trump', 'Biden', 'Harris', 'Musk', 'Xi', 'Putin'];
+  for (const person of personPatterns) {
+    if (question.includes(person)) entities.push(person);
+  }
+  
+  return entities;
+}
 
 /* =========================
    Market normalization helpers
@@ -132,17 +195,24 @@ async function crossReferenceNews(market = {}) {
       // Filter out news containing probability estimates that contradict market prices
       enriched = filterProbabilityEstimates(enriched);
 
-      enriched = enriched
-        .sort((a, b) => b.relevanceScore - a.relevanceScore)
+      // PATCH: Filter by relevance
+      const scoredNews = enriched.map(item => ({
+        ...item,
+        relevance: scoreNewsRelevance(item, market.question)
+      }));
+      
+      const relevantNews = scoredNews
+        .filter(item => item.relevance.isRelevant)
+        .sort((a, b) => b.relevance.score - a.relevance.score)
         .slice(0, MAX_NEWS_RESULTS)
         .map(hit => {
           const factCheck = "Fact check not implemented yet";
           return { ...hit, factCheck };
         });
 
-      newsCache.set(cacheKey, { timestamp: Date.now(), data: enriched });
-      console.log(`✅ Found ${enriched.length} news items from multi-source search`);
-      return enriched;
+      newsCache.set(cacheKey, { timestamp: Date.now(), data: relevantNews });
+      console.log(`✅ Found ${relevantNews.length} relevant news items from ${multiSourceResults.length} total for: ${market.question.slice(0, 40)}...`);
+      return relevantNews;
     }
 
     // Fallback to cached data if available
@@ -153,7 +223,6 @@ async function crossReferenceNews(market = {}) {
 
     console.log('❌ No news found from any source');
     return [];
-
   } catch (e) {
     console.error('Cross-reference news error:', e.message);
     if (cached) return cached.data;

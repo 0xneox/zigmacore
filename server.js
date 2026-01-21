@@ -1,12 +1,12 @@
 const express = require('express');
 const app = express();
+const http = require('http');
 const PORT = process.env.PORT || 3001;
 const path = require('path');
 const fs = require('fs');
 const { findBestMatchingMarket } = require('./src/utils/nlp-market-matcher');
-const http = require('http');
-const { randomUUID } = require('crypto');
 const { BoundedMap } = require('./src/utils/bounded-map');
+const { parsePolymarketUrl, normalizeSlug } = require('./src/utils/url-parser');
 const { createBackup, listBackups, verifyBackup } = require('./backup');
 const PriceWebSocketServer = require('./src/websocket');
 const prometheusMetrics = require('./src/prometheus');
@@ -33,6 +33,10 @@ const authenticate = (req, res, next) => {
 
 // Middleware
 app.use(express.json({ limit: '1mb' }));
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
 
 // Simple in-memory rate limiter
 const rateLimitStore = new BoundedMap(10000);
@@ -310,6 +314,11 @@ app.get('/api/metrics', (req, res) => {
 // Data endpoint for UI (structured cycle data)
 app.get('/data', (req, res) => {
   res.json(global.latestData);
+});
+
+// Visualization data endpoint (for risk metrics visualization)
+app.get('/api/visualization/risk-metrics', (req, res) => {
+  res.json(prometheusMetrics.getMetricsJSON());
 });
 
 // Logs endpoint for UI (sanitized for public display) - REQUIRES AUTHENTICATION
@@ -961,6 +970,58 @@ async function hydrateMarket(market) {
     console.warn(`Hydration failed for market ${market?.id}:`, error.message);
   }
   return normalizeMarketPrices(market);
+}
+
+async function findMarketByUrl(urlOrQuery, markets) {
+  const parsed = parsePolymarketUrl(urlOrQuery);
+  
+  console.log(`[URL PARSE] Type: ${parsed.type}, Value: ${parsed.value}`);
+  
+  let market = null;
+  
+  switch (parsed.type) {
+    case 'slug':
+      // PATCH: Exact slug match first
+      market = markets.find(m => 
+        normalizeSlug(m.slug) === normalizeSlug(parsed.value)
+      );
+      
+      // Fallback: partial match
+      if (!market) {
+        market = markets.find(m => 
+          m.slug && m.slug.toLowerCase().includes(parsed.value.toLowerCase())
+        );
+      }
+      break;
+      
+    case 'conditionId':
+    case 'marketId':
+      market = markets.find(m => 
+        m.conditionId === parsed.value || 
+        m.id === parsed.value
+      );
+      break;
+      
+    case 'uuid':
+      market = markets.find(m => m.id === parsed.value);
+      break;
+      
+    case 'query':
+      // Search by question text
+      const query = parsed.value.toLowerCase();
+      market = markets.find(m => 
+        m.question && m.question.toLowerCase().includes(query)
+      );
+      break;
+  }
+  
+  if (!market) {
+    console.warn(`[MARKET LOOKUP] No match found for: ${urlOrQuery}`);
+  } else {
+    console.log(`[MARKET LOOKUP] Found: ${market.question?.slice(0, 50)}...`);
+  }
+  
+  return market;
 }
 
 async function respondWithIntent({ market, similarity = 1, source, event }) {
@@ -2555,56 +2616,39 @@ app.get('/api/signals/performance', (req, res) => {
 });
 
 // Recent signals endpoint
-app.get('/api/signals/recent', (req, res) => {
+app.get('/api/signals/recent', async (req, res) => {
   try {
-    // Return empty recent signals for now
-    res.json([]);
+    const { getTradeSignals } = require('./src/db');
+    const limit = parseInt(req.query.limit) || 50;
+    const category = req.query.category || null;
+    const minEdge = parseFloat(req.query.minEdge) || 0;
+    
+    const executableTrades = await getTradeSignals(limit, category, minEdge);
+    
+    // Format for UI
+    const formattedTrades = executableTrades.map(trade => ({
+      id: trade.id,
+      marketId: trade.market_id,
+      marketQuestion: trade.market_question || `Market ${trade.market_id}`,
+      question: trade.market_question || `Market ${trade.market_id}`,
+      action: trade.action,
+      price: trade.price,
+      edge: trade.edge * 100, // Convert decimal to percentage
+      confidence: trade.confidence,
+      category: trade.category,
+      timestamp: new Date(trade.created_at).toISOString(),
+      source: trade.source || 'ZIGMA_AUTO',
+      status: trade.status || 'EXECUTABLE',
+      link: `https://polymarket.com/event/${trade.market_id}`
+    }));
+    
+    res.json(formattedTrades);
   } catch (error) {
     console.error('Error fetching recent signals:', error);
     res.json([]);
   }
 });
 
-// Aggregate P&L endpoint
-app.get('/api/pnl/aggregate', (req, res) => {
-  try {
-    // Return mock P&L data for now
-    res.json({
-      totalSignals: 0,
-      settledSignals: 0,
-      pendingSignals: 0,
-      totalPnL: 0,
-      totalPnLPercent: 0,
-      winningSignals: 0,
-      losingSignals: 0,
-      winRate: 0,
-      avgWin: 0,
-      avgLoss: 0,
-      profitFactor: 0,
-      maxWin: 0,
-      maxLoss: 0,
-      sharpeRatio: 0
-    });
-  } catch (error) {
-    console.error('Error fetching aggregate P&L:', error);
-    res.json({
-      totalSignals: 0,
-      settledSignals: 0,
-      pendingSignals: 0,
-      totalPnL: 0,
-      totalPnLPercent: 0,
-      winningSignals: 0,
-      losingSignals: 0,
-      winRate: 0,
-      avgWin: 0,
-      avgLoss: 0,
-      profitFactor: 0,
-      maxWin: 0,
-      maxLoss: 0,
-      sharpeRatio: 0
-    });
-  }
-});
 
 // Category P&L endpoint
 app.get('/api/pnl/by-category', (req, res) => {

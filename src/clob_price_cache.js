@@ -36,7 +36,7 @@ async function fetchClobOrderBook(marketId, tokenId) {
   try {
     const token = await getAuthToken();
     if (!token) {
-      console.log(`[CLOB] No auth token available for ${marketId}`);
+      // Silently skip CLOB when auth is disabled
       return null;
     }
 
@@ -183,7 +183,7 @@ function getClobPrice(marketId, gammaPrice = null) {
   const age = cached ? (Date.now() - cached.ts) : Infinity;
 
   if (cached && age < 5000) { // Reduced to 5 seconds
-    console.log(`[CLOB] ✅ Using fresh cached price for ${marketId}: ${cached.mid}`);
+    // Use cached price silently
     return {
       mid: cached.mid,
       bid: cached.bid,
@@ -194,11 +194,7 @@ function getClobPrice(marketId, gammaPrice = null) {
     };
   }
 
-  if (age >= 5000 && cached) {
-    console.warn(`[CLOB] ⚠️ Stale CLOB price for ${marketId}: ${age}ms old`);
-  }
-
-  console.log(`[CLOB] Using fallback gamma price for ${marketId}: ${gammaPrice}`);
+  // Use fallback gamma price silently
   return {
     mid: gammaPrice,
     bid: null,

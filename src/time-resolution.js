@@ -216,7 +216,7 @@ function calculateTimeAdjustedSize(baseSize, daysRemaining, category) {
  * @param {number} baseMinEdge - Base minimum edge (default 1.5%)
  * @returns {Object} - Required minimum edge
  */
-function calculateMinimumEdgeRequired(daysRemaining, category, baseMinEdge = 0.015) {
+function calculateMinimumEdgeRequired(daysRemaining, category, baseMinEdge = 0.005) {
   if (daysRemaining === null || daysRemaining === undefined) {
     return {
       minEdge: baseMinEdge,

@@ -38,17 +38,22 @@ async function fetchResolvedMarkets(since = null) {
  * Match our signals against resolved markets
  */
 async function reconcileSignals() {
-  const db = initDb();
+  const db = supabase;
   
   // Get unreconciled signals (outcome IS NULL)
-  const pendingSignals = db.prepare(`
-    SELECT id, market_id, action, price, confidence, edge, category, timestamp
-    FROM trade_signals
-    WHERE outcome IS NULL
-    AND timestamp > datetime('now', '-30 days')
-  `).all();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: pendingSignals, error } = await db
+    .from('trade_signals')
+    .select('id, market_id, action, price, confidence, edge, category, timestamp')
+    .is('outcome', null)
+    .gt('timestamp', thirtyDaysAgo);
   
-  if (pendingSignals.length === 0) {
+  if (error) {
+    console.error('[RESOLUTION] Failed to fetch pending signals:', error.message);
+    return { reconciled: 0, pending: 0 };
+  }
+  
+  if (!pendingSignals || pendingSignals.length === 0) {
     console.log('[RESOLUTION] No pending signals to reconcile');
     return { reconciled: 0, pending: 0 };
   }
@@ -81,19 +86,35 @@ async function reconcileSignals() {
       }
       
       // Update signal with outcome
-      db.prepare(`
-        UPDATE trade_signals
-        SET outcome = ?,
-            resolved_at = datetime('now'),
-            actual_pnl = ?,
-            was_correct = ?
-        WHERE id = ?
-      `).run(
-        resolvedYes ? 'YES' : 'NO',
-        pnl,
-        wasCorrect ? 1 : 0,
-        signal.id
-      );
+      const { error: updateError } = await db
+        .from('trade_signals')
+        .update({
+          outcome: resolvedYes ? 'YES' : 'NO',
+          resolved_at: new Date().toISOString(),
+          actual_pnl: pnl,
+          was_correct: wasCorrect ? 1 : 0
+        })
+        .eq('id', signal.id);
+      
+      // Feed back to adaptive learning system
+      try {
+        const { recordSignalOutcome } = require('./adaptive-learning');
+        recordSignalOutcome(
+          signal.id,
+          resolvedYes ? 'YES' : 'NO',
+          signal.category,
+          signal.action,
+          signal.edge,
+          signal.confidence
+        );
+      } catch (e) {
+        console.warn('[RESOLUTION] Failed to record for adaptive learning:', e.message);
+      }
+      
+      if (updateError) {
+        console.error('[RESOLUTION] Failed to update signal:', updateError.message);
+        continue;
+      }
       
       reconciled++;
       
@@ -111,27 +132,61 @@ async function reconcileSignals() {
  * Calculate live accuracy metrics
  */
 function getAccuracyMetrics() {
-  const db = initDb();
+  const db = supabase;
   
-  const metrics = db.prepare(`
-    SELECT 
-      category,
-      COUNT(*) as total,
-      SUM(CASE WHEN was_correct = 1 THEN 1 ELSE 0 END) as correct,
-      AVG(actual_pnl) as avg_pnl,
-      AVG(confidence) as avg_confidence,
-      AVG(edge) as avg_edge
-    FROM trade_signals
-    WHERE outcome IS NOT NULL
-    AND timestamp > datetime('now', '-30 days')
-    GROUP BY category
-  `).all();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   
-  return metrics.map(m => ({
-    ...m,
-    winRate: m.total > 0 ? (m.correct / m.total * 100).toFixed(1) : 0,
-    calibrationError: Math.abs((m.correct / m.total * 100) - m.avg_confidence).toFixed(1)
-  }));
+  // Using Supabase query instead of SQLite
+  return db
+    .from('trade_signals')
+    .select('category, was_correct, actual_pnl, confidence, edge')
+    .not('outcome', 'is', null)
+    .gt('timestamp', thirtyDaysAgo)
+    .then(({ data, error }) => {
+      if (error) {
+        console.error('[RESOLUTION] Failed to get accuracy metrics:', error.message);
+        return [];
+      }
+      
+      // Group by category and calculate metrics
+      const categoryMap = new Map();
+      data.forEach(signal => {
+        const category = signal.category || 'OTHER';
+        if (!categoryMap.has(category)) {
+          categoryMap.set(category, {
+            category,
+            total: 0,
+            correct: 0,
+            avgPnl: 0,
+            avgConfidence: 0,
+            avgEdge: 0
+          });
+        }
+        
+        const stats = categoryMap.get(category);
+        stats.total++;
+        if (signal.was_correct === 1) stats.correct++;
+        stats.avgPnl += signal.actual_pnl || 0;
+        stats.avgConfidence += signal.confidence || 0;
+        stats.avgEdge += signal.edge || 0;
+      });
+      
+      // Calculate final metrics
+      return Array.from(categoryMap.values()).map(stats => ({
+        category: stats.category,
+        total: stats.total,
+        correct: stats.correct,
+        avgPnl: stats.avgPnl / stats.total,
+        avgConfidence: stats.avgConfidence / stats.total,
+        avgEdge: stats.avgEdge / stats.total,
+        winRate: stats.total > 0 ? (stats.correct / stats.total * 100).toFixed(1) : 0,
+        calibrationError: Math.abs(((stats.correct / stats.total * 100) - (stats.avgConfidence / stats.total))).toFixed(1)
+      }));
+    })
+    .catch(error => {
+      console.error('[RESOLUTION] Error in getAccuracyMetrics:', error);
+      return [];
+    });
 }
 
 /**
@@ -194,11 +249,13 @@ function startResolutionTracker() {
     if (result.reconciled > 0) {
       console.log(`[RESOLUTION] Reconciled ${result.reconciled} signals`);
       
-      // Log updated accuracy
-      const metrics = getAccuracyMetrics();
-      metrics.forEach(m => {
-        console.log(`[ACCURACY] ${m.category}: ${m.winRate}% win rate (${m.total} signals)`);
-      });
+      // Log updated accuracy - getAccuracyMetrics returns a Promise!
+      const metrics = await getAccuracyMetrics();
+      if (Array.isArray(metrics)) {
+        metrics.forEach(m => {
+          console.log(`[ACCURACY] ${m.category}: ${m.winRate}% win rate (${m.total} signals)`);
+        });
+      }
     }
   }, CHECK_INTERVAL_MS);
 }

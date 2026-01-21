@@ -1,6 +1,72 @@
 const { classifyMarket } = require('./utils/classifier');
 
 /**
+ * Calculate unified win rate from all sources (redemptions, trades, positions)
+ * Returns consistent win rate across the entire portfolio
+ */
+function calculateUnifiedWinRate(trades, positions, redemptions) {
+  let wins = 0, total = 0;
+  
+  // 1. Count redemptions (definitive wins/losses)
+  if (redemptions && redemptions.length > 0) {
+    redemptions.forEach(r => {
+      total++;
+      if (r.profit > 0) wins++;
+    });
+  }
+  
+  // 2. Count completed trades (BUY/SELL pairs)
+  const tradesByMarket = {};
+  trades.forEach(trade => {
+    const marketId = trade.conditionId || trade.asset;
+    if (!tradesByMarket[marketId]) {
+      tradesByMarket[marketId] = [];
+    }
+    tradesByMarket[marketId].push(trade);
+  });
+  
+  Object.values(tradesByMarket).forEach(marketTrades => {
+    const sorted = marketTrades.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    const buyQueue = [];
+    
+    sorted.forEach(trade => {
+      if (trade.side === 'BUY') {
+        buyQueue.push({ size: trade.size, price: trade.price });
+      } else if (trade.side === 'SELL') {
+        let remainingSell = trade.size;
+        
+        while (remainingSell > 0 && buyQueue.length > 0) {
+          const buy = buyQueue[0];
+          const matchSize = Math.min(remainingSell, buy.size);
+          const pnl = matchSize * (trade.price - buy.price);
+          
+          if (pnl !== 0) {
+            total++;
+            if (pnl > 0) wins++;
+          }
+          
+          remainingSell -= matchSize;
+          buy.size -= matchSize;
+          if (buy.size <= 0) buyQueue.shift();
+        }
+      }
+    });
+  });
+  
+  // 3. Count open positions by current P&L
+  if (positions && positions.length > 0) {
+    positions.forEach(p => {
+      if (p.cashPnl !== 0) {
+        total++;
+        if (p.cashPnl > 0) wins++;
+      }
+    });
+  }
+  
+  return total > 0 ? (wins / total) * 100 : 0;
+}
+
+/**
  * Analyze trading patterns from user activity
  * Returns comprehensive trading behavior metrics
  */
@@ -24,7 +90,7 @@ function analyzeTradingPatterns(trades, positions) {
     recoveryFactor: 0
   };
 
-  if (trades.length === 0) return patterns;
+  if (trades.length === 0 && positions.length === 0) return patterns;
 
   // Calculate buy/sell ratio
   const buys = trades.filter(t => t.side === 'BUY');
@@ -33,7 +99,7 @@ function analyzeTradingPatterns(trades, positions) {
 
   // Calculate average position size
   const totalVolume = trades.reduce((sum, t) => sum + (t.size * t.price || 0), 0);
-  patterns.avgPositionSize = totalVolume / trades.length;
+  patterns.avgPositionSize = trades.length > 0 ? totalVolume / trades.length : 0;
 
   // Calculate trade frequency (trades per day)
   if (trades.length > 1) {
@@ -127,6 +193,21 @@ function analyzeTradingPatterns(trades, positions) {
     }
   });
 
+  // If no realized P&L from trades, use unrealized from positions
+  if (pnlHistory.length === 0 && positions.length > 0) {
+    positions.forEach(pos => {
+      const pnl = pos.cashPnl || 0;
+      if (pnl !== 0) pnlHistory.push(pnl);
+      if (pnl > 0) {
+        wins++;
+        totalWinAmount += pnl;
+      } else if (pnl < 0) {
+        losses++;
+        totalLossAmount += Math.abs(pnl);
+      }
+    });
+  }
+
   // Finalize consecutive streaks
   consecutiveWins = Math.max(consecutiveWins, currentStreak.type === 'win' ? currentStreak.count : 0);
   consecutiveLosses = Math.max(consecutiveLosses, currentStreak.type === 'loss' ? currentStreak.count : 0);
@@ -190,6 +271,10 @@ function analyzeTradingPatterns(trades, positions) {
     if (patterns.scalpingTendency > 0.4) patterns.preferredTimeframes.push('scalping');
     if (patterns.swingTendency > 0.4) patterns.preferredTimeframes.push('swing');
     if (patterns.hodlTendency > 0.4) patterns.preferredTimeframes.push('position');
+  } else if (positions && positions.length > 0) {
+    // Estimate hold time from position creation if no sell trades
+    patterns.hodlTendency = 1.0;
+    patterns.preferredTimeframes.push('position');
   }
 
   return patterns;
@@ -236,7 +321,9 @@ function analyzeCategoryPerformance(trades, positions) {
           avgTradeSize: 0,
           winningTrades: [],
           losingTrades: [],
-          totalTradesInCategory: 0
+          totalTradesInCategory: 0,
+          unrealizedPnl: 0,  // NEW: Track separately
+          realizedPnl: 0    // NEW: Track separately
         };
       }
 
@@ -279,45 +366,47 @@ function analyzeCategoryPerformance(trades, positions) {
         categoryStats[category].wins += marketWins;
         categoryStats[category].losses += marketLosses;
         categoryStats[category].markets.add(marketId);
+        categoryStats[category].realizedPnl += marketPnl;
         processedMarkets.add(marketId);
       }
     }
   });
 
-  // Add unrealized P&L from ACTIVE positions (only if not already processed)
+  // Add unrealized P&L from ALL active positions (regardless of trades)
   positions.forEach(pos => {
     const marketId = pos.conditionId || pos.asset;
+    const category = classifyMarket(pos.title || pos.market || '');
     
-    // Only add positions that weren't already processed from trades
-    if (!processedMarkets.has(marketId)) {
-      const category = classifyMarket(pos.title || pos.market || '');
-      if (!categoryStats[category]) {
-        categoryStats[category] = {
-          trades: 0,
-          volume: 0,
-          pnl: 0,
-          wins: 0,
-          losses: 0,
-          markets: new Set(),
-          avgTradeSize: 0,
-          winningTrades: [],
-          losingTrades: [],
-          totalTradesInCategory: 0
-        };
-      }
-      
-      const pnl = pos.cashPnl || 0;
-      categoryStats[category].pnl += pnl;
-      categoryStats[category].markets.add(marketId);
+    if (!categoryStats[category]) {
+      categoryStats[category] = {
+        trades: 0,
+        volume: 0,
+        pnl: 0,
+        wins: 0,
+        losses: 0,
+        markets: new Set(),
+        avgTradeSize: 0,
+        winningTrades: [],
+        losingTrades: [],
+        totalTradesInCategory: 0,
+        unrealizedPnl: 0,  // NEW: Track separately
+        realizedPnl: 0    // NEW: Track separately
+      };
+    }
+    
+    // Always add unrealized P&L from open positions
+    const unrealizedPnl = pos.cashPnl || 0;
+    categoryStats[category].unrealizedPnl += unrealizedPnl;
+    categoryStats[category].pnl += unrealizedPnl;
+    categoryStats[category].markets.add(marketId);
 
-      // Count active positions as wins or losses based on current P&L
-      if (pnl > 0) {
-        categoryStats[category].wins++;
-        categoryStats[category].winningTrades.push(pnl);
-      } else if (pnl < 0) {
-        categoryStats[category].losses++;
-        categoryStats[category].losingTrades.push(pnl);
-      }
+    // Count active positions as wins or losses based on current P&L
+    if (unrealizedPnl > 0) {
+      categoryStats[category].wins++;
+      categoryStats[category].winningTrades.push(unrealizedPnl);
+    } else if (unrealizedPnl < 0) {
+      categoryStats[category].losses++;
+      categoryStats[category].losingTrades.push(unrealizedPnl);
     }
   });
 
@@ -336,6 +425,8 @@ function analyzeCategoryPerformance(trades, positions) {
       trades: stats.trades,
       volume: stats.volume,
       pnl: stats.pnl,
+      realizedPnl: stats.realizedPnl,
+      unrealizedPnl: stats.unrealizedPnl,
       winRate: totalTrades > 0 ? (stats.wins / totalTrades) * 100 : 0,
       uniqueMarkets: stats.markets.size,
       avgTradeSize: stats.trades > 0 ? stats.volume / stats.trades : 0,
@@ -591,13 +682,29 @@ function analyzeMarketTiming(trades) {
   return timing;
 }
 
+function calculateEntryTimings(tradePnls) {
+  const entryTimings = tradePnls.map(({ timestamp }) => {
+    const date = new Date(timestamp);
+    return date.getHours() + date.getMinutes() / 60;
+  });
+  return entryTimings.reduce((a, b) => a + b, 0) / entryTimings.length;
+}
 /**
  * Generate actionable trading recommendations
  * Returns prioritized list of improvements
  */
-function generateRecommendations(profile, patterns, categoryPerf, risk, timing, metrics) {
+function generateRecommendations(profile, patterns, categoryPerf, risk, timing, metrics, positions = []) {
   const recommendations = [];
-  const portfolioValue = metrics?.totalValue || profile?.balance || 0;
+  
+  // Calculate total portfolio value correctly
+  const positionsValue = positions.reduce((sum, p) => sum + (p.currentValue || 0), 0);
+  const cashBalance = profile?.balance || metrics?.balance || 0;
+  let portfolioValue = positionsValue + cashBalance;
+  
+  // Fallback to prevent $0
+  if (portfolioValue <= 0) {
+    portfolioValue = metrics?.totalVolume || 10000;
+  }
 
   // Position sizing recommendations
   if (risk.topPositionExposure > 25) {
@@ -1020,13 +1127,18 @@ function analyzeUserProfile(profile, positions, activity, metrics) {
   if (!metrics) metrics = {};
 
   const trades = activity.filter(a => a && a.type === 'TRADE');
+  const redemptions = activity.filter(a => a && a.type === 'REDEMPTION');
 
   const patterns = analyzeTradingPatterns(trades, positions);
   const categoryPerf = analyzeCategoryPerformance(trades, positions);
   const risk = analyzeRiskAndConcentration(positions, metrics);
   const timing = analyzeMarketTiming(trades);
-  const recommendations = generateRecommendations(profile, patterns, categoryPerf, risk, timing, metrics);
+  const recommendations = generateRecommendations(profile, patterns, categoryPerf, risk, timing, metrics, positions);
   const health = calculatePortfolioHealth(metrics, patterns, risk, categoryPerf);
+
+  // Use unified win rate for consistency
+  const unifiedWinRate = calculateUnifiedWinRate(trades, positions, redemptions);
+  patterns.winRate = unifiedWinRate;
 
   return {
     patterns,
