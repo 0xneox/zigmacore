@@ -240,6 +240,11 @@ app.get('/status', async (req, res) => {
 
   const healthy = Object.values(checks).every(v => v);
 
+  // Debug logging for market data
+  const cycleSummary = global.latestData?.cycleSummary;
+  console.log('[STATUS DEBUG] cycleSummary:', cycleSummary);
+  console.log('[STATUS DEBUG] global.latestData exists:', !!global.latestData);
+
   const generateServiceHistory = () => {
     const history = [];
     for (let i = 0; i < 6; i++) {
@@ -278,7 +283,7 @@ app.get('/status', async (req, res) => {
   res.status(healthy ? 200 : 503).json({
     status: healthy ? 'healthy' : 'unhealthy',
     checks,
-    uptime: systemHealth.uptime,
+    uptime: Math.floor((Date.now() - systemHealth.startTime) / 1000),
     lastRun: systemHealth.lastRun,
     posts: systemHealth.posts,
     marketsScanned: global.latestData?.cycleSummary?.marketsFetched || 0,
