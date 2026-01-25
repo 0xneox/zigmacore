@@ -804,6 +804,10 @@ const recordCycleSnapshot = (latestData = {}) => {
     watchlist: summary.watchlist || latestData.liveSignals?.length || 0,
     outlook: summary.outlook || latestData.marketOutlook?.length || 0,
     rejected: summary.rejected || latestData.rejectedSignals?.length || 0,
+    // Include actual signal data for performance tracking
+    liveSignals: latestData.liveSignals || [],
+    marketOutlook: latestData.marketOutlook || [],
+    rejectedSignals: latestData.rejectedSignals || [],
   };
 
   const history = [snapshot, ...getCycleHistory()].filter(Boolean);
@@ -2340,6 +2344,9 @@ async function generateSignals(selectedMarkets) {
       log(`[CALIBRATION] ${categoryKey}: winRate=${(categoryStats.winRate || 0.5).toFixed(3)}, sampleSize=${categoryStats.sampleSize || 0}, adjustedConf=${finalConfidence.toFixed(3)}`);
     }
 
+    // Create signal timestamp before using it
+    const signalTimestamp = new Date().toISOString();
+
     // Create signal with CORRECT edge values (using adaptive learning adjustments)
     // Create signal with CORRECT edge values (using adaptive learning adjustments)
     // UNITS: edgeScore/rawEdge/effectiveEdge are PERCENTAGES (0-100)
@@ -2348,9 +2355,14 @@ async function generateSignals(selectedMarkets) {
       marketId: market.id,
       marketSlug: market.slug,
       marketQuestion: market.question,
+      category: market.category, // Add category to signal
       action,
       direction,  // 'BUY_YES' or 'BUY_NO' - for frontend display
       price: yesPrice,
+      predictedProbability: llmProbability, // Add predicted probability for analytics
+      confidence: finalConfidence, // Add confidence for analytics
+      edge: effectiveEdge, // Add edge for analytics
+      timestamp: signalTimestamp, // Add timestamp for analytics
       confidenceClass: normalizedConfidence >= 0.7 ? 'HIGH' : normalizedConfidence >= 0.4 ? 'MEDIUM' : 'LOW',
       intentExposure,
       edgeScore: Math.abs(effectiveEdge) * 100,       // PERCENTAGE (0-100)
@@ -2409,9 +2421,6 @@ async function generateSignals(selectedMarkets) {
       signal.structuredAnalysis.directionalBias.buyYesCount++;
     }
     signal.structuredAnalysis.directionalBias.totalSignals++;
-
-    // ...
-    const signalTimestamp = new Date().toISOString();
 
     // Dynamic confidence threshold based on category and RAW edge (not adjusted)
     let confidenceThreshold = DEFAULT_CONFIDENCE_THRESHOLD;

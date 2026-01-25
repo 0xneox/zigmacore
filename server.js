@@ -11,6 +11,7 @@ const { parsePolymarketUrl, normalizeSlug } = require('./src/utils/url-parser');
 const { createBackup, listBackups, verifyBackup } = require('./backup');
 const PriceWebSocketServer = require('./src/websocket');
 const prometheusMetrics = require('./src/prometheus');
+const { runResolutionUpdate, getResolutionStats } = require('./src/market-resolution-updater');
 
 // Create HTTP server for WebSocket support
 const server = http.createServer(app);
@@ -1907,6 +1908,7 @@ app.get('/api/performance-history', async (req, res) => {
     const performanceData = cycleHistory.map(cycle => ({
       timestamp: cycle.timestamp || cycle.lastRun,
       marketsFetched: cycle.marketsFetched || 0,
+      marketsAnalyzed: cycle.marketsAnalyzed || 0,
       signalsGenerated: cycle.signalsGenerated || 0,
       watchlist: cycle.watchlist || 0,
       outlook: cycle.outlook || 0,
@@ -2150,7 +2152,79 @@ app.get('/api/analytics/full-report', async (req, res) => {
   }
 });
 
-// Signal Performance API endpoints
+// Signal// Reload cycle history from file (for testing)
+app.post('/api/admin/reload-cycle-history', (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const CYCLE_HISTORY_FILE = path.join(__dirname, 'cache', 'cycle_history.json');
+    
+    if (fs.existsSync(CYCLE_HISTORY_FILE)) {
+      const data = fs.readFileSync(CYCLE_HISTORY_FILE, 'utf8');
+      const cycleHistory = JSON.parse(data);
+      global.cycleHistory = cycleHistory;
+      
+      res.json({
+        success: true,
+        message: `Reloaded ${cycleHistory.length} cycles from file`,
+        cyclesLoaded: cycleHistory.length
+      });
+    } else {
+      res.status(404).json({ error: 'Cycle history file not found' });
+    }
+  } catch (error) {
+    console.error('Error reloading cycle history:', error);
+    res.status(500).json({ error: 'Failed to reload cycle history' });
+  }
+});
+
+// Resolution Management API endpoints
+app.post('/api/resolutions/update', async (req, res) => {
+  try {
+    console.log(' Manual resolution update triggered');
+    const stats = await runResolutionUpdate();
+    
+    res.json({
+      success: true,
+      message: `Resolution update completed. ${stats.newlyResolved} new resolutions found.`,
+      stats
+    });
+  } catch (error) {
+    console.error('Error in manual resolution update:', error);
+    res.status(500).json({ 
+      error: 'Failed to update resolutions', 
+      message: error.message 
+    });
+  }
+});
+
+app.get('/api/resolutions/stats', async (req, res) => {
+  try {
+    const stats = getResolutionStats();
+    
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    console.error('Error getting resolution stats:', error);
+    res.status(500).json({ 
+      error: 'Failed to get resolution stats', 
+      message: error.message 
+    });
+  }
+});
+
+// Auto-run resolution update every hour
+setInterval(async () => {
+  try {
+    await runResolutionUpdate();
+  } catch (error) {
+    console.error(' Auto resolution update failed:', error);
+  }
+}, 60 * 60 * 1000); // Every hour
+
+// Performance History API endpoints
 app.get('/api/signals/performance', async (req, res) => {
   try {
     const cycleHistory = global.getCycleHistory ? global.getCycleHistory() : [];
@@ -2438,21 +2512,42 @@ app.delete('/api/watchlist/:marketId', async (req, res) => {
   }
 });
 
+// ============================================================
+// NEW SUPABASE-BASED API ROUTES
+// ============================================================
+
+// Import Supabase-based API routes
+const watchlistRoutes = require('./src/api/watchlist');
+const userRoutes = require('./src/api/users');
+const signalRoutes = require('./src/api/signals');
+
+// Use the new routes
+app.use('/api/watchlist', watchlistRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/signals', signalRoutes);
+
 // Visualization API endpoints
 app.get('/api/visualization/price-history', async (req, res) => {
   try {
     const cycleHistory = global.getCycleHistory ? global.getCycleHistory() : [];
     const allSignals = cycleHistory.flatMap(cycle => cycle.liveSignals || []);
 
+    // Debug: Log signal structure
+    console.log('Total signals:', allSignals.length);
+    console.log('Sample signal:', allSignals[0]);
+    
     // Get recent signals with market odds
     const priceHistory = allSignals
-      .filter(s => s.marketOdds && s.timestamp)
+      .filter(s => (s.price || s.marketOdds) && s.timestamp)
       .slice(0, 50)
       .map(s => ({
         timestamp: s.timestamp,
-        price: s.marketOdds
+        price: (s.price * 100) || s.marketOdds, // Convert to percentage
+        marketQuestion: s.marketQuestion
       }))
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    console.log('Price history entries:', priceHistory.length);
 
     res.json(priceHistory);
   } catch (error) {
@@ -2478,7 +2573,9 @@ app.get('/api/visualization/edge-distribution', async (req, res) => {
 
     allSignals.forEach(signal => {
       const edge = signal.edge || 0;
-      const bin = bins.find(b => edge >= b.min && edge < b.max);
+      // Convert to percentage if it's a decimal
+      const edgePercent = edge <= 1 ? edge * 100 : edge;
+      const bin = bins.find(b => edgePercent >= b.min && edgePercent < b.max);
       if (bin) bin.count++;
     });
 
@@ -2500,8 +2597,10 @@ app.get('/api/visualization/confidence', async (req, res) => {
 
     allSignals.forEach(signal => {
       const confidence = signal.confidence || 0;
-      if (confidence < 50) low++;
-      else if (confidence < 75) medium++;
+      // Convert to percentage if it's a decimal
+      const confidencePercent = confidence <= 1 ? confidence * 100 : confidence;
+      if (confidencePercent < 50) low++;
+      else if (confidencePercent < 75) medium++;
       else high++;
     });
 
@@ -2595,72 +2694,7 @@ app.get('/api/signals/historical', (req, res) => {
   }
 });
 
-// Signal performance endpoint
-app.get('/api/signals/performance', (req, res) => {
-  try {
-    // Return mock performance data for now
-    res.json({
-      totalSignals: 0,
-      resolvedSignals: 0,
-      correctSignals: 0,
-      incorrectSignals: 0,
-      pendingSignals: 0,
-      accuracy: 0,
-      avgConfidence: 0,
-      avgEdge: 0,
-      bestSignals: [],
-      worstSignals: []
-    });
-  } catch (error) {
-    console.error('Error fetching signal performance:', error);
-    res.json({
-      totalSignals: 0,
-      resolvedSignals: 0,
-      correctSignals: 0,
-      incorrectSignals: 0,
-      pendingSignals: 0,
-      accuracy: 0,
-      avgConfidence: 0,
-      avgEdge: 0,
-      bestSignals: [],
-      worstSignals: []
-    });
-  }
-});
 
-// Recent signals endpoint
-app.get('/api/signals/recent', async (req, res) => {
-  try {
-    const { getTradeSignals } = require('./src/db');
-    const limit = parseInt(req.query.limit) || 50;
-    const category = req.query.category || null;
-    const minEdge = parseFloat(req.query.minEdge) || 0;
-    
-    const executableTrades = await getTradeSignals(limit, category, minEdge);
-    
-    // Format for UI
-    const formattedTrades = executableTrades.map(trade => ({
-      id: trade.id,
-      marketId: trade.market_id,
-      marketQuestion: trade.market_question || `Market ${trade.market_id}`,
-      question: trade.market_question || `Market ${trade.market_id}`,
-      action: trade.action,
-      price: trade.price,
-      edge: trade.edge * 100, // Convert decimal to percentage
-      confidence: trade.confidence,
-      category: trade.category,
-      timestamp: new Date(trade.created_at).toISOString(),
-      source: trade.source || 'ZIGMA_AUTO',
-      status: trade.status || 'EXECUTABLE',
-      link: `https://polymarket.com/event/${trade.market_id}`
-    }));
-    
-    res.json(formattedTrades);
-  } catch (error) {
-    console.error('Error fetching recent signals:', error);
-    res.json([]);
-  }
-});
 
 
 // Category P&L endpoint
