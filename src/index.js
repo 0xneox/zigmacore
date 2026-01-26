@@ -3268,6 +3268,13 @@ async function runCycle() {
 
     const lastRunTimestamp = new Date().toISOString();
 
+    console.log('[CYCLE DEBUG] Setting global.latestData with:');
+    console.log('- markets.length:', markets.length);
+    console.log('- selectedMarkets.length:', selectedMarkets.length);
+    console.log('- clusterFiltered.length:', clusterFiltered.length);
+    console.log('- signalsGenerated:', signalsGenerated);
+    console.log('- executableTrades.length:', executableTrades.length);
+
     global.latestData = {
       cycleSummary: {
         marketsFetched: markets.length,
@@ -3285,6 +3292,8 @@ async function runCycle() {
       marketsMonitored: clusterFiltered.length,
       posts: signalsGenerated
     };
+
+    console.log('[CYCLE DEBUG] global.latestData set:', JSON.stringify(global.latestData.cycleSummary, null, 2));
 
     saveCycleData(global.latestData);
     recordCycleSnapshot(global.latestData);

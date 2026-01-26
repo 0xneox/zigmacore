@@ -209,6 +209,27 @@ function updateHealthMetrics(metrics) {
   };
 }
 
+// Manual cycle trigger endpoint for debugging
+app.post('/admin/trigger-cycle', async (req, res) => {
+  try {
+    console.log('[MANUAL TRIGGER] Forcing cycle run...');
+    const { queuedRunCycle } = require('./src/index');
+    await queuedRunCycle();
+    res.json({ 
+      success: true, 
+      message: 'Cycle triggered successfully',
+      timestamp: new Date().toISOString(),
+      data: global.latestData?.cycleSummary 
+    });
+  } catch (error) {
+    console.error('[MANUAL TRIGGER] Error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/status', async (req, res) => {
   const checks = {
@@ -251,6 +272,9 @@ app.get('/status', async (req, res) => {
   const cycleSummary = global.latestData?.cycleSummary;
   console.log('[STATUS DEBUG] cycleSummary:', cycleSummary);
   console.log('[STATUS DEBUG] global.latestData exists:', !!global.latestData);
+  console.log('[STATUS DEBUG] marketsFetched:', cycleSummary?.marketsFetched);
+  console.log('[STATUS DEBUG] marketsEligible:', cycleSummary?.marketsEligible);
+  console.log('[STATUS DEBUG] systemHealth:', systemHealth);
 
   const generateServiceHistory = () => {
     const history = [];
@@ -291,17 +315,24 @@ app.get('/status', async (req, res) => {
     status: healthy ? 'healthy' : 'unhealthy',
     checks,
     uptime: Math.floor((Date.now() - systemHealth.startTime) / 1000),
-    lastRun: systemHealth.lastRun,
-    posts: systemHealth.posts,
+    lastRun: systemHealth.lastRun || global.latestData?.lastRun,
+    posts: systemHealth.posts || global.latestData?.posts || 0,
     marketsScanned: global.latestData?.cycleSummary?.marketsFetched || 0,
     marketsQualified: global.latestData?.cycleSummary?.marketsEligible || 0,
-    marketsMonitored: systemHealth.marketsMonitored || global.latestData?.cycleSummary?.marketsEligible || 0,
+    marketsMonitored: systemHealth.marketsMonitored || global.latestData?.marketsMonitored || global.latestData?.cycleSummary?.marketsAnalyzed || 0,
     alertsActive: systemHealth.alertsActive,
     timestamp: Date.now(),
     version: '1.1-beta',
     history: generateServiceHistory(),
     recentEvents: generateRecentEvents(),
-    noRecentIssues: healthy
+    noRecentIssues: healthy,
+    // Add debug info
+    debug: {
+      hasGlobalData: !!global.latestData,
+      hasCycleSummary: !!global.latestData?.cycleSummary,
+      systemHealthPosts: systemHealth.posts,
+      globalDataPosts: global.latestData?.posts
+    }
   });
 });
 
@@ -322,6 +353,17 @@ app.get('/metrics', (req, res) => {
 // Basic metrics endpoint (for backward compatibility)
 app.get('/api/metrics', (req, res) => {
   res.json(prometheusMetrics.getMetricsJSON());
+});
+
+// Debug endpoint to check global data state
+app.get('/admin/debug', (req, res) => {
+  res.json({
+    globalLatestData: global.latestData,
+    systemHealth: systemHealth,
+    hasCycleSummary: !!global.latestData?.cycleSummary,
+    cycleSummary: global.latestData?.cycleSummary,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Data endpoint for UI (structured cycle data)
