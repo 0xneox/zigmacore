@@ -209,12 +209,28 @@ function updateHealthMetrics(metrics) {
   };
 }
 
+// Simple health check endpoint
+app.get('/admin/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    hasGlobalData: !!global.latestData,
+    cycleSummary: global.latestData?.cycleSummary || null
+  });
+});
+
 // Manual cycle trigger endpoint for debugging
 app.post('/admin/trigger-cycle', async (req, res) => {
   try {
     console.log('[MANUAL TRIGGER] Forcing cycle run...');
+    // Import the queued cycle function
     const { queuedRunCycle } = require('./src/index');
+    
+    // Run the cycle
     await queuedRunCycle();
+    
     res.json({ 
       success: true, 
       message: 'Cycle triggered successfully',

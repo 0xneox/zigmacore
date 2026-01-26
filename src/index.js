@@ -3363,6 +3363,7 @@ module.exports = {
   getCorrelationAdjustedPosition,
   generateEnhancedSignal,
   enhancedMainCycle,
+  queuedRunCycle,
   
   // Existing functions (preserved)
   applyAdaptiveLearning,
