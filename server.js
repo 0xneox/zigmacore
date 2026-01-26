@@ -12,6 +12,12 @@ const { createBackup, listBackups, verifyBackup } = require('./backup');
 const PriceWebSocketServer = require('./src/websocket');
 const prometheusMetrics = require('./src/prometheus');
 const { runResolutionUpdate, getResolutionStats } = require('./src/market-resolution-updater');
+const { 
+  saveChatExchange, 
+  saveErrorMessage, 
+  extractClientInfo,
+  generateSessionId 
+} = require('./src/chat-persistence');
 
 // Create HTTP server for WebSocket support
 const server = http.createServer(app);
@@ -289,7 +295,7 @@ app.get('/status', async (req, res) => {
     posts: systemHealth.posts,
     marketsScanned: global.latestData?.cycleSummary?.marketsFetched || 0,
     marketsQualified: global.latestData?.cycleSummary?.marketsEligible || 0,
-    marketsMonitored: systemHealth.marketsMonitored,
+    marketsMonitored: systemHealth.marketsMonitored || global.latestData?.cycleSummary?.marketsEligible || 0,
     alertsActive: systemHealth.alertsActive,
     timestamp: Date.now(),
     version: '1.1-beta',
@@ -1259,6 +1265,9 @@ function sanitizeUserInput(input) {
 
 // Chat endpoint for natural language queries with contextual history
 app.post('/chat', validateInput, async (req, res) => {
+  const startTime = Date.now();
+  let userId = null;
+  
   try {
     const {
       query,
@@ -1267,9 +1276,13 @@ app.post('/chat', validateInput, async (req, res) => {
       polymarketUser,
       history = [],
       contextId: incomingContextId,
-      compareMarkets // Array of market IDs/questions to compare
+      compareMarkets, // Array of market IDs/questions to compare
+      userId: requestUserId // User ID from client if authenticated
     } = req.body || {};
 
+    // Extract user ID for persistence
+    userId = requestUserId || req.user?.id || req.headers['x-user-id'];
+    
     // Sanitize user inputs to prevent prompt injection
     const sanitizedQuery = query ? sanitizeUserInput(query) : '';
     const sanitizedMarketQuestion = marketQuestion ? sanitizeUserInput(marketQuestion) : '';
@@ -1355,7 +1368,7 @@ app.post('/chat', validateInput, async (req, res) => {
 
       const responseId = incomingContextId || crypto.randomUUID();
 
-      res.json({
+      const responseData = {
         contextId: responseId,
         type: 'multi_market_comparison',
         comparisonResults,
@@ -1365,7 +1378,34 @@ app.post('/chat', validateInput, async (req, res) => {
           { role: 'assistant', content: comparisonLines }
         ].filter((msg) => msg.content),
         timestamp: Date.now()
-      });
+      };
+
+      // Save to database if user is authenticated
+      if (userId) {
+        try {
+          await saveChatExchange(
+            `Compare: ${compareMarkets.join(', ')}`,
+            { role: 'assistant', content: comparisonLines },
+            {
+              userId,
+              sessionId: responseId,
+              contextId: responseId,
+              processingTimeMs: Date.now() - startTime,
+              clientInfo: extractClientInfo(req),
+              ipAddress: req.ip,
+              metadata: {
+                queryType: 'multi_market_comparison',
+                marketsCount: compareMarkets.length,
+                source: 'backend_api'
+              }
+            }
+          );
+        } catch (persistError) {
+          console.error('Failed to save multi-market comparison:', persistError);
+        }
+      }
+
+      res.json(responseData);
       return;
     }
 
@@ -1712,7 +1752,7 @@ ${aiAnalysis}`;
       messages: updatedMessages
     });
 
-    res.json({
+    const data = {
       contextId: responseId,
       type: 'market_analysis',
       matchedMarket: {
@@ -1726,7 +1766,43 @@ ${aiAnalysis}`;
       analysis,
       messages: updatedMessages,
       timestamp: Date.now()
-    });
+    };
+
+    // Save to database if user is authenticated
+    if (userId) {
+      try {
+        await saveChatExchange(
+          sanitizedQuery || `Market analysis: ${matchedMarket.question}`,
+          {
+            role: 'assistant',
+            content: updatedMessages[updatedMessages.length - 1]?.content || '',
+            recommendation,
+            analysis
+          },
+          {
+            userId,
+            sessionId: data.contextId,
+            marketId: matchedMarket.id,
+            marketQuestion: matchedMarket.question,
+            polymarketUser: sanitizedPolymarketUser,
+            contextId: data.contextId,
+            matchedMarket,
+            processingTimeMs: Date.now() - startTime,
+            clientInfo: extractClientInfo(req),
+            ipAddress: req.ip,
+            metadata: {
+              queryType: marketId ? 'market_analysis' : 'general_query',
+              marketId: matchedMarket.id,
+              source: 'backend_api'
+            }
+          }
+        );
+      } catch (persistError) {
+        console.error('Failed to save chat exchange:', persistError);
+      }
+    }
+
+    res.json(data);
   } catch (error) {
     console.error('[ERROR] Chat endpoint error:', {
       message: error?.message || 'Unknown',
@@ -1736,6 +1812,27 @@ ${aiAnalysis}`;
       data: error?.response?.data,
       stack: error?.stack?.split('\n').slice(0, 3).join('\n')
     });
+    
+    // Save error to database if user is authenticated
+    if (userId) {
+      try {
+        await saveErrorMessage(error.message, {
+          userId,
+          sessionId: incomingContextId || generateSessionId(),
+          contextId: incomingContextId,
+          processingTimeMs: Date.now() - startTime,
+          clientInfo: extractClientInfo(req),
+          ipAddress: req.ip,
+          metadata: {
+            queryType: marketId ? 'market_analysis' : 'general_query',
+            source: 'backend_api'
+          }
+        });
+      } catch (persistError) {
+        console.error('Failed to save error message:', persistError);
+      }
+    }
+    
     // Don't expose internal error details in production
     const isDevelopment = process.env.NODE_ENV === 'development';
     res.status(500).json({ 
