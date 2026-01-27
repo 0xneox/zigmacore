@@ -167,6 +167,7 @@ const {
   fetchUserProfile
 } = require('./src/fetcher');
 const { generateEnhancedAnalysis } = require('./src/llm');
+const { requireCredits, deductCredit } = require('./src/api/credits');
 
 // Simple string similarity function
 function calculateSimilarity(query, text) {
@@ -251,104 +252,47 @@ app.get('/status', async (req, res) => {
   const checks = {
     database: false,
     polymarketApi: false,
-    llmApi: false
+    llmApi: false,
+    databaseStatus: 'unknown'
   };
 
-  // Check database connectivity
   try {
-    const { initDb } = require('./src/db');
-    const db = initDb();
-    db.prepare('SELECT 1').get();
-    checks.database = true;
-  } catch (e) {
-    checks.database = false;
+    // Check database health
+    const { checkDbHealth } = require('./src/db');
+    const dbHealth = await checkDbHealth();
+    checks.database = dbHealth.available;
+    checks.databaseStatus = dbHealth.status;
+  } catch (error) {
+    console.error('Database health check failed:', error);
   }
 
-  // Check Polymarket API connectivity
   try {
-    const response = await fetch('https://gamma-api.polymarket.com/markets?limit=1', {
-      signal: AbortSignal.timeout(5000)
-    });
-    checks.polymarketApi = response.ok;
-  } catch (e) {
-    checks.polymarketApi = false;
+    // Check Polymarket API
+    const polymarketHealth = await fetch('https://gamma-api.polymarket.com/markets?limit=1')
+      .then(res => res.ok)
+      .catch(() => false);
+    checks.polymarketApi = polymarketHealth;
+  } catch (error) {
+    console.error('Polymarket health check failed:', error);
   }
 
-  // Check LLM API connectivity (basic check - just verify config exists)
   try {
-    const hasApiKey = process.env.OPENAI_API_KEY || process.env.XAI_API_KEY;
-    checks.llmApi = !!hasApiKey;
-  } catch (e) {
-    checks.llmApi = false;
+    // Check LLM API
+    const llmHealth = process.env.OPENAI_API_KEY || process.env.XAI_API_KEY;
+    checks.llmApi = !!llmHealth;
+  } catch (error) {
+    console.error('LLM health check failed:', error);
   }
 
-  const healthy = Object.values(checks).every(v => v);
+  const overallStatus = checks.database && checks.polymarketApi && checks.llmApi ? 'healthy' : 'degraded';
 
-  // Debug logging for market data
-  const cycleSummary = global.latestData?.cycleSummary;
-  console.log('[STATUS DEBUG] cycleSummary:', cycleSummary);
-  console.log('[STATUS DEBUG] global.latestData exists:', !!global.latestData);
-  console.log('[STATUS DEBUG] marketsFetched:', cycleSummary?.marketsFetched);
-  console.log('[STATUS DEBUG] marketsEligible:', cycleSummary?.marketsEligible);
-  console.log('[STATUS DEBUG] systemHealth:', systemHealth);
-
-  const generateServiceHistory = () => {
-    const history = [];
-    for (let i = 0; i < 6; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      history.push({
-        date: dateStr,
-        services: {
-          'Oracle Core': '●',
-          'API Gateway': '●',
-          'Logs Processor': '●',
-          'Signal Engine': '●'
-        }
-      });
-    }
-    return history;
-  };
-
-  const generateRecentEvents = () => {
-    const now = new Date();
-    const events = [
-      { offset: 0, event: 'Oracle Core cycle completed successfully' },
-      { offset: 15, event: 'API Gateway operational' },
-      { offset: 30, event: 'Logs processed without issues' },
-      { offset: 45, event: 'Signal engine analysis completed' }
-    ];
-    return events.map(e => {
-      const time = new Date(now.getTime() - e.offset * 60000);
-      const dateStr = time.toISOString().slice(0, 10);
-      const timeStr = time.toISOString().slice(11, 16) + ' UTC';
-      return `${dateStr} ${timeStr} - ${e.event}`;
-    });
-  };
-
-  res.status(healthy ? 200 : 503).json({
-    status: healthy ? 'healthy' : 'unhealthy',
+  res.json({
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
     checks,
-    uptime: Math.floor((Date.now() - systemHealth.startTime) / 1000),
-    lastRun: systemHealth.lastRun || global.latestData?.lastRun,
-    posts: systemHealth.posts || global.latestData?.posts || 0,
-    marketsScanned: global.latestData?.cycleSummary?.marketsFetched || 0,
-    marketsQualified: global.latestData?.cycleSummary?.marketsEligible || 0,
-    marketsMonitored: systemHealth.marketsMonitored || global.latestData?.marketsMonitored || global.latestData?.cycleSummary?.marketsAnalyzed || 0,
-    alertsActive: systemHealth.alertsActive,
-    timestamp: Date.now(),
-    version: '1.1-beta',
-    history: generateServiceHistory(),
-    recentEvents: generateRecentEvents(),
-    noRecentIssues: healthy,
-    // Add debug info
-    debug: {
-      hasGlobalData: !!global.latestData,
-      hasCycleSummary: !!global.latestData?.cycleSummary,
-      systemHealthPosts: systemHealth.posts,
-      globalDataPosts: global.latestData?.posts
-    }
+    message: overallStatus === 'healthy' 
+      ? 'All systems operational' 
+      : 'Some systems are degraded - see checks for details'
   });
 });
 
@@ -1322,7 +1266,7 @@ function sanitizeUserInput(input) {
 }
 
 // Chat endpoint for natural language queries with contextual history
-app.post('/chat', validateInput, async (req, res) => {
+app.post('/chat', validateInput, requireCredits, async (req, res) => {
   const startTime = Date.now();
   let userId = null;
   
@@ -1857,6 +1801,16 @@ ${aiAnalysis}`;
         );
       } catch (persistError) {
         console.error('Failed to save chat exchange:', persistError);
+      }
+    }
+
+    // Deduct credit after successful chat
+    if (userId) {
+      try {
+        await deductCredit(userId, data.contextId);
+        console.log(`[CHAT] Credit deducted for user ${userId}. Remaining: ${req.userCredits - 1}`);
+      } catch (creditError) {
+        console.error('[CHAT] Failed to deduct credit:', creditError);
       }
     }
 
@@ -2675,11 +2629,16 @@ app.delete('/api/watchlist/:marketId', async (req, res) => {
 const watchlistRoutes = require('./src/api/watchlist');
 const userRoutes = require('./src/api/users');
 const signalRoutes = require('./src/api/signals');
+const tokenRoutes = require('./src/api/token');
+const paymentRoutes = require('./src/api/payments');
 
 // Use the new routes
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/signals', signalRoutes);
+app.use('/api/token', tokenRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/credits', require('./src/api/credits').router);
 
 // Visualization API endpoints
 app.get('/api/visualization/price-history', async (req, res) => {

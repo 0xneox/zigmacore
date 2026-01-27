@@ -3,8 +3,10 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 let supabase = null;
+let dbAvailable = true;
+let inMemoryCache = {};
 
-// Initialize Supabase client
+// Initialize Supabase client with graceful degradation
 function initDb() {
   if (supabase) return supabase;
   
@@ -13,15 +15,141 @@ function initDb() {
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
     
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase configuration. Please check SUPABASE_URL and SUPABASE_ANON_KEY in .env file.');
+      console.warn('[DB] Missing Supabase configuration. Running in degraded mode with in-memory storage.');
+      dbAvailable = false;
+      return createMockClient();
     }
     
     supabase = createClient(supabaseUrl, supabaseKey);
-    console.log('Supabase client initialized successfully');
+    console.log('[DB] Supabase client initialized successfully');
+    dbAvailable = true;
     return supabase;
   } catch (error) {
-    console.error('Failed to initialize Supabase client:', error.message);
-    throw error;
+    console.warn('[DB] Failed to initialize Supabase client:', error.message);
+    console.warn('[DB] Running in degraded mode with in-memory storage.');
+    dbAvailable = false;
+    return createMockClient();
+  }
+}
+
+// Create mock client for degraded mode
+function createMockClient() {
+  return {
+    from: (table) => ({
+      select: (columns) => ({
+        eq: (field, value) => mockQuery(table, columns, field, value),
+        order: (field, options) => mockQuery(table, columns),
+        limit: (n) => mockQuery(table, columns),
+        single: () => mockQuery(table, columns).then(data => data[0] || null)
+      }),
+      upsert: (data) => mockUpsert(table, data),
+      insert: (data) => mockUpsert(table, data),
+      update: (data) => ({
+        eq: (field, value) => mockUpdate(table, data, field, value)
+      }),
+      delete: () => mockDelete(table)
+    })
+  };
+}
+
+// Mock query function for in-memory storage
+async function mockQuery(table, columns, field, value) {
+  if (!inMemoryCache[table]) {
+    return { data: [], error: null };
+  }
+  
+  let data = inMemoryCache[table];
+  
+  if (field && value !== undefined) {
+    data = data.filter(item => item[field] === value);
+  }
+  
+  return { data, error: null };
+}
+
+// Mock upsert function
+async function mockUpsert(table, data) {
+  if (!inMemoryCache[table]) {
+    inMemoryCache[table] = [];
+  }
+  
+  if (Array.isArray(data)) {
+    data.forEach(item => {
+      const index = inMemoryCache[table].findIndex(i => i.id === item.id);
+      if (index >= 0) {
+        inMemoryCache[table][index] = { ...inMemoryCache[table][index], ...item };
+      } else {
+        inMemoryCache[table].push(item);
+      }
+    });
+  } else {
+    const index = inMemoryCache[table].findIndex(i => i.id === data.id);
+    if (index >= 0) {
+      inMemoryCache[table][index] = { ...inMemoryCache[table][index], ...data };
+    } else {
+      inMemoryCache[table].push(data);
+    }
+  }
+  
+  return { data, error: null };
+}
+
+// Mock update function
+async function mockUpdate(table, data, field, value) {
+  if (!inMemoryCache[table]) {
+    return { error: { message: 'Table not found' } };
+  }
+  
+  inMemoryCache[table] = inMemoryCache[table].map(item => 
+    item[field] === value ? { ...item, ...data } : item
+  );
+  
+  return { error: null };
+}
+
+// Mock delete function
+async function mockDelete(table) {
+  if (inMemoryCache[table]) {
+    inMemoryCache[table] = [];
+  }
+  return { error: null };
+}
+
+// Check database health
+async function checkDbHealth() {
+  try {
+    if (!dbAvailable || !supabase) {
+      return {
+        status: 'degraded',
+        message: 'Database unavailable - running in in-memory mode',
+        available: false
+      };
+    }
+    
+    // Test database connection
+    const { error } = await supabase.from('users').select('count').single();
+    
+    if (error) {
+      console.warn('[DB] Health check failed:', error.message);
+      return {
+        status: 'degraded',
+        message: 'Database connection failed - running in in-memory mode',
+        available: false
+      };
+    }
+    
+    return {
+      status: 'healthy',
+      message: 'Database connection successful',
+      available: true
+    };
+  } catch (error) {
+    console.warn('[DB] Health check error:', error.message);
+    return {
+      status: 'degraded',
+      message: 'Database error - running in in-memory mode',
+      available: false
+    };
   }
 }
 
@@ -52,14 +180,19 @@ async function savePriceCache(cache) {
       .select();
     
     if (error) {
-      console.error('Failed to save price cache:', error.message);
-      throw error;
+      console.error('[DB] Failed to save price cache:', error.message);
+      if (!dbAvailable) {
+        console.warn('[DB] Running in degraded mode - price cache not persisted');
+      }
+      return;
     }
     
-    console.log(`Saved ${validEntries.length} price cache entries`);
+    console.log(`[DB] Saved ${validEntries.length} price cache entries`);
   } catch (error) {
-    console.error('Failed to save price cache:', error);
-    throw error;
+    console.error('[DB] Failed to save price cache:', error);
+    if (!dbAvailable) {
+      console.warn('[DB] Running in degraded mode - price cache not persisted');
+    }
   }
 }
 
@@ -70,7 +203,10 @@ async function loadPriceCache() {
     .select('id, price, created_at');
   
   if (error) {
-    console.error('Failed to load price cache:', error.message);
+    console.error('[DB] Failed to load price cache:', error.message);
+    if (!dbAvailable) {
+      console.warn('[DB] Running in degraded mode - returning empty cache');
+    }
     return {};
   }
   
@@ -396,14 +532,12 @@ module.exports = {
   getTradeSignals,
   saveVolumeSnapshot,
   getVolumeSnapshots,
-  saveUserPerformanceSnapshot,
-  getUserPerformanceHistory,
-  getUserPerformanceTrend,
-  saveConversationCache,
-  getConversationCache,
-  pruneExpiredConversationCache,
+  saveTradeSignal,
+  getTradeSignals,
   saveClobPriceCache,
   getClobPriceCache,
   saveAnalysisCacheV2,
-  getAnalysisCacheV2
+  getAnalysisCacheV2,
+  checkDbHealth,
+  dbAvailable: () => dbAvailable
 };
