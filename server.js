@@ -2881,6 +2881,365 @@ app.use((err, req, res, next) => {
   });
 });
 
+// ============================================================
+// MOLTBOT INTEGRATION API ENDPOINTS
+// ============================================================
+
+// Import utilities
+const { verifyZigmaAccess } = require('./src/utils/token');
+const { analyzeWallet } = require('./src/api/wallet');
+const {
+  addTrackedMarket,
+  removeTrackedMarket,
+  getTrackedMarkets,
+  runHeartbeat,
+  getHeartbeatStats
+} = require('./src/utils/heartbeat');
+const {
+  requireTokenAccess,
+  getUserUsage,
+  incrementUsage
+} = require('./src/middleware/token-access');
+
+// Store webhooks for real-time alerts
+const webhooks = new Map();
+
+// GET /api/v1/signals - Get trading signals with auth middleware and tier enforcement
+app.get('/api/v1/signals', authenticate, requireTokenAccess('signals'), async (req, res) => {
+  try {
+    const { limit = 5, minEdge = 0.03, category } = req.query;
+    const signals = global.latestData?.liveSignals || [];
+    
+    // Filter signals
+    const filtered = signals
+      .filter(s => {
+        const edge = Math.abs(s.edgeScoreDecimal || (s.edge || 0));
+        return edge >= parseFloat(minEdge);
+      })
+      .filter(s => !category || s.category === category)
+      .slice(0, parseInt(limit));
+    
+    // Apply signal priority based on tier
+    const priorityOrder = {
+      'FREE': ['edge'],
+      'BASIC': ['edge', 'confidence'],
+      'PRO': ['edge', 'confidence', 'liquidity'],
+      'WHALE': ['edge', 'confidence', 'liquidity', 'kelly']
+    };
+    
+    const sortCriteria = priorityOrder[req.userTier] || priorityOrder.FREE;
+    
+    const prioritized = filtered.sort((a, b) => {
+      for (const criterion of sortCriteria) {
+        const aVal = a[criterion] || 0;
+        const bVal = b[criterion] || 0;
+        if (aVal !== bVal) {
+          return bVal - aVal; // Descending order
+        }
+      }
+      return 0;
+    });
+    
+    res.json(prioritized);
+  } catch (error) {
+    console.error('[API/v1/signals] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch signals', message: error.message });
+  }
+});
+
+// GET /api/v1/market/:id/analysis - Deep market analysis
+app.get('/api/v1/market/:id/analysis', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find market in live signals
+    const market = global.latestData?.liveSignals?.find(s => s.marketId === id);
+    
+    if (!market) {
+      return res.status(404).json({ error: 'Market not found', id });
+    }
+    
+    // Fetch news for this market
+    const { crossReferenceNews } = require('./src/index');
+    let news = [];
+    try {
+      const newsResults = await crossReferenceNews(market);
+      news = newsResults.slice(0, 3).map(n => ({ title: n.title, source: n.source }));
+    } catch (error) {
+      console.error('News fetch failed:', error.message);
+    }
+    
+    // Build analysis response
+    const analysis = {
+      id: market.marketId,
+      question: market.marketQuestion,
+      probability: market.predictedProbability || 0.5,
+      confidence: market.confidence || 0,
+      edge: market.edgeScoreDecimal || (market.edge || 0),
+      recommendation: market.action || 'NO_TRADE',
+      reasoning: market.structuredAnalysis?.reasoning || 'Analysis available',
+      news
+    };
+    
+    res.json(analysis);
+  } catch (error) {
+    console.error('[API/v1/market/:id/analysis] Error:', error);
+    res.status(500).json({ error: 'Failed to analyze market', message: error.message });
+  }
+});
+
+// GET /api/v1/arbitrage - Scan for arbitrage opportunities with tier enforcement
+app.get('/api/v1/arbitrage', authenticate, requireTokenAccess('arbitrage'), async (req, res) => {
+  try {
+    const { scanArbitrageOpportunities } = require('./src/index');
+    
+    const opportunities = await scanArbitrageOpportunities(
+      global.latestData?.liveSignals || []
+    );
+    
+    res.json(opportunities);
+  } catch (error) {
+    console.error('[API/v1/arbitrage] Error:', error);
+    res.status(500).json({ error: 'Failed to scan arbitrage', message: error.message });
+  }
+});
+
+// GET /api/v1/access/:wallet - Token verification endpoint
+app.get('/api/v1/access/:wallet', authenticate, async (req, res) => {
+  try {
+    const { wallet } = req.params;
+    
+    // Validate wallet address format
+    if (!wallet || !/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+      return res.status(400).json({ error: 'Invalid wallet address format' });
+    }
+    
+    // Verify ZIGMA access
+    const access = await verifyZigmaAccess(wallet);
+    
+    res.json(access);
+  } catch (error) {
+    console.error('[API/v1/access/:wallet] Error:', error);
+    res.status(500).json({ error: 'Failed to verify access', message: error.message });
+  }
+});
+
+// GET /api/v1/wallet/:address - Wallet analysis endpoint with tier enforcement
+app.get('/api/v1/wallet/:address', authenticate, requireTokenAccess('wallet'), async (req, res) => {
+  try {
+    const { address } = req.params;
+    
+    // Validate wallet address
+    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      return res.status(400).json({ error: 'Invalid wallet address format' });
+    }
+    
+    // Analyze wallet
+    const analysis = await analyzeWallet(address);
+    
+    res.json(analysis);
+  } catch (error) {
+    console.error('[API/v1/wallet/:address] Error:', error);
+    res.status(500).json({ error: 'Failed to analyze wallet', message: error.message });
+  }
+});
+
+// POST /api/v1/track - Track a market for alerts with tier enforcement
+app.post('/api/v1/track', authenticate, requireTokenAccess('track'), async (req, res) => {
+  try {
+    const { userId, marketId, threshold } = req.body;
+    
+    if (!userId || !marketId) {
+      return res.status(400).json({ error: 'Missing required fields: userId, marketId' });
+    }
+    
+    const result = addTrackedMarket(userId, marketId, threshold);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('[API/v1/track] Error:', error);
+    res.status(500).json({ error: 'Failed to track market', message: error.message });
+  }
+});
+
+// GET /api/v1/tracked - Get tracked markets for a user
+app.get('/api/v1/tracked', authenticate, async (req, res) => {
+  try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId parameter' });
+    }
+    
+    const markets = getTrackedMarkets(userId);
+    
+    // Enrich with current market data
+    const enriched = markets.map(tracking => {
+      const market = global.latestData?.liveSignals?.find(s => s.marketId === tracking.marketId);
+      return {
+        ...tracking,
+        currentMarket: market ? {
+          question: market.marketQuestion,
+          currentEdge: (Math.abs(market.edgeScoreDecimal || (market.edge || 0)) * 100).toFixed(1),
+          confidence: market.confidence || 0,
+          action: market.action || 'NO_TRADE'
+        } : null
+      };
+    });
+    
+    res.json(enriched);
+  } catch (error) {
+    console.error('[API/v1/tracked] Error:', error);
+    res.status(500).json({ error: 'Failed to get tracked markets', message: error.message });
+  }
+});
+
+// DELETE /api/v1/tracked/:marketId - Remove tracked market
+app.delete('/api/v1/tracked/:marketId', authenticate, async (req, res) => {
+  try {
+    const { marketId } = req.params;
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId parameter' });
+    }
+    
+    const result = removeTrackedMarket(userId, marketId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('[API/v1/tracked/:marketId] Error:', error);
+    res.status(500).json({ error: 'Failed to remove tracked market', message: error.message });
+  }
+});
+
+// POST /api/v1/webhooks - Register webhook for alerts
+app.post('/api/v1/webhooks', authenticate, async (req, res) => {
+  try {
+    const { userId, url, events } = req.body;
+    
+    if (!userId || !url) {
+      return res.status(400).json({ error: 'Missing required fields: userId, url' });
+    }
+    
+    webhooks.set(userId, {
+      url,
+      events: events || ['EDGE_CHANGE', 'HIGH_EDGE_SIGNAL', 'ARBITRAGE_OPPORTUNITY', 'EXIT_SIGNAL'],
+      registeredAt: Date.now()
+    });
+    
+    res.json({ success: true, message: 'Webhook registered' });
+  } catch (error) {
+    console.error('[API/v1/webhooks] Error:', error);
+    res.status(500).json({ error: 'Failed to register webhook', message: error.message });
+  }
+});
+
+// DELETE /api/v1/webhooks - Remove webhook
+app.delete('/api/v1/webhooks', authenticate, async (req, res) => {
+  try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId parameter' });
+    }
+    
+    webhooks.delete(userId);
+    
+    res.json({ success: true, message: 'Webhook removed' });
+  } catch (error) {
+    console.error('[API/v1/webhooks DELETE] Error:', error);
+    res.status(500).json({ error: 'Failed to remove webhook', message: error.message });
+  }
+});
+
+// POST /api/v1/alerts - Send alerts to webhooks
+app.post('/api/v1/alerts', authenticate, async (req, res) => {
+  try {
+    const { alerts } = req.body;
+    
+    if (!Array.isArray(alerts)) {
+      return res.status(400).json({ error: 'Invalid alerts format' });
+    }
+    
+    const results = [];
+    
+    for (const alert of alerts) {
+      const webhook = webhooks.get(alert.userId);
+      
+      if (!webhook) {
+        results.push({ alertId: alert.id, status: 'NO_WEBHOOK' });
+        continue;
+      }
+      
+      // Check if event type is subscribed
+      if (!webhook.events.includes(alert.type)) {
+        results.push({ alertId: alert.id, status: 'NOT_SUBSCRIBED' });
+        continue;
+      }
+      
+      // Send webhook
+      try {
+        await fetch(webhook.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(alert)
+        });
+        
+        results.push({ alertId: alert.id, status: 'SENT' });
+      } catch (error) {
+        console.error(`Failed to send webhook to ${webhook.url}:`, error.message);
+        results.push({ alertId: alert.id, status: 'FAILED', error: error.message });
+      }
+    }
+    
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error('[API/v1/alerts] Error:', error);
+    res.status(500).json({ error: 'Failed to send alerts', message: error.message });
+  }
+});
+
+// GET /api/v1/heartbeat/stats - Get heartbeat statistics
+app.get('/api/v1/heartbeat/stats', authenticate, async (req, res) => {
+  try {
+    const userId = req.user?.id || req.headers['x-user-id'];
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+    
+    const stats = getHeartbeatStats();
+    const usage = getUserUsage(userId);
+    
+    res.json({
+      ...stats,
+      usage
+    });
+  } catch (error) {
+    console.error('[API/v1/heartbeat/stats] Error:', error);
+    res.status(500).json({ error: 'Failed to get heartbeat stats', message: error.message });
+  }
+});
+
+// GET /api/v1/usage - Get user's daily usage stats
+app.get('/api/v1/usage', authenticate, async (req, res) => {
+  try {
+    const userId = req.user?.id || req.headers['x-user-id'];
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+    
+    const usage = getUserUsage(userId);
+    
+    res.json(usage);
+  } catch (error) {
+    console.error('[API/v1/usage] Error:', error);
+    res.status(500).json({ error: 'Failed to get usage stats', message: error.message });
+  }
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
