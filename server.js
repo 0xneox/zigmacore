@@ -18,6 +18,7 @@ const {
   extractClientInfo,
   generateSessionId 
 } = require('./src/chat-persistence');
+const v1Router = require('./src/api/v1');
 
 // Create HTTP server for WebSocket support
 const server = http.createServer(app);
@@ -156,6 +157,9 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') res.sendStatus(200);
   else next();
 });
+
+// Mount v1 API routes for Moltbot integration
+app.use('/api/v1', v1Router);
 
 // Import agent functions
 const {
@@ -2631,14 +2635,22 @@ const userRoutes = require('./src/api/users');
 const signalRoutes = require('./src/api/signals');
 const tokenRoutes = require('./src/api/token');
 const paymentRoutes = require('./src/api/payments');
+const { router: magicAuthRouter } = require('./src/api/magic-auth');
+const { router: zigmaChatRouter } = require('./src/api/zigma-chat');
 
 // Use the new routes
+app.use('/api/auth', magicAuthRouter);
+app.use('/api/chat', zigmaChatRouter);
+app.use('/api/helius', require('./src/api/helius-webhook'));
+
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/signals', signalRoutes);
 app.use('/api/token', tokenRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/credits', require('./src/api/credits').router);
+app.use('/api/auth/magic', magicAuthRouter);
+app.use('/api/chat', zigmaChatRouter);
 
 // Visualization API endpoints
 app.get('/api/visualization/price-history', async (req, res) => {
