@@ -150,7 +150,8 @@ async function fetchAllMarkets() {
     order: 'startDate',
     sort: 'desc'
   };
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 4000;
+  // DEV: Limit to 100 markets for faster response time (prod: 4000)
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 100;
   let offset = 0;
   let allMarkets = [];
 

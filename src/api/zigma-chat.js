@@ -74,6 +74,11 @@ function getUserChatUsage(walletAddress) {
 async function requireZigmaTokens(req, res, next) {
   try {
     const walletAddress = req.user?.publicAddress;
+    const userEmail = req.user?.email;
+    
+    console.log('[ZIGMA CHAT] requireZigmaTokens - req.user:', req.user);
+    console.log('[ZIGMA CHAT] walletAddress:', walletAddress);
+    console.log('[ZIGMA CHAT] userEmail:', userEmail);
     
     if (!walletAddress) {
       return res.status(401).json({
@@ -81,6 +86,18 @@ async function requireZigmaTokens(req, res, next) {
         message: 'Wallet address not found in session'
       });
     }
+
+    // DEV EXCEPTION: Allow unlimited chat for dev/test accounts
+    const DEV_EMAILS = ['neohex262@gmail.com', 'jissjoseph30@gmail.com'];
+    console.log('[ZIGMA CHAT] Checking dev exception for email:', userEmail);
+    console.log('[ZIGMA CHAT] Is dev email?', userEmail && DEV_EMAILS.includes(userEmail.toLowerCase()));
+    
+    if (userEmail && DEV_EMAILS.includes(userEmail.toLowerCase())) {
+      console.log('[ZIGMA CHAT] ✅ DEV MODE: Unlimited chat access for', userEmail);
+      return next();
+    }
+    
+    console.log('[ZIGMA CHAT] ❌ Not a dev email, checking ZIGMA balance...');
 
     // Get ZIGMA balance
     const balance = await getZigmaBalance(walletAddress);
@@ -186,35 +203,173 @@ router.get('/balance', verifyMagicToken, async (req, res) => {
  */
 router.post('/message', verifyMagicToken, requireZigmaTokens, async (req, res) => {
   try {
-    const { message, marketUrl } = req.body;
+    const { message, marketUrl, query, marketId, marketQuestion, polymarketUser } = req.body;
     const walletAddress = req.user.publicAddress;
     
-    if (!message) {
+    // Accept either 'message' or 'query' field for compatibility
+    const userQuery = message || query;
+    
+    if (!userQuery && !marketId && !marketQuestion && !marketUrl && !polymarketUser) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Message is required'
+        message: 'Message, query, marketId, marketQuestion, marketUrl, or polymarketUser is required'
       });
     }
     
     // Record chat usage
     recordChatUsage(walletAddress);
     
-    // TODO: Integrate with your existing chat/LLM logic here
-    // For now, return a mock response
-    const response = {
-      success: true,
-      message: 'Chat message received',
-      chatInfo: req.chatInfo,
-      // Add your actual chat response here
-      response: 'This will be replaced with actual LLM response'
+    console.log('[ZIGMA CHAT] Processing message:', userQuery);
+    console.log('[ZIGMA CHAT] polymarketUser:', polymarketUser);
+    
+    // Handle user profile analysis if polymarketUser is provided
+    if (polymarketUser) {
+      console.log('[ZIGMA CHAT] User profile request for:', polymarketUser);
+      
+      const { fetchUserProfile } = require('../../server');
+      
+      // Validate wallet address format
+      if (!/^0x[a-fA-F0-9]{40}$/.test(polymarketUser)) {
+        return res.status(400).json({
+          error: 'Invalid wallet address format',
+          message: 'Please provide a valid Polymarket wallet address (starts with 0x and is 42 characters long)',
+          user: polymarketUser
+        });
+      }
+      
+      console.log('[ZIGMA CHAT] Fetching user profile for:', polymarketUser);
+      const userProfile = await fetchUserProfile(polymarketUser);
+      
+      if (!userProfile) {
+        return res.status(404).json({
+          error: 'User profile not found',
+          message: 'Unable to find trading activity for this wallet address',
+          user: polymarketUser
+        });
+      }
+      
+      const { metrics, positions, activity, maker, profile, balance } = userProfile;
+      const analysis = userProfile.analysis || {};
+      const health = analysis.health || {};
+      const risk = analysis.risk || {};
+      const patterns = analysis.patterns || {};
+      
+      // Calculate total P&L
+      const totalPnl = metrics.realizedPnl + metrics.unrealizedPnl;
+      
+      // Build user profile response
+      const profileMessage = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 USER PROFILE ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Wallet: ${maker}
+Balance: $${balance?.toFixed(2) || 'N/A'}
+
+📊 Performance Metrics:
+  Total Positions: ${metrics.totalPositions}
+  Total Trades: ${metrics.totalTrades}
+  Realized P&L: $${metrics.realizedPnl.toFixed(2)}
+  Unrealized P&L: $${metrics.unrealizedPnl.toFixed(2)}
+  Total P&L: $${totalPnl.toFixed(2)}
+  Total Volume: $${metrics.totalVolume.toFixed(2)}
+  Win Rate: ${metrics.winRate.toFixed(1)}%
+  Average Position Size: $${metrics.averagePositionSize.toFixed(2)}
+
+🏆 Top Markets by P&L:
+${metrics.topMarkets.slice(0, 5).map((m, i) => `  ${i + 1}. ${m.title}: $${m.pnl.toFixed(2)}`).join('\n')}
+
+⚠️ Risk Assessment:
+  Diversification: ${risk.diversificationScore?.toFixed(0) || 'N/A'}%
+  Top Position Exposure: ${risk.topPositionExposure?.toFixed(1) || 'N/A'}%
+  Portfolio Health: ${health.grade || 'N/A'} (${health.score?.toFixed(0) || 'N/A'}/100)
+
+📈 Trading Patterns:
+  Average Hold Time: ${patterns.avgHoldTime?.toFixed(1) || 'N/A'} hours
+  Trade Frequency: ${patterns.tradeFrequency?.toFixed(1) || 'N/A'} trades/day
+  Trading Style: ${patterns.scalpingTendency > 0.5 ? '🏎️ Scalper' : patterns.hodlTendency > 0.5 ? '📊 Position Trader' : '📈 Swing Trader'}
+
+📜 Recent Activity:
+${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price} - ${a.title}`).join('\n')}
+`;
+      
+      const response = {
+        success: true,
+        answer: profileMessage,
+        confidence: 100,
+        userProfile: {
+          maker,
+          profile,
+          metrics,
+          positions: positions, // Send all positions for PositionTable
+          activity: activity.slice(0, 50) // Increase activity for better insights
+        }
+      };
+      
+      console.log('[ZIGMA CHAT] Sending user profile response');
+      return res.json(response);
+    }
+    
+    // Use the original chat logic from server.js for market analysis
+    const { resolveMarketIntent, generateEnhancedAnalysis, buildAssistantMessage, normalizeAction } = require('../../server');
+    
+    // Resolve market intent (handles URLs, market IDs, questions, etc.)
+    const intent = await resolveMarketIntent({
+      marketId: marketId,
+      marketQuestion: marketQuestion || userQuery,
+      query: userQuery,
+      existingMarket: null
+    });
+    
+    if (!intent?.market) {
+      return res.status(404).json({
+        error: 'No matching market found',
+        message: 'Unable to find a market matching your query. Try providing a Polymarket URL or full market question.',
+        query: userQuery
+      });
+    }
+    
+    const matchedMarket = intent.market;
+    console.log('[ZIGMA CHAT] Analyzing market:', matchedMarket.question);
+    
+    // Generate analysis using the original LLM logic
+    const analysis = await generateEnhancedAnalysis(matchedMarket);
+    console.log('[ZIGMA CHAT] Analysis complete');
+    
+    // Build assistant message using original formatting
+    const assistantMessage = buildAssistantMessage({
+      analysis,
+      matchedMarket,
+      userPrompt: userQuery || marketQuestion || '(market analysis)'
+    });
+    
+    const recommendation = {
+      action: normalizeAction(analysis?.action),
+      confidence: analysis?.confidence ?? null,
+      probability: typeof analysis?.probability === 'number'
+        ? Number((analysis.probability * 100).toFixed(2))
+        : null,
+      marketOdds: typeof matchedMarket?.yesPrice === 'number'
+        ? Number((matchedMarket.yesPrice * 100).toFixed(2))
+        : null,
+      effectiveEdge: analysis?.effectiveEdge ?? null
     };
     
+    const response = {
+      success: true,
+      answer: assistantMessage, // Full formatted response
+      confidence: analysis?.confidence || 0,
+      recommendation: recommendation,
+      analysis: analysis,
+      market: matchedMarket
+    };
+    
+    console.log('[ZIGMA CHAT] Sending response (length:', assistantMessage.length, 'chars)');
     res.json(response);
   } catch (error) {
     console.error('[ZIGMA CHAT] Message error:', error);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to process message'
+      message: 'Failed to process message: ' + error.message
     });
   }
 });

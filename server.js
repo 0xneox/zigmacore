@@ -684,30 +684,8 @@ function buildAssistantMessage({ analysis, matchedMarket, userPrompt }) {
     lines.push(``, `📝 Analysis:`, `  ${analysis.narrative}`);
   }
 
-  // Add historical context section
-  const category = matchedMarket?.category || matchedMarket?.marketType || 'General';
-  const historicalContext = getHistoricalContextForCategory(category, matchedMarket?.question);
-  
-  if (historicalContext && historicalContext.length > 0) {
-    lines.push(``, `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`📜 HISTORICAL CONTEXT`);
-    lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(``);
-    lines.push(`Category: ${category}`);
-    lines.push(`Similar Markets & Outcomes:`);
-    
-    historicalContext.slice(0, 3).forEach((ctx, idx) => {
-      lines.push(`${idx + 1}. ${ctx.market}`);
-      lines.push(`   Outcome: ${ctx.outcome} | Final Odds: ${ctx.finalOdds}%`);
-      if (ctx.lesson) {
-        lines.push(`   Lesson: ${ctx.lesson}`);
-      }
-    });
-    
-    if (historicalContext.length > 3) {
-      lines.push(`... and ${historicalContext.length - 3} more similar markets`);
-    }
-  }
+  // Historical context removed - was showing placeholder/incorrect data
+  // TODO: Implement real historical market data from database if needed
 
   if (analysis?.primaryReason) {
     lines.push(``, `🎯 Primary Driver: ${analysis.primaryReason}`);
@@ -745,118 +723,6 @@ function getDepthRisk(liquidity, volume24hr) {
   return 'LOW - Good depth available';
 }
 
-function getHistoricalContextForCategory(category, question) {
-  const categoryContexts = {
-    'General': [
-      {
-        market: 'Will Trump win 2024 election?',
-        outcome: 'YES',
-        finalOdds: '58',
-        lesson: 'Polls underestimated support; late momentum matters'
-      },
-      {
-        market: 'Will Bitcoin reach $100k by 2025?',
-        outcome: 'NO',
-        finalOdds: '35',
-        lesson: 'Crypto markets often overestimate short-term targets'
-      },
-      {
-        market: 'Will Fed cut rates before March 2024?',
-        outcome: 'NO',
-        finalOdds: '25',
-        lesson: 'Central bank decisions are more conservative than market expectations'
-      }
-    ],
-    'Politics': [
-      {
-        market: 'Will Republicans control Senate after 2024?',
-        outcome: 'YES',
-        finalOdds: '62',
-        lesson: 'Incumbent party struggles in midterms; polling errors persist'
-      },
-      {
-        market: 'Will Biden be replaced as 2024 nominee?',
-        outcome: 'NO',
-        finalOdds: '15',
-        lesson: 'Party consolidation occurs late; early speculation often wrong'
-      },
-      {
-        market: 'Will UK hold general election in 2024?',
-        outcome: 'YES',
-        finalOdds: '85',
-        lesson: 'Political timing markets have high accuracy when close to deadline'
-      }
-    ],
-    'Crypto': [
-      {
-        market: 'Will ETH flip BTC by EOY 2024?',
-        outcome: 'NO',
-        finalOdds: '12',
-        lesson: 'Market leader dominance persists longer than expected'
-      },
-      {
-        market: 'Will Solana reach $200 in 2024?',
-        outcome: 'YES',
-        finalOdds: '68',
-        lesson: 'Ecosystem growth drives price; narrative markets can be accurate'
-      },
-      {
-        market: 'Will Bitcoin ETF be approved in 2024?',
-        outcome: 'YES',
-        finalOdds: '72',
-        lesson: 'Regulatory markets track institutional sentiment well'
-      }
-    ],
-    'Sports': [
-      {
-        market: 'Will Chiefs repeat as Super Bowl champions?',
-        outcome: 'YES',
-        finalOdds: '55',
-        lesson: 'Dynasty teams have repeat probability above random chance'
-      },
-      {
-        market: 'Will Messi win Ballon d\'Or 2024?',
-        outcome: 'YES',
-        finalOdds: '78',
-        lesson: 'Individual awards markets track consensus well'
-      },
-      {
-        market: 'Will Lakers make playoffs 2024?',
-        outcome: 'NO',
-        finalOdds: '42',
-        lesson: 'Team chemistry matters more than individual talent'
-      }
-    ],
-    'Economics': [
-      {
-        market: 'Will US enter recession in 2024?',
-        outcome: 'NO',
-        finalOdds: '28',
-        lesson: 'Economic resilience often exceeds pessimistic forecasts'
-      },
-      {
-        market: 'Will inflation drop below 3% in 2024?',
-        outcome: 'YES',
-        finalOdds: '65',
-        lesson: 'Disinflation trends persist longer than expected'
-      },
-      {
-        market: 'Will unemployment exceed 5% in 2024?',
-        outcome: 'NO',
-        finalOdds: '35',
-        lesson: 'Labor markets show more stickiness than predicted'
-      }
-    ]
-  };
-
-  // Try to find context for the specific category
-  if (categoryContexts[category]) {
-    return categoryContexts[category];
-  }
-
-  // Fallback to General context if category not found
-  return categoryContexts['General'] || [];
-}
 
 function extractMarketHints(input = '') {
   if (!input || typeof input !== 'string') return {};
@@ -2637,10 +2503,12 @@ const tokenRoutes = require('./src/api/token');
 const paymentRoutes = require('./src/api/payments');
 const { router: magicAuthRouter } = require('./src/api/magic-auth');
 const { router: zigmaChatRouter } = require('./src/api/zigma-chat');
+const { router: chatActionsRouter } = require('./src/api/chat-actions');
 
 // Use the new routes
 app.use('/api/auth', magicAuthRouter);
 app.use('/api/chat', zigmaChatRouter);
+app.use('/api/chat/actions', chatActionsRouter);
 app.use('/api/helius', require('./src/api/helius-webhook'));
 
 app.use('/api/watchlist', watchlistRoutes);
@@ -3266,6 +3134,11 @@ module.exports = {
   server,
   wsServer,
   updateHealthMetrics,
+  resolveMarketIntent,
+  generateEnhancedAnalysis,
+  buildAssistantMessage,
+  normalizeAction,
+  fetchUserProfile,
   startServer: () => {
     server.listen(PORT, () => {
       console.log(`Agent Zigma server running on port ${PORT}`);
@@ -3276,6 +3149,10 @@ module.exports = {
     return server;
   }
 };
+
+// Initialize live market tracking WebSocket
+const { initializeLiveTracking } = require('./src/api/live-market-tracking');
+const liveTrackingWss = initializeLiveTracking(server);
 
 // Start server if run directly
 if (require.main === module) {

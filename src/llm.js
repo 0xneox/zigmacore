@@ -1241,6 +1241,36 @@ async function generateEnhancedAnalysis(marketData) {
 
     const baseEffectiveEdge = Number((netEdge * 100).toFixed(2)); // Use netEdge for consistency
 
+    // Calculate factor breakdown for display
+    // deltaNews: Impact from news sentiment (-0.2 to +0.2)
+    const deltaNews = sentimentScore !== 0 ? sentimentScore * 0.15 : 0; // Scale sentiment to ±15%
+    
+    // deltaStructure: Market structure quality based on liquidity and spread
+    const liquidityUsd = Number(marketData.liquidity) || 0;
+    const spreadCost = edgeAnalysis.spreadCost || 0.01;
+    let deltaStructure = 0;
+    if (liquidityUsd > 100000 && spreadCost < 0.015) {
+      deltaStructure = 0.05; // Good structure
+    } else if (liquidityUsd < 20000 || spreadCost > 0.03) {
+      deltaStructure = -0.05; // Poor structure
+    }
+    
+    // deltaBehavior: Behavioral mispricing (difference between LLM and market)
+    const deltaBehavior = rawEdge; // Use raw edge as behavioral signal
+    
+    // deltaTime: Time decay factor based on days remaining
+    const daysLeft = marketData.endDateIso
+      ? (new Date(marketData.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24)
+      : 365;
+    let deltaTime = 0;
+    if (daysLeft < 7) {
+      deltaTime = -0.08; // High time decay
+    } else if (daysLeft < 30) {
+      deltaTime = -0.03; // Moderate time decay
+    } else if (daysLeft > 180) {
+      deltaTime = 0.02; // Time working in favor
+    }
+
     const structuredAnalysis = {
       probability: winProb, // Use RAW LLM probability for edge calculation
       adjustedProbability: adjustedWinProb, // Sentiment-adjusted for reference only
@@ -1254,6 +1284,11 @@ async function generateEnhancedAnalysis(marketData) {
       entropy: entropy,
       sentimentScore: sentimentScore !== 0 ? sentimentScore : extractSentimentFromNews(news),
       adaptiveLearning: adaptiveLearning,
+      // Factor breakdown for display
+      deltaNews,
+      deltaStructure,
+      deltaBehavior,
+      deltaTime,
       calibration: {
         confidence: Number(finalConfidence.toFixed(2)),
         rawConfidence: Number(finalConfidence.toFixed(2)),
