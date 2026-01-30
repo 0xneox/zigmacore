@@ -146,12 +146,12 @@ async function fetchAllMarkets() {
   const baseUrl = `${GAMMA}/markets`;
   const params = {
     closed: 'false',
-    limit: 1700,
+    limit: 5000,
     order: 'startDate',
     sort: 'desc'
   };
-  // DEV: Limit to 100 markets for faster response time (prod: 4000)
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 100;
+  // DEV: Limit to 5000 markets for production
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 5000;
   let offset = 0;
   let allMarkets = [];
 
@@ -205,7 +205,7 @@ async function fetchAllMarkets() {
       offset += markets.length;
 
       // Rate limiting delay
-      if (markets.length === 500) {
+      if (markets.length === 5000) {
         await new Promise(resolve => setTimeout(resolve, 1000)); // 1s delay between pages
       }
     } catch (err) {
