@@ -30,7 +30,8 @@ const CREDIT_CONFIG = {
   CREDITS_PER_PAYMENT: 25,
   CREDITS_PER_CHAT: 1,
   REQUIRED_USD_AMOUNT: 25,
-  MIN_CREDITS_FOR_CHAT: 1
+  MIN_CREDITS_FOR_CHAT: 1,
+  FREE_TRIAL_CHATS: 3  // New users get 3 free chats
 };
 
 // Middleware to check if user has sufficient credits
@@ -52,28 +53,76 @@ async function requireCredits(req, res, next) {
       return next();
     }
 
-    // Get user's current credit balance
-    const { data: user, error } = await db
+    // Extract wallet address from DID format if needed
+    const walletOrId = extractWalletFromUserId(userId);
+    
+    console.log(`[CREDITS] requireCredits - Looking up user: original=${userId}, extracted=${walletOrId}`);
+
+    // Build query based on identifier type
+    let query = db
       .from('users')
-      .select('chat_credits, wallet_address')
-      .eq('id', userId)
-      .single();
+      .select('id, chat_credits, wallet_address, free_chats_remaining, email');
+    
+    // Check if it looks like a UUID (format: 8-4-4-4-12 hex characters with dashes)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(walletOrId);
+    
+    if (isUUID) {
+      // Query by id if it's a valid UUID
+      query = query.eq('id', walletOrId);
+    } else if (walletOrId.includes('@')) {
+      // Query by email if it contains @
+      query = query.eq('email', walletOrId);
+    } else {
+      // Otherwise search by wallet_address (Solana or Ethereum address)
+      query = query.eq('wallet_address', walletOrId);
+    }
+    
+    const { data: user, error } = await query.single();
 
     if (error) {
       console.error('[CREDITS] Error fetching user data:', error);
+      
+      // If user not found, allow with free trial defaults (new user)
+      if (error.code === 'PGRST116') {
+        console.log('[CREDITS] User not found - allowing as new user with free trial');
+        req.userCredits = 0;
+        req.userWallet = walletOrId.includes('@') ? null : walletOrId;
+        req.freeChatsRemaining = CREDIT_CONFIG.FREE_TRIAL_CHATS;
+        req.usingFreeTrial = true;
+        req.userId = walletOrId;
+        return next();
+      }
+      
       return res.status(500).json({ 
         error: 'Internal server error',
         message: 'Failed to verify user account'
       });
     }
 
-    // Check if user has sufficient credits
+    console.log(`[CREDITS] Found user: id=${user.id}, credits=${user.chat_credits}, freeChats=${user.free_chats_remaining}`);
+
+    // Check if user has free trial chats remaining
+    const freeChatsRemaining = user?.free_chats_remaining || 0;
+    
+    if (freeChatsRemaining > 0) {
+      // User has free trial chats - allow chat
+      req.userCredits = user.chat_credits || 0;
+      req.userWallet = user.wallet_address;
+      req.freeChatsRemaining = freeChatsRemaining;
+      req.usingFreeTrial = true;
+      req.userId = user.id; // Store actual database ID for credit deduction
+      console.log(`[CREDITS] User ${user.id} using free trial. ${freeChatsRemaining} free chats remaining.`);
+      return next();
+    }
+
+    // Free trial exhausted - check if user has sufficient credits
     if (!user || !user.chat_credits || user.chat_credits < CREDIT_CONFIG.MIN_CREDITS_FOR_CHAT) {
       return res.status(403).json({ 
         error: 'Insufficient credits',
-        message: 'You need at least 1 credit to chat. Please top up your account.',
+        message: 'Your free trial is over. You need ZIGMA tokens or credits to continue chatting.',
         currentCredits: user?.chat_credits || 0,
         requiredCredits: CREDIT_CONFIG.MIN_CREDITS_FOR_CHAT,
+        freeTrialUsed: true,
         paymentRequired: true
       });
     }
@@ -81,6 +130,9 @@ async function requireCredits(req, res, next) {
     // Attach user credits to request for later use
     req.userCredits = user.chat_credits;
     req.userWallet = user.wallet_address;
+    req.freeChatsRemaining = 0;
+    req.usingFreeTrial = false;
+    req.userId = user.id; // Store actual database ID for credit deduction
     
     next();
   } catch (error) {
@@ -93,7 +145,7 @@ async function requireCredits(req, res, next) {
 }
 
 // Deduct credit after successful chat
-async function deductCredit(userId, chatId) {
+async function deductCredit(userId, chatId, usingFreeTrial = false) {
   try {
     const db = getSupabase();
     if (!db) {
@@ -101,10 +153,10 @@ async function deductCredit(userId, chatId) {
       return false;
     }
 
-    // Get current credits
+    // Get current credits and free trial status
     const { data: user, error: fetchError } = await db
       .from('users')
-      .select('chat_credits')
+      .select('chat_credits, free_chats_remaining')
       .eq('id', userId)
       .single();
 
@@ -113,19 +165,41 @@ async function deductCredit(userId, chatId) {
       return false;
     }
 
-    const newBalance = Math.max(0, (user.chat_credits || 0) - CREDIT_CONFIG.CREDITS_PER_CHAT);
+    let updateData = {
+      last_chat_at: new Date().toISOString()
+    };
+    
+    let usageType = 'credit';
+    let balanceBefore = user.chat_credits || 0;
+    let balanceAfter = balanceBefore;
 
-    // Update user credits
+    // Check if using free trial
+    if (usingFreeTrial || (user.free_chats_remaining && user.free_chats_remaining > 0)) {
+      // Deduct from free trial
+      const newFreeChats = Math.max(0, (user.free_chats_remaining || 0) - 1);
+      updateData.free_chats_remaining = newFreeChats;
+      usageType = 'free_trial';
+      balanceBefore = user.free_chats_remaining || 0;
+      balanceAfter = newFreeChats;
+      
+      console.log(`[CREDITS] Deducted 1 free chat from user ${userId}. Remaining free chats: ${newFreeChats}`);
+    } else {
+      // Deduct from paid credits
+      const newBalance = Math.max(0, (user.chat_credits || 0) - CREDIT_CONFIG.CREDITS_PER_CHAT);
+      updateData.chat_credits = newBalance;
+      balanceAfter = newBalance;
+      
+      console.log(`[CREDITS] Deducted ${CREDIT_CONFIG.CREDITS_PER_CHAT} credit from user ${userId}. New balance: ${newBalance}`);
+    }
+
+    // Update user
     const { error: updateError } = await db
       .from('users')
-      .update({
-        chat_credits: newBalance,
-        last_chat_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', userId);
 
     if (updateError) {
-      console.error('[CREDITS] Error updating user credits:', updateError);
+      console.error('[CREDITS] Error updating user:', updateError);
       return false;
     }
 
@@ -135,9 +209,10 @@ async function deductCredit(userId, chatId) {
       .insert({
         user_id: userId,
         chat_id: chatId,
-        credits_used: CREDIT_CONFIG.CREDITS_PER_CHAT,
-        balance_before: user.chat_credits,
-        balance_after: newBalance,
+        credits_used: usageType === 'free_trial' ? 0 : CREDIT_CONFIG.CREDITS_PER_CHAT,
+        usage_type: usageType,
+        balance_before: balanceBefore,
+        balance_after: balanceAfter,
         created_at: new Date().toISOString()
       });
 
@@ -145,14 +220,36 @@ async function deductCredit(userId, chatId) {
       console.error('[CREDITS] Error recording credit usage:', usageError);
       // Don't fail the operation if usage recording fails
     }
-
-    console.log(`[CREDITS] Deducted ${CREDIT_CONFIG.CREDITS_PER_CHAT} credit from user ${userId}. New balance: ${newBalance}`);
     
     return true;
   } catch (error) {
     console.error('[CREDITS] Error in deductCredit:', error);
     return false;
   }
+}
+
+// Helper function to extract wallet address from DID or return as-is
+function extractWalletFromUserId(userId) {
+  if (!userId) return null;
+  
+  // Check if it's a DID format: did:ethr:0x...
+  const didMatch = userId.match(/^did:ethr:(0x[a-fA-F0-9]{40})/i);
+  if (didMatch) {
+    return didMatch[1];
+  }
+  
+  // Check if it's a Solana address (base58, typically 32-44 chars)
+  if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(userId)) {
+    return userId;
+  }
+  
+  // Check if it's already an Ethereum address
+  if (/^0x[a-fA-F0-9]{40}$/.test(userId)) {
+    return userId;
+  }
+  
+  // Otherwise assume it's a UUID
+  return userId;
 }
 
 // GET /api/credits/balance - Get user's credit balance
@@ -174,31 +271,74 @@ router.get('/balance', async (req, res) => {
         totalCreditsEarned: 0,
         lastPaymentAt: null,
         lastChatAt: null,
+        freeChatsRemaining: 0,
+        freeTrialTotal: CREDIT_CONFIG.FREE_TRIAL_CHATS,
         creditsPerChat: CREDIT_CONFIG.CREDITS_PER_CHAT,
         minCreditsRequired: CREDIT_CONFIG.MIN_CREDITS_FOR_CHAT,
         message: 'Database unavailable - credits system disabled'
       });
     }
 
-    const { data: user, error } = await db
+    // Extract wallet address from DID format if needed
+    const walletOrId = extractWalletFromUserId(userId);
+    
+    console.log(`[CREDITS] Looking up user: original=${userId}, extracted=${walletOrId}`);
+
+    // Try to find user by wallet_address first, then by id
+    let query = db
       .from('users')
-      .select('chat_credits, total_credits_earned, last_payment_at, last_chat_at')
-      .eq('id', userId)
-      .single();
+      .select('id, chat_credits, total_credits_earned, last_payment_at, last_chat_at, free_chats_remaining, wallet_address, email');
+    
+    // Check if it looks like a UUID (format: 8-4-4-4-12 hex characters with dashes)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(walletOrId);
+    
+    if (isUUID) {
+      // Query by id if it's a valid UUID
+      query = query.eq('id', walletOrId);
+    } else if (walletOrId.includes('@')) {
+      // Query by email if it contains @
+      query = query.eq('email', walletOrId);
+    } else {
+      // Otherwise search by wallet_address (Solana or Ethereum address)
+      query = query.eq('wallet_address', walletOrId);
+    }
+    
+    const { data: user, error } = await query.single();
 
     if (error) {
       console.error('[CREDITS] Error fetching credit balance:', error);
+      
+      // If user not found, return default values (new user scenario)
+      if (error.code === 'PGRST116') {
+        console.log('[CREDITS] User not found in database, returning defaults for new user');
+        return res.json({
+          currentCredits: 0,
+          totalCreditsEarned: 0,
+          lastPaymentAt: null,
+          lastChatAt: null,
+          freeChatsRemaining: CREDIT_CONFIG.FREE_TRIAL_CHATS,
+          freeTrialTotal: CREDIT_CONFIG.FREE_TRIAL_CHATS,
+          creditsPerChat: CREDIT_CONFIG.CREDITS_PER_CHAT,
+          minCreditsRequired: CREDIT_CONFIG.MIN_CREDITS_FOR_CHAT,
+          message: 'New user - free trial available'
+        });
+      }
+      
       return res.status(500).json({ 
         error: 'Internal server error',
         message: 'Failed to fetch credit balance'
       });
     }
 
+    console.log(`[CREDITS] Found user: id=${user.id}, credits=${user.chat_credits}, freeChats=${user.free_chats_remaining}`);
+
     res.json({
       currentCredits: user?.chat_credits || 0,
       totalCreditsEarned: user?.total_credits_earned || 0,
       lastPaymentAt: user?.last_payment_at,
       lastChatAt: user?.last_chat_at,
+      freeChatsRemaining: user?.free_chats_remaining || 0,
+      freeTrialTotal: CREDIT_CONFIG.FREE_TRIAL_CHATS,
       creditsPerChat: CREDIT_CONFIG.CREDITS_PER_CHAT,
       minCreditsRequired: CREDIT_CONFIG.MIN_CREDITS_FOR_CHAT
     });

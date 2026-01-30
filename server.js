@@ -1694,8 +1694,12 @@ ${aiAnalysis}`;
     // Deduct credit after successful chat
     if (userId) {
       try {
-        await deductCredit(userId, data.contextId);
-        console.log(`[CHAT] Credit deducted for user ${userId}. Remaining: ${req.userCredits - 1}`);
+        await deductCredit(userId, data.contextId, req.usingFreeTrial);
+        if (req.usingFreeTrial) {
+          console.log(`[CHAT] Free trial chat used for user ${userId}. Remaining free chats: ${req.freeChatsRemaining - 1}`);
+        } else {
+          console.log(`[CHAT] Credit deducted for user ${userId}. Remaining: ${req.userCredits - 1}`);
+        }
       } catch (creditError) {
         console.error('[CHAT] Failed to deduct credit:', creditError);
       }

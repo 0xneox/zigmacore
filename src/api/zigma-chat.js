@@ -69,85 +69,104 @@ function getUserChatUsage(walletAddress) {
 }
 
 /**
- * Middleware to check ZIGMA token balance before allowing chat
+ * Middleware to check ZIGMA token balance OR credits before allowing chat
+ * Now supports free trial system via credits API
  */
 async function requireZigmaTokens(req, res, next) {
   try {
     const walletAddress = req.user?.publicAddress;
     const userEmail = req.user?.email;
+    const userIssuer = req.user?.issuer;
     
     console.log('[ZIGMA CHAT] requireZigmaTokens - req.user:', req.user);
     console.log('[ZIGMA CHAT] walletAddress:', walletAddress);
     console.log('[ZIGMA CHAT] userEmail:', userEmail);
     
-    if (!walletAddress) {
+    if (!walletAddress && !userEmail) {
       return res.status(401).json({
         error: 'Unauthorized',
-        message: 'Wallet address not found in session'
+        message: 'User identification not found in session'
       });
     }
 
     // DEV EXCEPTION: Allow unlimited chat for dev/test accounts
     const DEV_EMAILS = ['neohex262@gmail.com', 'jissjoseph30@gmail.com'];
     console.log('[ZIGMA CHAT] Checking dev exception for email:', userEmail);
-    console.log('[ZIGMA CHAT] Is dev email?', userEmail && DEV_EMAILS.includes(userEmail.toLowerCase()));
     
     if (userEmail && DEV_EMAILS.includes(userEmail.toLowerCase())) {
       console.log('[ZIGMA CHAT] ✅ DEV MODE: Unlimited chat access for', userEmail);
       return next();
     }
     
-    console.log('[ZIGMA CHAT] ❌ Not a dev email, checking ZIGMA balance...');
+    console.log('[ZIGMA CHAT] Checking credits/free trial status...');
 
-    // Get ZIGMA balance
-    const balance = await getZigmaBalance(walletAddress);
-    const availableChats = calculateAvailableChats(balance);
+    // Use credits API to check for free trial or paid credits
+    const { requireCredits } = require('./credits');
     
-    // Get usage tracking
-    const usage = getUserChatUsage(walletAddress);
-    
-    // Check if user needs to refresh their package
-    if (balance !== usage.zigmaBalanceSnapshot) {
-      // Balance changed, reset usage
-      usage.chatsUsed = 0;
-      usage.zigmaBalanceSnapshot = balance;
-      usage.lastReset = Date.now();
-    }
-    
-    // Check if user has chats available
-    if (availableChats === 0) {
-      return res.status(403).json({
-        error: 'Insufficient ZIGMA tokens',
-        message: `You need ${CHAT_CONFIG.ZIGMA_PER_PACKAGE} ZIGMA tokens for ${CHAT_CONFIG.CHATS_PER_PACKAGE} chats`,
-        balance,
-        availableChats: 0,
-        requiredZigma: CHAT_CONFIG.ZIGMA_PER_PACKAGE,
-        paymentRequired: true
-      });
-    }
-    
-    // Check if user has used all their chats
-    if (usage.chatsUsed >= availableChats) {
-      return res.status(403).json({
-        error: 'Chat limit reached',
-        message: `You've used all ${availableChats} chats. Get more ZIGMA tokens to continue.`,
-        balance,
-        availableChats,
-        chatsUsed: usage.chatsUsed,
-        requiredZigma: CHAT_CONFIG.ZIGMA_PER_PACKAGE,
-        paymentRequired: true
-      });
-    }
-    
-    // Attach chat info to request
-    req.chatInfo = {
-      balance,
-      availableChats,
-      chatsUsed: usage.chatsUsed,
-      chatsRemaining: availableChats - usage.chatsUsed,
+    // Create a mock request object for credits middleware
+    const creditsReq = {
+      user: { id: userEmail || userIssuer },
+      body: { userId: userEmail || userIssuer }
     };
     
-    next();
+    const creditsRes = {
+      status: (code) => ({
+        json: (data) => {
+          console.log('[ZIGMA CHAT] Credits check failed:', code, data);
+          return res.status(code).json(data);
+        }
+      })
+    };
+    
+    // Check credits using the credits middleware logic
+    try {
+      await requireCredits(creditsReq, creditsRes, () => {
+        // Credits check passed
+        console.log('[ZIGMA CHAT] ✅ Credits check passed');
+        console.log('[ZIGMA CHAT] User credits:', creditsReq.userCredits);
+        console.log('[ZIGMA CHAT] Free chats remaining:', creditsReq.freeChatsRemaining);
+        console.log('[ZIGMA CHAT] Using free trial:', creditsReq.usingFreeTrial);
+        console.log('[ZIGMA CHAT] User ID from credits:', creditsReq.userId);
+        
+        // Attach chat info to request
+        req.chatInfo = {
+          credits: creditsReq.userCredits || 0,
+          freeChatsRemaining: creditsReq.freeChatsRemaining || 0,
+          usingFreeTrial: creditsReq.usingFreeTrial || false,
+          userEmail: userEmail,
+          userId: creditsReq.userId || userEmail || userIssuer // Use actual DB user ID from requireCredits
+        };
+        
+        next();
+      });
+    } catch (error) {
+      console.error('[ZIGMA CHAT] Credits middleware error:', error);
+      // Fallback to old ZIGMA balance check if credits system fails
+      console.log('[ZIGMA CHAT] Falling back to ZIGMA balance check...');
+      
+      const balance = await getZigmaBalance(walletAddress);
+      const availableChats = calculateAvailableChats(balance);
+      
+      if (availableChats === 0) {
+        return res.status(403).json({
+          error: 'Insufficient ZIGMA tokens',
+          message: `You need ${CHAT_CONFIG.ZIGMA_PER_PACKAGE} ZIGMA tokens for ${CHAT_CONFIG.CHATS_PER_PACKAGE} chats`,
+          balance,
+          availableChats: 0,
+          requiredZigma: CHAT_CONFIG.ZIGMA_PER_PACKAGE,
+          paymentRequired: true
+        });
+      }
+      
+      req.chatInfo = {
+        balance,
+        availableChats,
+        chatsUsed: 0,
+        chatsRemaining: availableChats
+      };
+      
+      next();
+    }
   } catch (error) {
     console.error('[ZIGMA CHAT] Error checking token balance:', error);
     res.status(500).json({
@@ -221,6 +240,10 @@ router.post('/message', verifyMagicToken, requireZigmaTokens, async (req, res) =
     
     console.log('[ZIGMA CHAT] Processing message:', userQuery);
     console.log('[ZIGMA CHAT] polymarketUser:', polymarketUser);
+    console.log('[ZIGMA CHAT] Chat info:', req.chatInfo);
+    
+    // Generate a unique chat ID for tracking
+    const chatId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     // Handle user profile analysis if polymarketUser is provided
     if (polymarketUser) {
@@ -306,6 +329,26 @@ ${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price
       };
       
       console.log('[ZIGMA CHAT] Sending user profile response');
+      
+      // Deduct credit after successful chat
+      if (req.chatInfo?.userId) {
+        console.log('[ZIGMA CHAT] Attempting to deduct credit...');
+        console.log('[ZIGMA CHAT] - userId:', req.chatInfo.userId);
+        console.log('[ZIGMA CHAT] - chatId:', chatId);
+        console.log('[ZIGMA CHAT] - usingFreeTrial:', req.chatInfo.usingFreeTrial);
+        
+        const { deductCredit } = require('./credits');
+        const deducted = await deductCredit(req.chatInfo.userId, chatId, req.chatInfo.usingFreeTrial);
+        
+        if (deducted) {
+          console.log('[ZIGMA CHAT] ✅ Credit successfully deducted for user:', req.chatInfo.userId);
+        } else {
+          console.error('[ZIGMA CHAT] ❌ Failed to deduct credit for user:', req.chatInfo.userId);
+        }
+      } else {
+        console.error('[ZIGMA CHAT] ⚠️ No userId in chatInfo, credit deduction skipped');
+      }
+      
       return res.json(response);
     }
     
@@ -364,6 +407,26 @@ ${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price
     };
     
     console.log('[ZIGMA CHAT] Sending response (length:', assistantMessage.length, 'chars)');
+    
+    // Deduct credit after successful chat
+    if (req.chatInfo?.userId) {
+      console.log('[ZIGMA CHAT] Attempting to deduct credit...');
+      console.log('[ZIGMA CHAT] - userId:', req.chatInfo.userId);
+      console.log('[ZIGMA CHAT] - chatId:', chatId);
+      console.log('[ZIGMA CHAT] - usingFreeTrial:', req.chatInfo.usingFreeTrial);
+      
+      const { deductCredit } = require('./credits');
+      const deducted = await deductCredit(req.chatInfo.userId, chatId, req.chatInfo.usingFreeTrial);
+      
+      if (deducted) {
+        console.log('[ZIGMA CHAT] ✅ Credit successfully deducted for user:', req.chatInfo.userId);
+      } else {
+        console.error('[ZIGMA CHAT] ❌ Failed to deduct credit for user:', req.chatInfo.userId);
+      }
+    } else {
+      console.error('[ZIGMA CHAT] ⚠️ No userId in chatInfo, credit deduction skipped');
+    }
+    
     res.json(response);
   } catch (error) {
     console.error('[ZIGMA CHAT] Message error:', error);
