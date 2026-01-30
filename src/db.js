@@ -454,7 +454,7 @@ function saveVolumeSnapshot(marketId, volume, timestamp) {
 function getVolumeSnapshots(marketId, sinceTimestamp) {
   // For now, return empty array to prevent crashes
   // TODO: Implement proper caching or make this fully async
-  console.log(`[DB] Getting volume snapshots for ${marketId} since ${sinceTimestamp}`);
+  // Removed verbose logging - this gets called for every market in computeMetrics
   return [];
 }
 
