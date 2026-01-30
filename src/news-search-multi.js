@@ -105,7 +105,7 @@ async function searchOpenAINews(query = '', marketContext = {}) {
   }
 
   try {
-    const client = new OpenAI({ apiKey });
+    const client = new OpenAI({ apiKey, timeout: 15000 });
 
     const prompt = `You are a news search assistant. Given this query about a prediction market, return up to 5 recent, verifiable news headlines related to the topic.
 

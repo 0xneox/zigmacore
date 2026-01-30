@@ -430,25 +430,25 @@ async function getTradeSignals(limit = 50, category = null, minEdge = 0) {
 
 // Volume snapshots operations
 function saveVolumeSnapshot(marketId, volume, timestamp) {
-  const db = initDb();
-  // Use synchronous approach for Supabase
-  db
-    .from('volume_snapshots')
-    .upsert({
-      market_id: marketId,
-      volume: volume,
-      created_at: timestamp
-    })
-    .then(({ data, error }) => {
-      if (error) {
-        console.error('Failed to save volume snapshot:', error.message);
-      } else {
-        console.log(`Volume snapshot saved for ${marketId}`);
-      }
-    })
-    .catch(err => {
-      console.error('Volume snapshot save error:', err);
-    });
+  try {
+    const db = initDb();
+    // Use synchronous approach for Supabase
+    db
+      .from('volume_snapshots')
+      .insert({ market_id: marketId, volume, timestamp })
+      .then(() => {
+        // Success - no logging to reduce noise
+      })
+      .catch((err) => {
+        // Silently fail - Supabase timeouts are non-critical
+        // Only log if it's not a timeout/connection error
+        if (err.code !== 'ECONNABORTED' && !err.message?.includes('timed out') && !err.message?.includes('522')) {
+          console.error('[DB] Volume snapshot error:', err.code || err.message);
+        }
+      });
+  } catch (err) {
+    // Silently catch initialization errors
+  }
 }
 
 function getVolumeSnapshots(marketId, sinceTimestamp) {

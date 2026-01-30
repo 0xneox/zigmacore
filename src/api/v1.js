@@ -163,42 +163,37 @@ router.get('/arbitrage', async (req, res) => {
 router.get('/access/:walletAddress', async (req, res) => {
   try {
     const { walletAddress } = req.params;
+    const { getAccessInfo, isValidSolanaAddress } = require('../utils/token-gating');
 
-    // Validate wallet address
-    if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
-      return res.status(400).json({ error: 'Invalid wallet address format' });
+    // Validate Solana wallet address
+    if (!isValidSolanaAddress(walletAddress)) {
+      return res.status(400).json({ 
+        error: 'Invalid Solana wallet address format',
+        message: 'Please provide a valid Solana wallet address'
+      });
     }
 
-    // TODO: Implement actual $ZIGMA token balance check
-    // For now, return default tier based on placeholder logic
-    // This should be replaced with actual blockchain integration
-    
-    const tier = 'FREE'; // Default tier
-    const balance = 0;
-    
-    const features = {
-      signalsPerDay: 3,
-      alerts: undefined,
-      arbitrage: false,
-      tracking: 1,
-      apiAccess: false
-    };
+    // Get complete access information
+    const accessInfo = await getAccessInfo(walletAddress);
 
-    // TODO: Implement actual tier logic based on $ZIGMA balance
-    // Example tiers:
-    // FREE: 0 tokens
-    // BASIC: 100 tokens
-    // PRO: 1000 tokens
-    // WHALE: 10000 tokens
-
-    res.json({
-      tier,
-      balance,
-      features
-    });
+    res.json(accessInfo);
   } catch (error) {
     console.error('[API v1] Error checking access:', error);
-    res.status(500).json({ error: 'Failed to check access', message: error.message });
+    res.status(500).json({ 
+      error: 'Failed to check access', 
+      message: error.message,
+      tier: 'FREE',
+      balance: 0,
+      features: {
+        signalsPerDay: 3,
+        alerts: undefined,
+        arbitrage: false,
+        tracking: 1,
+        apiAccess: false,
+        walletAnalysisPerDay: 1,
+        priority: 'low'
+      }
+    });
   }
 });
 

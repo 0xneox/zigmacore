@@ -19,6 +19,7 @@ const {
   generateSessionId 
 } = require('./src/chat-persistence');
 const v1Router = require('./src/api/v1');
+const { startResolutionMonitoring } = require('./src/cron-resolution-check');
 
 // Create HTTP server for WebSocket support
 const server = http.createServer(app);
@@ -158,8 +159,24 @@ app.use((req, res, next) => {
   else next();
 });
 
-// Mount v1 API routes for Moltbot integration
-app.use('/api/v1', v1Router);
+// Authentication middleware
+const { optionalApiKey } = require('./src/middleware/auth');
+
+// API v1 routes for OpenClaw integration
+const apiV1Routes = require('./src/api/v1');
+app.use('/api/v1', optionalApiKey, apiV1Routes);
+
+// Performance tracking API routes
+const performanceRoutes = require('./src/api/performance');
+app.use('/api/performance', performanceRoutes);
+
+// Webhook routes for proactive alerts
+const { router: webhookRoutes } = require('./src/api/webhooks');
+app.use('/api/webhooks', webhookRoutes);
+
+// API key management routes
+const apiKeyRoutes = require('./src/api/api-keys');
+app.use('/api/keys', apiKeyRoutes);
 
 // Import agent functions
 const {
@@ -3145,6 +3162,9 @@ module.exports = {
       console.log(`Health check: http://localhost:${PORT}/status`);
       console.log(`WebSocket endpoint: ws://localhost:${PORT}/ws/prices`);
       systemHealth.status = 'operational';
+      
+      // Start resolution monitoring cron job
+      startResolutionMonitoring();
     });
     return server;
   }

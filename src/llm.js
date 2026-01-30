@@ -51,16 +51,14 @@ function computeNetEdge(llmProbability, marketPrice, orderBook = {}) {
   // Determine direction
   const direction = rawEdge > 0 ? 'BUY_YES' : 'BUY_NO';
 
-  // Minimum executable edge: must cover costs + provide profit margin
-  const minExecutableEdge = 0.01; // 1% minimum after costs
+  // Minimum executable edge: 2% for signal volume generation
+  const minExecutableEdge = 0.02; // 2% minimum after costs
 
   return {
-    rawEdge,           // Signed edge (-1 to +1)
-    netEdge: Math.max(0, netEdge), // Absolute edge after costs (floor at 0)
-    direction,         // Trade direction
+    rawEdge,
+    netEdge,
+    direction,
     isExecutable: netEdge >= minExecutableEdge,
-    spreadCost,
-    slippageCost,
     executionCost,
     estimatedSpread
   };
@@ -366,17 +364,23 @@ CRITICAL INSTRUCTIONS:
 4. confidence is how CERTAIN you are (1-100), NOT the probability
 5. Base revised_prior on: news sentiment, historical data, base rates, market inefficiencies
 
-DECISIVE PROBABILITY INSTRUCTIONS:
-1. Markets are often WRONG. Your probability should differ from market price when evidence supports it.
-2. If evidence strongly supports YES, output probability > market price (even 10-20% higher)
-3. If evidence strongly supports NO, output probability < market price (even 10-20% lower)
-4. Do NOT anchor to market price. Calculate independent probability from evidence.
-5. Confidence should reflect your certainty in the probability estimate, not how close you are to market.
+REAL MONEY TRADING INSTRUCTIONS (Building Track Record):
+1. We are trading REAL MONEY - target 2-5% edge with 75%+ confidence for 10-15 signals per cycle
+2. Markets have inefficiencies. Look for ANY mispricing (2-5% difference)
+3. If evidence supports YES, output probability 2-5% HIGHER than market price
+4. If evidence supports NO, output probability 2-5% LOWER than market price
+5. Recommend trades with 75%+ confidence - we need volume to build track record
+6. Calculate independent probability from evidence - avoid market anchoring
 
-Edge Detection Rules:
-- If your analysis shows market is mispriced by 3%+, be confident in your assessment
-- Sports/Crypto/Politics markets are often inefficient - look for edges
-- Recent news not reflected in price = opportunity
+Edge Detection Rules (2-5% target):
+- Recommend if market is mispriced by 2%+ with reasonable confidence
+- Look for: stale prices, news not reflected, data-driven miscalculations, structural edges
+- Sports: injuries/lineup changes not priced, schedule strength, playoff math, recent form
+- Crypto: technical breakouts, fundamental catalysts, on-chain data, sentiment shifts
+- Politics: polling updates, structural advantages, historical base rates, demographic shifts
+- Macro: Fed data, economic indicators, policy changes, market expectations
+- Require 75%+ confidence - if uncertain, output confidence < 75 and we skip the trade
+- Focus on SHORT-TERM markets (<6 months) with clear resolution criteria
 
 CALIBRATION EXAMPLES:
 Example 1: "Will Bitcoin reach $100k in 2026?" (Bitcoin already at $95k in Jan 2026)

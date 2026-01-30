@@ -401,56 +401,6 @@ No waiver of any term or condition shall be deemed a further or continuing waive
 ### **4. Assignment**
 You may not assign these Terms without our prior written consent. We may assign these Terms freely.
 
-### **5. Notices**
-All notices should be sent to:
-- ZIGMA: legal@zigma.ai
-- Users: Email address on file or account notifications
-
----
-
-## 📞 **Contact Information**
-
-### **General Inquiries**
-- **Email**: contact@zigma.ai
-- **Website**: https://zigma.ai
-- **Discord**: https://discord.gg/zigma
-
-### **Legal and Compliance**
-- **Legal**: legal@zigma.ai
-- **Compliance**: compliance@zigma.ai
-- **Security**: security@zigma.ai
-
-### **Support**
-- **Customer Support**: support@zigma.ai
-- **Technical Support**: tech-support@zigma.ai
-- **API Support**: api-support@zigma.ai
-
----
-
-## 📅 **Effective Date and Changes**
-
-### **Effective Date**
-These Terms are effective as of January 28, 2026, and apply to all users from that date forward.
-
-### **Recent Changes**
-- Updated token economics section
-- Added basket contract terms
-- Enhanced risk disclaimers
-- Improved clarity on AI services
-
-### **Future Modifications**
-We reserve the right to modify these Terms at any time. Material changes will be highlighted in platform announcements and email notifications.
-
----
-
-## 🎯 **Acknowledgment**
-
-By using ZIGMA, you acknowledge that you:
-- Have read and understood these Terms
-- Agree to be bound by these Terms
-- Understand the risks involved
-- Are not relying on any promises or guarantees
-- Use the Service at your own risk
 
 ---
 

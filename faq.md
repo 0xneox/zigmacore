@@ -140,13 +140,6 @@
 
 ## 🔒 **Security & Trust**
 
-### **Q: Is ZIGMA audited and secure?**
-**A:** Yes, we prioritize security:
-- **Smart Contract Audits**: Multiple firm audits (CertiK, OpenZeppelin)
-- **Bug Bounty**: Up to $250,000 rewards
-- **Insurance**: Smart contract coverage
-- **Best Practices**: Industry-standard security measures
-
 ### **Q: How do you protect user data?**
 **A:** We implement:
 - **GDPR Compliance**: Full data privacy compliance
@@ -274,47 +267,6 @@
 4. Generate new key
 5. Update your applications
 
----
-
-## 📞 **Support & Contact**
-
-### **Q: How can I get help?**
-**A:** Multiple support channels:
-- **Documentation**: https://docs.zigma.ai
-- **Discord Community**: https://discord.gg/zigma
-- **Email Support**: support@zigma.ai
-- **Status Page**: https://status.zigma.ai
-
-### **Q: What are your support hours?**
-**A:** 
-- **24/7**: Critical issues and security
-- **Business Hours**: General support (9 AM - 6 PM UTC)
-- **Community**: Discord support available 24/7
-
-### **Q: How do I report a bug or security issue?**
-**A:** 
-- **Bugs**: GitHub Issues or support@zigma.ai
-- **Security**: security@zigma.ai (encrypted preferred)
-- **Bug Bounty**: Up to $250,000 for critical vulnerabilities
-
----
-
-## 📚 **Additional Resources**
-
-### **Q: Where can I learn more?**
-**A:** Comprehensive resources:
-- **Whitepaper**: Complete technical and economic details
-- **Documentation**: https://docs.zigma.ai
-- **GitHub**: https://github.com/zigma-ai
-- **Blog**: https://blog.zigma.ai
-- **YouTube**: Tutorial videos and explanations
-
-### **Q: How can I stay updated?**
-**A:** Follow us on:
-- **Twitter**: @ZigmaOracle
-- **Discord**: https://discord.gg/zigma
-- **Telegram**: https://t.me/zigmaofficial
-- **Newsletter**: Subscribe on our website
 
 ---
 
@@ -337,12 +289,6 @@
 - **Chat Cost**: 100 ZIGMA per session
 - **API Tiers**: 1,000-100,000 $ZIGMA required
 
-### **Essential Links**
-- **Website**: https://zigma.ai
-- **App**: https://app.zigma.ai
-- **Docs**: https://docs.zigma.ai
-- **Discord**: https://discord.gg/zigma
-- **Twitter**: https://twitter.com/ZigmaOracle
 
 ---
 

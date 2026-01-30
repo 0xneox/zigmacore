@@ -266,35 +266,38 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PROBABILITY_FLOOR = 0.0001;
 const POLYMARKET_BASE_URL = 'https://polymarket.com';
 
-const EDGE_THRESHOLD = 0.02; // 2% edge threshold (decimal)
+const EDGE_THRESHOLD = 0.02; // 2% edge threshold - generate volume for track record (decimal)
 
 const UNCERTAINTY_MARGIN = 0.15; // Margin for confidence intervals
-const LOW_LIQUIDITY_THRESHOLD = 20000;   // was 50000
-const HIGH_LIQUIDITY_THRESHOLD = 50000;  // was 100000
+const LOW_LIQUIDITY_THRESHOLD = 10000;   // $10K minimum
+const HIGH_LIQUIDITY_THRESHOLD = 50000; // $50K for high liquidity
 const MAX_EXPOSURE_LOW_LIQUIDITY = 0.02; // was 0.03
 const MAX_EXPOSURE_HIGH_LIQUIDITY = 0.04; // was 0.05
-const PROBE_EDGE_THRESHOLD = 0.02; // Minimum edge for probe trades
+const PROBE_EDGE_THRESHOLD = 0.02; // Minimum 2% edge for execution
 const STRONG_TRADE_EXPOSURE = 0.02; // Minimum exposure for strong trades
 const SMALL_TRADE_EXPOSURE = 0.005; // Minimum exposure for small trades
 const PROBE_EXPOSURE = 0.001; // Minimum exposure for probe trades (INCREASED from 0.0005)
-const MIN_NET_EDGE = 0.005; // 0.5% minimum net edge (was 0.8%)
-const CONVICTION_MULTIPLIER_MIN = 0.85; // Minimum conviction multiplier
-const HIGH_EDGE_THRESHOLD = 0.12; // Edge above which conviction doesn't matter
-const MEDIUM_EDGE_THRESHOLD = 0.06; // Edge above which conviction penalty is reduced
-const MIN_LIQUIDITY_THRESHOLD = 1000; // $1K minimum liquidity (REDUCED from $7.5K)
-const MIN_VOLUME_VELOCITY = 25; // $25/hour minimum trading activity (REDUCED from $150)
+const MIN_NET_EDGE = 0.02; // 2% minimum net edge - generate signals for track record
+const CONVICTION_MULTIPLIER_MIN = 0.80; // Minimum conviction multiplier
+const HIGH_EDGE_THRESHOLD = 0.08; // 8% edge - extreme mispricing
+const MEDIUM_EDGE_THRESHOLD = 0.05; // 5% edge - strong opportunity
+const LOW_EDGE_THRESHOLD = 0.02; // 2% edge - minimum for execution
+const MIN_LIQUIDITY_THRESHOLD = 10000; // $10K minimum liquidity
+const MIN_VOLUME_VELOCITY = 100; // $100/hour minimum trading activity
 const PRIORITY_CATEGORIES = ['MACRO', 'POLITICS', 'CRYPTO', 'SPORTS_FUTURES','ETF_APPROVAL', 'TECH_ADOPTION', 'TECH', 'ENTERTAINMENT', 'EVENT'];
 const DATA_RICH_CATEGORIES = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
 const CONVICTION_BOOST_HIGH = 1.20; // 20% boost for high liquidity
 const CONVICTION_BOOST_MEDIUM = 1.15; // 15% boost for medium liquidity
 const CONVICTION_BOOST_LOW = 1.10; // 10% boost for low liquidity
-const EDGE_THRESHOLD_HIGH = 0.10; // Very high edge threshold
-const EDGE_THRESHOLD_MEDIUM_HIGH = 0.07; // High edge threshold
-const EDGE_THRESHOLD_MEDIUM = 0.05; // Medium-high edge threshold
-const DEFAULT_CONFIDENCE_THRESHOLD = 0.50; // 50% confidence (decimal)
+const EDGE_THRESHOLD_HIGH = 0.40; // 40% edge - extreme opportunities
+const EDGE_THRESHOLD_MEDIUM_HIGH = 0.30; // 30% edge - strong opportunities
+const EDGE_THRESHOLD_MEDIUM = 0.25; // 25% edge - minimum threshold
+const DEFAULT_CONFIDENCE_THRESHOLD = 0.80; // 80% confidence - balanced threshold (decimal)
 
-const TAIL_MARKET_THRESHOLD = 0.95; // 95% - above or below this is tail market
-const TAIL_MARKET_MIN_CONFIDENCE = 95; // Require 95% confidence for tail markets
+const TAIL_MARKET_THRESHOLD = 0.80; // 80% - above or below this is tail market
+const TAIL_MARKET_MIN_CONFIDENCE = 85; // Require 85% confidence for tail markets
+const EXTREME_TAIL_THRESHOLD = 0.95; // 95% - true bonds, reject these
+const TAIL_MARKET_MAX_EXPOSURE = 0.015; // 1.5% max exposure on tail markets (risk control)
 
 const CORRELATION_CLUSTERS = {
   politics: ['POLITICS', 'WAR_OUTCOMES'],
@@ -656,11 +659,11 @@ async function processCycleQueue() {
     try {
       await Promise.race([
         runCycle(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Cycle timeout')), 60000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Cycle timeout')), 300000))
       ]);
       resolve();
     } catch (err) {
-      console.error('Cycle failed:', err.message);
+      console.error('[CYCLE] Cycle failed:', err.message);
       resolve(); // Always resolve to prevent queue block
     }
   }
@@ -845,16 +848,16 @@ function getStaticBucketPrior(categoryKey) {
  * @returns {number} Edge threshold as decimal (0.02-0.0345 typically)
  */
 function getCategoryEdgeThreshold(categoryKey) {
-  // Base threshold: 2% for data-rich, 3% for others
+  // Base threshold: 2% for data-rich, 3% for others (generate signals)
   let edgeThreshold = DATA_RICH_CATEGORIES.includes(categoryKey) ? 0.02 : 0.03;
   
   // Adjust based on historical performance (if available)
   const categoryPerf = categoryPerformance[categoryKey];
   if (categoryPerf && typeof categoryPerf.emaError === 'number') {
     if (categoryPerf.emaError > 0.15) {
-      edgeThreshold *= 1.15; // Slightly increase for high-error categories
+      edgeThreshold *= 1.3; // Increase to 2.6-3.9% for high-error categories
     } else if (categoryPerf.emaError < 0.08) {
-      edgeThreshold *= 0.9; // Decrease for well-calibrated categories
+      edgeThreshold *= 0.9; // Decrease to 1.8-2.7% for well-calibrated categories
     }
   }
   
@@ -2166,27 +2169,49 @@ async function generateSignals(selectedMarkets) {
     let kellyFraction = calculateKelly(winProb, betPrice, 0, market.liquidity || 10000);
     log(`[POSITION SIZING] Step 1 - Base Kelly: ${(kellyFraction * 100).toFixed(2)}%`);
 
-    // CRITICAL: BOND MARKET FILTER - Never bet against near-certain outcomes
-    if (yesPrice > 0.90 && direction === 'BUY_NO') {
-      log(`[BOND_FILTER] Rejecting BUY NO on ${(yesPrice * 100).toFixed(1)}% market - catastrophic risk/reward`);
+    // SMART TAIL MARKET FILTER: Enable high-ROI opportunities with risk controls
+    // Reject only extreme bonds (>95% or <5%) - these are true bonds
+    if (yesPrice > EXTREME_TAIL_THRESHOLD && direction === 'BUY_NO') {
+      log(`[BOND_FILTER] Rejecting BUY NO on ${(yesPrice * 100).toFixed(1)}% market - extreme bond`);
       rejectedSignals.push({
         marketId: market.id,
         marketQuestion: market.question,
-        reason: 'BOND_MARKET_NO_BET',
-        details: `Cannot bet NO against ${(yesPrice * 100).toFixed(1)}% YES market - risk:reward = ${((1-yesPrice) * 100).toFixed(1)}¢ gain vs ${yesPrice * 100}% loss`
+        reason: 'EXTREME_BOND',
+        details: `Cannot bet NO against ${(yesPrice * 100).toFixed(1)}% YES market - extreme bond risk`
       });
-      continue; // Skip this market entirely
+      continue;
     }
 
-    if (yesPrice < 0.10 && direction === 'BUY_YES') {
-      log(`[BOND_FILTER] Rejecting BUY YES on ${(yesPrice * 100).toFixed(1)}% market - inverse bonding risk`);
+    if (yesPrice < (1 - EXTREME_TAIL_THRESHOLD) && direction === 'BUY_YES') {
+      log(`[BOND_FILTER] Rejecting BUY YES on ${(yesPrice * 100).toFixed(1)}% market - extreme inverse bond`);
       rejectedSignals.push({
         marketId: market.id,
         marketQuestion: market.question,
-        reason: 'BOND_MARKET_NO_BET',
-        details: `Cannot bet YES against ${((1-yesPrice) * 100).toFixed(1)}% NO market - risk:reward = ${(yesPrice * 100).toFixed(1)}¢ gain vs ${((1-yesPrice) * 100)}% loss`
+        reason: 'EXTREME_BOND',
+        details: `Cannot bet YES on ${(yesPrice * 100).toFixed(1)}% market - extreme bond risk`
       });
-      continue; // Skip this market entirely
+      continue;
+    }
+    
+    // TAIL MARKET STRATEGY: 20-40¢ YES and 60-80¢ NO have massive ROI potential
+    // Require higher confidence but allow with 4%+ edge
+    const isTailMarket = (yesPrice <= 0.40 && direction === 'BUY_YES') || (yesPrice >= 0.60 && direction === 'BUY_NO');
+    
+    if (isTailMarket) {
+      const tailConfidence = analysis.confidence || 0;
+      if (tailConfidence < TAIL_MARKET_MIN_CONFIDENCE) {
+        log(`[TAIL_MARKET] Rejecting ${direction} on ${(yesPrice * 100).toFixed(1)}% market - confidence ${tailConfidence}% < ${TAIL_MARKET_MIN_CONFIDENCE}% required`);
+        rejectedSignals.push({
+          marketId: market.id,
+          marketQuestion: market.question,
+          reason: 'TAIL_LOW_CONFIDENCE',
+          details: `Tail market requires ${TAIL_MARKET_MIN_CONFIDENCE}%+ confidence, got ${tailConfidence}%`
+        });
+        continue;
+      }
+      
+      const roiMultiplier = direction === 'BUY_YES' ? (1 / yesPrice) : (1 / (1 - yesPrice));
+      log(`[TAIL_MARKET] ✅ Allowing ${direction} on ${(yesPrice * 100).toFixed(1)}% market - ${(Math.abs(rawEdge) * 100).toFixed(1)}% edge, ${roiMultiplier.toFixed(1)}x ROI potential, ${tailConfidence}% confidence`);
     }
 
     // THIRD: Determine action based on edge AND Kelly
@@ -2221,33 +2246,6 @@ async function generateSignals(selectedMarkets) {
     };
 
     const marketOdds = yesPrice * 100;
-    // Tail market handling - only skip if edge is weak, otherwise reduce exposure
-    const isTailMarket = (marketOdds < 3 || marketOdds > 97) && confidencePercent < 70;
-
-    if (isTailMarket) {
-      // Only skip if edge is also weak (< 8%)
-      if (Math.abs(rawEdge) < 0.08) {
-        log(`[SKIP] Tail market with insufficient edge: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%, edge: ${(rawEdge * 100).toFixed(2)}%)`);
-
-        rejectedSignals.push({
-          marketId: market.id,
-          marketSlug: market.slug,
-          marketQuestion: market.question,
-          action,
-          price: yesPrice,
-          confidenceScore: confidencePercent,
-          marketOdds,
-          reason: 'TAIL_MARKET_LOW_EDGE',
-          details: `Tail market at ${marketOdds.toFixed(1)}% with ${(rawEdge * 100).toFixed(2)}% edge requires 8% minimum`,
-          timestamp: new Date().toISOString()
-        });
-        continue;
-      } else {
-        // Reduce exposure by 50% for tail markets with strong edge
-        log(`[WARNING] Tail market with strong edge - reducing exposure by 50%: ${market.question.slice(0, 40)} (odds: ${marketOdds.toFixed(1)}%, conf: ${confidencePercent}%)`, 'WARN');
-        // Will apply exposure reduction later after intentExposure is calculated
-      }
-    }
 
     let adaptiveLearning = applyAdaptiveLearning(categoryKey, action, absEdge, confidencePercent);
     
@@ -2313,10 +2311,11 @@ async function generateSignals(selectedMarkets) {
       log(`[POSITION SIZING] Step 3.5 - After correlation adjustment: ${(intentExposure * 100).toFixed(2)}% (factor: ${correlationAdjustment.correlationFactor}x)`);
     }
 
-    // Step 4: Apply tail market exposure reduction (if applicable)
-    if (isTailMarket && Math.abs(rawEdge) >= 0.08) {
-      intentExposure *= 0.5; // Reduce exposure by 50% for tail markets with strong edge
-      log(`[POSITION SIZING] Step 4 - After tail market reduction: ${(intentExposure * 100).toFixed(2)}%`);
+    // Step 4: Apply tail market exposure cap (20-40¢ YES or 60-80¢ NO markets)
+    const isTailMarketForSizing = (yesPrice <= 0.40 && direction === 'BUY_YES') || (yesPrice >= 0.60 && direction === 'BUY_NO');
+    if (isTailMarketForSizing) {
+      intentExposure = Math.min(intentExposure, TAIL_MARKET_MAX_EXPOSURE);
+      log(`[POSITION SIZING] Step 4 - Tail market exposure cap: ${(intentExposure * 100).toFixed(2)}% (max: ${(TAIL_MARKET_MAX_EXPOSURE * 100).toFixed(2)}%)`);
     }
 
     const boostedConfidenceScore = Math.min(100, confidencePercent * convictionBoost);
@@ -3126,6 +3125,17 @@ async function runCycle() {
       return;
     }
 
+    // Process signals for webhook notifications
+    try {
+      const { processSignalsForWebhooks } = require('./api/webhooks');
+      const signals = global.latestData?.cycleSummary?.liveSignals || [];
+      if (signals.length > 0) {
+        await processSignalsForWebhooks(signals);
+      }
+    } catch (error) {
+      log(`[WEBHOOK] Error processing webhooks: ${error.message}`);
+    }
+
     // POLYMARKET PRO MOVE: Filter for high-value markets first
     const highValueMarkets = filterHighValueMarkets(enriched);
     log(`HIGH-VALUE FILTER: ${highValueMarkets.length}/${enriched.length} markets meet liquidity thresholds`);
@@ -3237,9 +3247,9 @@ async function runCycle() {
     log(` Volume filtered: ${volumeFiltered.length}/${selectedMarkets.length} markets remain`);
     
     // Apply cluster filtering BEFORE LLM analysis to save costs
-    // Cluster filtering disabled for consistency - use all selected markets
-    const clusterFiltered = volumeFiltered;
-    log(` Selected ${clusterFiltered.length} markets for LLM analysis (cluster filtering disabled)`);
+    // Limit to top 15 markets to prevent cycle timeout
+    const clusterFiltered = volumeFiltered.slice(0, 15);
+    log(` Selected ${clusterFiltered.length} markets for LLM analysis (limited to prevent timeout)`);
 
     activeGroupSizes = computeGroupSizeMap(clusterFiltered);
 

@@ -180,12 +180,18 @@ async function crossReferenceNews(market = {}) {
   try {
     const queries = buildNewsQueries(market);
     
-    // Use multi-source news search with fallback chain
-    const multiSourceResults = await searchNewsMultiple(queries, market, {
-      maxResults: MAX_NEWS_RESULTS,
-      days: 7,
-      sources: ['google', 'openai'] // Free sources only - Google News RSS + OpenAI LLM
-    });
+    // Use multi-source news search with fallback chain and timeout
+    const multiSourceResults = await Promise.race([
+      searchNewsMultiple(queries, market, {
+        maxResults: MAX_NEWS_RESULTS,
+        days: 7,
+        sources: ['google', 'openai'] // Free sources only - Google News RSS + OpenAI LLM
+      }),
+      new Promise((resolve) => setTimeout(() => {
+        console.log('[NEWS] Search timeout - continuing without news');
+        resolve([]);
+      }, 20000)) // 20 second timeout
+    ]);
 
     if (multiSourceResults.length > 0) {
       let enriched = multiSourceResults
