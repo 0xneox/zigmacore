@@ -1868,7 +1868,7 @@ app.get('/api/risk-metrics', async (req, res) => {
       .from('trade_signals')
       .select('*')
       .eq('status', 'RESOLVED')
-      .order('generated_at', { ascending: true });
+      .order('created_at', { ascending: true });
     
     if (error) throw error;
     
@@ -2137,7 +2137,7 @@ app.get('/api/analytics/category-performance', async (req, res) => {
       .from('trade_signals')
       .select('*')
       .eq('status', 'RESOLVED')
-      .order('generated_at', { ascending: false });
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     
