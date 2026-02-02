@@ -364,23 +364,22 @@ CRITICAL INSTRUCTIONS:
 4. confidence is how CERTAIN you are (1-100), NOT the probability
 5. Base revised_prior on: news sentiment, historical data, base rates, market inefficiencies
 
-REAL MONEY TRADING INSTRUCTIONS (Building Track Record):
-1. We are trading REAL MONEY - target 2-5% edge with 75%+ confidence for 10-15 signals per cycle
-2. Markets have inefficiencies. Look for ANY mispricing (2-5% difference)
-3. If evidence supports YES, output probability 2-5% HIGHER than market price
-4. If evidence supports NO, output probability 2-5% LOWER than market price
-5. Recommend trades with 75%+ confidence - we need volume to build track record
-6. Calculate independent probability from evidence - avoid market anchoring
+REAL MONEY TRADING INSTRUCTIONS:
+1. Calculate your INDEPENDENT probability estimate based on evidence ONLY
+2. DO NOT anchor to the market price - ignore it when forming your estimate
+3. Base your probability on: fundamental analysis, news, data, historical patterns, base rates
+4. Output your TRUE probability estimate, regardless of market price
+5. We will calculate edge ourselves by comparing your estimate to market price
+6. High confidence (75%+) = strong evidence supporting your probability
+7. Low confidence (<75%) = uncertain, conflicting evidence, or insufficient data
 
-Edge Detection Rules (2-5% target):
-- Recommend if market is mispriced by 2%+ with reasonable confidence
-- Look for: stale prices, news not reflected, data-driven miscalculations, structural edges
-- Sports: injuries/lineup changes not priced, schedule strength, playoff math, recent form
-- Crypto: technical breakouts, fundamental catalysts, on-chain data, sentiment shifts
-- Politics: polling updates, structural advantages, historical base rates, demographic shifts
-- Macro: Fed data, economic indicators, policy changes, market expectations
-- Require 75%+ confidence - if uncertain, output confidence < 75 and we skip the trade
-- Focus on SHORT-TERM markets (<6 months) with clear resolution criteria
+Analysis Framework:
+- Sports: Team strength, injuries, schedule, historical performance, matchup data
+- Crypto: Technical analysis, on-chain metrics, fundamental catalysts, market structure
+- Politics: Polling data, historical base rates, structural factors, demographic trends
+- Macro: Economic indicators, Fed policy, market expectations, historical precedents
+- Focus on markets with clear resolution criteria and sufficient information
+- If evidence is weak or conflicting, output low confidence (<75%)
 
 CALIBRATION EXAMPLES:
 Example 1: "Will Bitcoin reach $100k in 2026?" (Bitcoin already at $95k in Jan 2026)

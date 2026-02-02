@@ -926,13 +926,14 @@ async function findMarketByUrl(urlOrQuery, markets) {
   return market;
 }
 
-async function respondWithIntent({ market, similarity = 1, source, event }) {
+async function respondWithIntent({ market, similarity = 1, source, event, allMarkets = null }) {
   const hydrated = await hydrateMarket(market);
   return {
     market: hydrated || market,
     similarity,
     source,
-    event
+    event,
+    allMarkets // Pass through all markets for multi-outcome events
   };
 }
 
@@ -1027,11 +1028,16 @@ async function resolveMarketIntent({
 
       const candidate = pickEventMarket();
       if (candidate && matchesToken(candidate)) {
+        // MULTI-OUTCOME DETECTION: If event has multiple markets (like Bitcoin price ranges),
+        // return all markets so user can see all available outcomes
+        const isMultiOutcome = fetchedEvent.markets.length > 1 && !urlHints.tokenId && !marketSlugSet.size;
+        
         return respondWithIntent({
           market: candidate,
           similarity: 1,
           source: urlHints.tokenId ? 'url_slug_remote_token' : 'url_slug_remote',
-          event: fetchedEvent
+          event: fetchedEvent,
+          allMarkets: isMultiOutcome ? fetchedEvent.markets : null // Include all markets for multi-outcome events
         });
       }
     }
@@ -1654,7 +1660,19 @@ ${aiAnalysis}`;
       recommendation,
       analysis,
       messages: updatedMessages,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      // Include all markets for multi-outcome events (e.g., Bitcoin price ranges)
+      allMarkets: intent.allMarkets ? intent.allMarkets.map(m => ({
+        id: m.id,
+        question: m.question,
+        yesPrice: m.yesPrice,
+        noPrice: m.noPrice,
+        liquidity: m.liquidity,
+        volume24hr: m.volume24hr,
+        slug: m.slug,
+        url: m.url || `https://polymarket.com/event/${intent.event?.slug}?tid=${m.tokens?.[0]?.token_id}`
+      })) : null,
+      isMultiOutcome: !!intent.allMarkets
     };
 
     // Save to database if user is authenticated

@@ -14,46 +14,105 @@ const { analyzeWallet } = require('./wallet');
  */
 router.get('/signals', async (req, res) => {
   try {
-    const { limit = 5, minEdge = 0.03, category } = req.query;
+    const { limit = 5, minEdge = 0.03, category, rotate = 'true' } = req.query;
 
     // Validate parameters
     const limitNum = Math.min(Math.max(parseInt(limit) || 5, 1), 50);
     const minEdgeNum = Math.max(parseFloat(minEdge) || 0.03, 0);
+    const shouldRotate = rotate !== 'false';
 
     // Get signals from global data
-    const cycleData = global.latestData?.cycleSummary;
-    if (!cycleData || !cycleData.liveSignals) {
+    const liveSignals = global.latestData?.liveSignals;
+    if (!liveSignals || !Array.isArray(liveSignals)) {
       return res.json([]);
     }
 
-    // Filter and transform signals
-    let signals = cycleData.liveSignals
-      .filter(signal => {
-        // Filter by edge
-        if (signal.effectiveEdge < minEdgeNum) return false;
-        
-        // Filter by category if specified
-        if (category && signal.category && signal.category.toLowerCase() !== category.toLowerCase()) {
-          return false;
+    // Filter signals by edge
+    let filteredSignals = liveSignals.filter(signal => {
+      if (signal.effectiveEdge < minEdgeNum) return false;
+      if (category && signal.category && signal.category.toLowerCase() !== category.toLowerCase()) {
+        return false;
+      }
+      return true;
+    });
+
+    // Sort by edge (best first)
+    filteredSignals.sort((a, b) => (b.effectiveEdge || 0) - (a.effectiveEdge || 0));
+
+    // INSTITUTIONAL FEATURE 1: Category Diversity
+    // Ensure we have signals from different categories
+    const categories = ['SPORTS_FUTURES', 'POLITICS', 'CRYPTO', 'MACRO', 'EVENT'];
+    const diverseSignals = [];
+    const usedMarkets = new Set();
+
+    // First pass: Get best signal from each category
+    categories.forEach(cat => {
+      const catSignal = filteredSignals.find(s => 
+        s.category === cat && !usedMarkets.has(s.marketId || s.id)
+      );
+      if (catSignal) {
+        diverseSignals.push(catSignal);
+        usedMarkets.add(catSignal.marketId || catSignal.id);
+      }
+    });
+
+    // Second pass: Fill remaining slots with best available signals
+    const remainingSignals = filteredSignals.filter(s => 
+      !usedMarkets.has(s.marketId || s.id)
+    );
+    diverseSignals.push(...remainingSignals);
+
+    // INSTITUTIONAL FEATURE 2: Signal Rotation
+    // Rotate through different signals every 6 hours to provide fresh opportunities
+    let signals = diverseSignals;
+    if (shouldRotate && diverseSignals.length > limitNum) {
+      // Calculate rotation offset based on 6-hour windows
+      const sixHourWindow = Math.floor(Date.now() / (6 * 60 * 60 * 1000));
+      const totalWindows = Math.ceil(diverseSignals.length / limitNum);
+      const offset = (sixHourWindow % totalWindows) * limitNum;
+      
+      // Rotate signals
+      signals = [
+        ...diverseSignals.slice(offset),
+        ...diverseSignals.slice(0, offset)
+      ].slice(0, limitNum);
+      
+      console.log(`[API v1] Rotation: window=${sixHourWindow}, offset=${offset}, total=${diverseSignals.length}`);
+    } else {
+      signals = diverseSignals.slice(0, limitNum);
+    }
+
+    // Transform signals for API response
+    signals = signals
+      .map((signal, index) => {
+        console.log(`[API v1] Signal ${index + 1}: ${signal.category} - ${(signal.effectiveEdge || 0).toFixed(2)}% edge`);
+        // Parse action - backend stores as 'EXECUTE BUY YES' or 'EXECUTE BUY NO'
+        let action = 'HOLD';
+        if (signal.action) {
+          if (signal.action.includes('BUY YES') || signal.action === 'BUY_YES') {
+            action = 'BUY YES';
+          } else if (signal.action.includes('BUY NO') || signal.action === 'BUY_NO') {
+            action = 'BUY NO';
+          }
         }
-        
-        return true;
-      })
-      .slice(0, limitNum)
-      .map(signal => ({
-        marketId: signal.marketId || signal.id,
-        question: signal.question || signal.marketQuestion,
-        action: signal.action === 'YES' ? 'BUY YES' : signal.action === 'NO' ? 'BUY NO' : 'HOLD',
-        marketOdds: signal.price || signal.marketOdds || 0.5,
-        zigmaOdds: signal.probZigma || signal.zigmaOdds || 0.5,
-        edge: signal.effectiveEdge || signal.edge || 0,
-        confidence: signal.confidence || 0.5,
-        tier: signal.tier || 'NO_TRADE',
-        kelly: signal.kelly || 0,
-        liquidity: signal.liquidity || 0,
-        reasoning: signal.rationale || signal.reasoning,
-        link: signal.link
-      }));
+
+        return {
+          marketId: signal.marketId || signal.id,
+          question: signal.question || signal.marketQuestion || signal.market,
+          action,
+          marketOdds: signal.probMarket || (signal.price || 0.5) * 100,
+          zigmaOdds: signal.probZigma || (signal.predictedProbability || 0.5) * 100,
+          edge: signal.effectiveEdge || signal.rawEdge || signal.edge || 0,
+          confidence: signal.confidenceScore || signal.confidence || signal.modelConfidence || 50,
+          tier: signal.tradeTier || signal.tier || 'NO_TRADE',
+          kelly: (signal.intentExposure || signal.adjustedSize || signal.kelly || 0),
+          liquidity: signal.marketLiquidity || signal.liquidity || 0,
+          reasoning: signal.rationale || signal.reasoning,
+          link: signal.link,
+          crypto: signal.crypto || null, // Add crypto correlation data if available
+          tracking: signal.tracking || null // Add edge change tracking if available
+        };
+      });
 
     res.json(signals);
   } catch (error) {
@@ -71,12 +130,12 @@ router.get('/market/:marketId/analysis', async (req, res) => {
     const { marketId } = req.params;
 
     // Find market in global data
-    const cycleData = global.latestData?.cycleSummary;
-    if (!cycleData || !cycleData.liveSignals) {
+    const liveSignals = global.latestData?.liveSignals;
+    if (!liveSignals || !Array.isArray(liveSignals)) {
       return res.status(404).json({ error: 'Market not found' });
     }
 
-    const market = cycleData.liveSignals.find(s => 
+    const market = liveSignals.find(s => 
       (s.marketId === marketId || s.id === marketId)
     );
 
@@ -132,15 +191,15 @@ router.get('/wallet/:address', async (req, res) => {
  */
 router.get('/arbitrage', async (req, res) => {
   try {
-    const cycleData = global.latestData?.cycleSummary;
+    const arbitrageOpportunities = global.latestData?.arbitrageOpportunities;
     
     // Check if arbitrage data exists
-    if (!cycleData || !cycleData.arbitrageOpportunities) {
+    if (!arbitrageOpportunities || !Array.isArray(arbitrageOpportunities)) {
       return res.json([]);
     }
 
     // Transform arbitrage opportunities
-    const opportunities = cycleData.arbitrageOpportunities.map(opp => ({
+    const opportunities = arbitrageOpportunities.map(opp => ({
       type: opp.type || 'UNKNOWN',
       expectedProfit: opp.profit || opp.expectedProfit || 0,
       marketATitle: opp.marketA?.question || opp.marketA?.title,
@@ -198,18 +257,50 @@ router.get('/access/:walletAddress', async (req, res) => {
 });
 
 /**
+ * GET /api/v1/positions/exit-signals
+ * Get position exit signals and recommendations
+ */
+router.get('/positions/exit-signals', async (req, res) => {
+  try {
+    const exitSignals = global.latestData?.exitSignals || [];
+    
+    // Transform for API response
+    const signals = exitSignals.map(signal => ({
+      marketId: signal.marketId,
+      question: signal.question,
+      category: signal.category,
+      recommendation: signal.recommendation,
+      urgency: signal.urgency,
+      reason: signal.reason,
+      entryEdge: signal.entryEdge,
+      currentEdge: signal.currentEdge,
+      edgeChange: signal.edgeChange,
+      edgeChangePercent: signal.edgeChangePercent,
+      daysHeld: signal.daysHeld,
+      entryDate: signal.entryDate,
+      tracking: signal.tracking
+    }));
+
+    res.json(signals);
+  } catch (error) {
+    console.error('[API v1] Error fetching exit signals:', error);
+    res.status(500).json({ error: 'Failed to fetch exit signals', message: error.message });
+  }
+});
+
+/**
  * GET /api/v1/stats
  * Get market statistics
  */
 router.get('/stats', async (req, res) => {
   try {
-    const cycleData = global.latestData?.cycleSummary;
+    const liveSignals = global.latestData?.liveSignals;
     
     const stats = {
-      marketCount: cycleData?.marketsMonitored || 0,
-      totalMarkets: cycleData?.totalMarkets || 0,
-      signalsGenerated: cycleData?.liveSignals?.length || 0,
-      lastUpdate: cycleData?.timestamp || new Date().toISOString()
+      marketCount: liveSignals?.length || 0,
+      totalMarkets: liveSignals?.length || 0,
+      signalsGenerated: liveSignals?.length || 0,
+      lastUpdate: global.latestData?.timestamp || new Date().toISOString()
     };
 
     res.json(stats);

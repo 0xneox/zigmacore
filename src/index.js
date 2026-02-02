@@ -113,6 +113,9 @@ const { recordCycle } = require('./monitoring');
 const { generateDecrees, generateEnhancedAnalysis, computeNetEdge } = require('./llm');
 const { applyAdaptiveLearning } = require('./adaptive-learning');
 const { calibrateForWinRate } = require('./confidence-calibration');
+const { fetchCryptoPrices, enhanceCryptoSignal } = require('./crypto-prices');
+const { trackSignalChanges, getSignificantChanges } = require('./signal-tracking');
+const { generateExitSignals, getActionableExitSignals, autoTrackNewPositions } = require('./position-manager');
 const { postToX } = require('./poster');
 const { calculateKelly } = require('./market_analysis');
 const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./clob_price_cache');
@@ -266,7 +269,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PROBABILITY_FLOOR = 0.0001;
 const POLYMARKET_BASE_URL = 'https://polymarket.com';
 
-const EDGE_THRESHOLD = 0.02; // 2% edge threshold - generate volume for track record (decimal)
+const EDGE_THRESHOLD = 0.015; // 1.5% edge threshold - institutional grade signal flow (decimal)
 
 const UNCERTAINTY_MARGIN = 0.15; // Margin for confidence intervals
 const LOW_LIQUIDITY_THRESHOLD = 10000;   // $10K minimum
@@ -277,13 +280,13 @@ const PROBE_EDGE_THRESHOLD = 0.02; // Minimum 2% edge for execution
 const STRONG_TRADE_EXPOSURE = 0.02; // Minimum exposure for strong trades
 const SMALL_TRADE_EXPOSURE = 0.005; // Minimum exposure for small trades
 const PROBE_EXPOSURE = 0.001; // Minimum exposure for probe trades (INCREASED from 0.0005)
-const MIN_NET_EDGE = 0.02; // 2% minimum net edge - generate signals for track record
+const MIN_NET_EDGE = 0.015; // 1.5% minimum net edge - institutional grade signal flow
 const CONVICTION_MULTIPLIER_MIN = 0.80; // Minimum conviction multiplier
 const HIGH_EDGE_THRESHOLD = 0.08; // 8% edge - extreme mispricing
 const MEDIUM_EDGE_THRESHOLD = 0.05; // 5% edge - strong opportunity
-const LOW_EDGE_THRESHOLD = 0.02; // 2% edge - minimum for execution
-const MIN_LIQUIDITY_THRESHOLD = 10000; // $10K minimum liquidity
-const MIN_VOLUME_VELOCITY = 100; // $100/hour minimum trading activity
+const LOW_EDGE_THRESHOLD = 0.015; // 1.5% edge - minimum for execution
+const MIN_LIQUIDITY_THRESHOLD = 2000; // $2K minimum liquidity (lowered to find mispricing)
+const MIN_VOLUME_VELOCITY = 20; // $20/hour minimum (lowered for new markets)
 const PRIORITY_CATEGORIES = ['MACRO', 'POLITICS', 'CRYPTO', 'SPORTS_FUTURES','ETF_APPROVAL', 'TECH_ADOPTION', 'TECH', 'ENTERTAINMENT', 'EVENT'];
 const DATA_RICH_CATEGORIES = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
 const CONVICTION_BOOST_HIGH = 1.20; // 20% boost for high liquidity
@@ -292,11 +295,11 @@ const CONVICTION_BOOST_LOW = 1.10; // 10% boost for low liquidity
 const EDGE_THRESHOLD_HIGH = 0.40; // 40% edge - extreme opportunities
 const EDGE_THRESHOLD_MEDIUM_HIGH = 0.30; // 30% edge - strong opportunities
 const EDGE_THRESHOLD_MEDIUM = 0.25; // 25% edge - minimum threshold
-const DEFAULT_CONFIDENCE_THRESHOLD = 0.80; // 80% confidence - balanced threshold (decimal)
+const DEFAULT_CONFIDENCE_THRESHOLD = 0.70; // 70% confidence - institutional grade threshold (decimal)
 
 const TAIL_MARKET_THRESHOLD = 0.80; // 80% - above or below this is tail market
-const TAIL_MARKET_MIN_CONFIDENCE = 85; // Require 85% confidence for tail markets
-const EXTREME_TAIL_THRESHOLD = 0.95; // 95% - true bonds, reject these
+const TAIL_MARKET_MIN_CONFIDENCE = 75; // Require 75% confidence for tail markets (lowered to allow more signals)
+const EXTREME_TAIL_THRESHOLD = 0.98; // 98% - true bonds, reject these (was 95%, too restrictive)
 const TAIL_MARKET_MAX_EXPOSURE = 0.015; // 1.5% max exposure on tail markets (risk control)
 
 const CORRELATION_CLUSTERS = {
@@ -1436,21 +1439,19 @@ function computeEdgeScore(market) {
     return 0;
   }
   
-  const yesPrice = getYesNoPrices(market)?.yes || 0.5;
+  // FIXED: Use liquidity + volume for market selection, NOT fake base rate edges
+  // Real edge will be calculated by LLM analysis vs market price
+  const liquidity = Math.max(0, Number(market.liquidity) || 0);
+  const volume = Math.max(0, Number(market.volume24h || market.volume) || 0);
+  const priceVolatility = Math.max(0, Number(market.priceVolatility) || 0);
   
-  if (typeof yesPrice !== 'number' || yesPrice < 0 || yesPrice > 1) {
-    console.warn('[computeEdgeScore] Invalid yesPrice:', yesPrice);
-    return 0;
-  }
+  // Score based on trading activity (more liquid = more likely to have real mispricing)
+  // Volatility bonus (price movement = potential mispricing)
+  const liquidityScore = Math.log(liquidity + 1000) / 10;
+  const volumeScore = Math.log(volume + 100) / 10;
+  const volatilityBonus = priceVolatility * 5;
   
-  const prior = getBaseRate(market.question, market);
-  
-  if (typeof prior !== 'number' || prior < 0 || prior > 1) {
-    console.warn('[computeEdgeScore] Invalid prior:', prior);
-    return 0;
-  }
-  
-  return Math.abs(yesPrice - prior);
+  return liquidityScore + volumeScore + volatilityBonus;
 }
 
 function parseAnalysis(llmOutput, market) {
@@ -1817,30 +1818,17 @@ function filterHighValueMarkets(marketList) {
 
   dynamicCategoryPriors = Object.keys(dynamicCategoryPriors).length ? dynamicCategoryPriors : safeBuildDynamicCategoryPriors(dedupedList);
 
+  // FIXED: Don't filter by fake base rate edges - let LLM find real mispricing
+  // Just ensure markets have minimum liquidity and are in valid price range
   const baselineFlagged = dedupedList.filter(m => {
     const yesPrice = typeof m.yesPrice === 'number' && Number.isFinite(m.yesPrice) ? m.yesPrice : 0.5;
-    const pPrior = getBaseRate(m.question, m);
-    const edge = Math.abs(pPrior - yesPrice);
     const category = getCategoryKey(m.question, m);
-    const categoryAdjustment = getCategoryEdgeAdjustment(category);
-    const adjustedEdge = edge * categoryAdjustment;
-    
-    // Base threshold: 2% for data-rich, 3% for others
-    const dataRichCategories = ['SPORTS_FUTURES', 'CRYPTO', 'ETF_APPROVAL', 'TECH_ADOPTION'];
-    let edgeThreshold = dataRichCategories.includes(category) ? 0.02 : 0.03;
-    
-    // Adjust based on historical performance (if available)
-    const categoryPerf = categoryPerformance[category];
-    if (categoryPerf && typeof categoryPerf.emaError === 'number') {
-      if (categoryPerf.emaError > 0.15) {
-        edgeThreshold *= 1.15; // Slightly increase for high-error categories
-      } else if (categoryPerf.emaError < 0.08) {
-        edgeThreshold *= 0.9; // Decrease for well-calibrated categories
-      }
-    }
-    
     const liquidityFloor = computeCategoryLiquidityFloor(category, m);
-    return adjustedEdge > edgeThreshold && (m.liquidity || 0) > liquidityFloor;
+    
+    // Only filter by liquidity and valid price range
+    // Real edge detection happens in LLM analysis
+    return (m.liquidity || 0) > liquidityFloor && 
+           yesPrice > 0.01 && yesPrice < 0.99; // Exclude bonds
   });
 
   const priceSpikes = dedupedList
@@ -1916,12 +1904,11 @@ function filterHighValueMarkets(marketList) {
 
   selected = selected.filter(m => {
     const daysLeft = m.endDateIso ? (new Date(m.endDateIso) - Date.now()) / (1000 * 60 * 60 * 24) : 365;
-    if (daysLeft < 7 || daysLeft > 365) return false;
+    // FIXED: Allow short-horizon trades (<7 days) - these are often the best opportunities!
+    // Only reject if >365 days (too far out) or already expired (<0 days)
+    if (daysLeft < 0 || daysLeft > 365) return false;
 
-    const pPrior = getBaseRate(m.question, m);
-    const edge = Math.abs(pPrior - (m.yesPrice || 0.5));
-    if (getCategoryKey(m.question, m) === 'CELEBRITY' && edge < 0.15) return false;
-    if (getCategoryKey(m.question, m) === 'POLITICS' && edge < 0.08) return false;
+    // Don't use fake base rate edges for filtering - LLM will find real mispricing
     return true;
   });
 
@@ -2330,7 +2317,8 @@ async function generateSignals(selectedMarkets) {
       edge: effectiveEdge * 100 // Convert to percentage
     };
     
-    if (categoryStats) {
+    // Only calibrate if we have sufficient historical data (20+ samples)
+    if (categoryStats && categoryStats.sampleSize >= 20) {
       calibratedSignal = calibrateForWinRate(calibratedSignal, {
         winRate: categoryStats.winRate || 0.5,
         sampleSize: categoryStats.sampleSize || 0
@@ -2340,7 +2328,10 @@ async function generateSignals(selectedMarkets) {
       finalConfidence = Math.min(0.99, Math.max(0.01, calibratedSignal.confidence / 100));
       effectiveEdge = calibratedSignal.edge / 100;
       
-      log(`[CALIBRATION] ${categoryKey}: winRate=${(categoryStats.winRate || 0.5).toFixed(3)}, sampleSize=${categoryStats.sampleSize || 0}, adjustedConf=${finalConfidence.toFixed(3)}`);
+      log(`[CALIBRATION] ${categoryKey}: winRate=${(categoryStats.winRate || 0.5).toFixed(3)}, sampleSize=${categoryStats.sampleSize}, adjustedConf=${finalConfidence.toFixed(3)}`);
+    } else {
+      // Preserve LLM confidence when no historical data
+      log(`[CALIBRATION] ${categoryKey}: Insufficient data (sampleSize=${categoryStats?.sampleSize || 0}), using LLM confidence=${finalConfidence.toFixed(3)}`);
     }
 
     // Create signal timestamp before using it
@@ -2510,14 +2501,18 @@ Exposure: ${signal.intentExposure.toFixed(1)}%`;
       effectiveEdge: enhancedSignal.adjustedEdge * 100,
       rawEdge: enhancedSignal.adjustedEdge * 100,
       link: buildPolymarketUrl(market.slug, market.question),
-      cluster: getClusterForCategory(market.category)
+      cluster: getClusterForCategory(market.category),
+      marketLiquidity: market.liquidity || 0 // Add liquidity for API
     };
 
     if (shouldExecuteTrade(signalWithMarket, market)) {
       if (signal.tradeTier === 'PROBE' && Math.abs(rawEdge) > PROBE_EDGE_THRESHOLD) {
         signal.tradeTier = 'MEDIUM_TRADE';
       }
-      executableTrades.push(signalWithMarket);
+      
+      // Enhance crypto signals with spot price correlation
+      const enhancedSignal = enhanceCryptoSignal(signalWithMarket, global.cryptoPrices);
+      executableTrades.push(enhancedSignal);
       
       // Save executable trade to database for UI display
       try {
@@ -3099,6 +3094,21 @@ async function runCycle() {
   if (isRunning) return;
   isRunning = true;
   const cycleStartTime = Date.now(); // Track cycle start time
+  
+  // Fetch crypto prices at start of cycle for correlation analysis
+  try {
+    global.cryptoPrices = await fetchCryptoPrices();
+    if (global.cryptoPrices) {
+      console.log('[CRYPTO] Prices loaded:', {
+        BTC: global.cryptoPrices.bitcoin.price,
+        ETH: global.cryptoPrices.ethereum.price,
+        SOL: global.cryptoPrices.solana.price
+      });
+    }
+  } catch (error) {
+    console.error('[CRYPTO] Failed to fetch prices, continuing without crypto enhancement:', error.message);
+    global.cryptoPrices = null;
+  }
   let markets = [];
   try {
     // ...
@@ -3247,9 +3257,27 @@ async function runCycle() {
     log(` Volume filtered: ${volumeFiltered.length}/${selectedMarkets.length} markets remain`);
     
     // Apply cluster filtering BEFORE LLM analysis to save costs
-    // Limit to top 15 markets to prevent cycle timeout
-    const clusterFiltered = volumeFiltered.slice(0, 15);
-    log(` Selected ${clusterFiltered.length} markets for LLM analysis (limited to prevent timeout)`);
+    // INSTITUTIONAL FEATURE: Rotate through different markets each cycle
+    // Instead of always analyzing the same top 15, rotate to get diversity
+    let clusterFiltered;
+    if (volumeFiltered.length <= 30) {
+      clusterFiltered = volumeFiltered;
+    } else {
+      // Calculate rotation offset based on cycle count (changes every cycle)
+      const cycleNumber = Math.floor(Date.now() / (12 * 60 * 60 * 1000)); // Changes every 12 hours
+      const totalBatches = Math.ceil(volumeFiltered.length / 30);
+      const batchIndex = cycleNumber % totalBatches;
+      const startIndex = batchIndex * 30;
+      
+      // Rotate through different batches of 30 markets (increased for more opportunities)
+      clusterFiltered = [
+        ...volumeFiltered.slice(startIndex),
+        ...volumeFiltered.slice(0, startIndex)
+      ].slice(0, 30);
+      
+      log(` ROTATION: Batch ${batchIndex + 1}/${totalBatches}, analyzing markets ${startIndex}-${startIndex + 30} of ${volumeFiltered.length}`);
+    }
+    log(` Selected ${clusterFiltered.length} markets for LLM analysis`);
 
     activeGroupSizes = computeGroupSizeMap(clusterFiltered);
 
@@ -3285,19 +3313,38 @@ async function runCycle() {
     console.log('- signalsGenerated:', signalsGenerated);
     console.log('- executableTrades.length:', executableTrades.length);
 
+    // Track signal changes across cycles
+    const trackedSignals = await trackSignalChanges(executableTrades);
+    const significantChanges = getSignificantChanges(trackedSignals);
+    
+    if (significantChanges.length > 0) {
+      console.log(`[TRACKING] 🚨 ${significantChanges.length} signals with significant edge changes`);
+    }
+
+    // Auto-track new strong signals as positions
+    await autoTrackNewPositions(trackedSignals);
+
+    // Generate exit signals for tracked positions
+    const exitSignals = await generateExitSignals(trackedSignals);
+    const actionableExits = getActionableExitSignals(exitSignals);
+    
+    if (actionableExits.length > 0) {
+      console.log(`[POSITIONS] 🚨 ${actionableExits.length} actionable position updates`);
+    }
+
     global.latestData = {
       cycleSummary: {
         marketsFetched: markets.length,
         marketsEligible: selectedMarkets.length,
         marketsAnalyzed: clusterFiltered.length,
-        signalsGenerated,
-        watchlist: executableTrades.length,
-        outlook: outlookSignals.length,
-        rejected: rejectedSignals.length
+        signalsGenerated: signalsGenerated,
+        significantChanges: significantChanges.length,
+        timestamp: new Date().toISOString()
       },
-      liveSignals: executableTrades,
+      liveSignals: trackedSignals,
       marketOutlook: outlookSignals,
       rejectedSignals,
+      exitSignals: actionableExits,
       lastRun: lastRunTimestamp,
       marketsMonitored: clusterFiltered.length,
       posts: signalsGenerated

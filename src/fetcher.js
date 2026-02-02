@@ -139,16 +139,19 @@ async function fetchMarkets(limit = 500, offset = 0) {  // Reduced default limit
 
 /**
  * Fetch all active Polymarket markets by paginating through the API
- * - Prioritizes recent/new markets by sorting by startDate desc
+ * - Prioritizes markets by liquidity
  * - Includes rate limiting to avoid throttling
  */
 async function fetchAllMarkets() {
   const baseUrl = `${GAMMA}/markets`;
+  // CRITICAL FIX: Fetch by liquidity, not startDate
+  // New markets (0-4 hours) have no price history, no patterns, no real edge
+  // Real alpha is in established markets (7-30 days) with volume and mispricing
   const params = {
     closed: 'false',
     limit: 1008,
-    order: 'startDate',
-    sort: 'desc'
+    order: 'liquidity',  // Changed from 'startDate' to 'liquidity'
+    sort: 'desc'         // Get highest liquidity markets first
   };
   // DEV: Limit to 5000 markets for production
   const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 1008;

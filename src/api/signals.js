@@ -165,4 +165,123 @@ router.post('/generate', authenticateUser, async (req, res) => {
   }
 });
 
+// GET /api/signals/recent - Get recent executable signals (PUBLIC - no auth required)
+router.get('/recent', async (req, res) => {
+  try {
+    const { limit = 50, category, minEdge, timeRange } = req.query;
+    
+    // Get live signals from global data
+    const liveSignals = global.latestData?.liveSignals || [];
+    
+    // Filter signals
+    let filtered = liveSignals.filter(s => {
+      // Filter by category
+      if (category && category !== 'all' && s.category !== category) return false;
+      
+      // Filter by minimum edge
+      if (minEdge && (s.effectiveEdge || s.edge || 0) < parseFloat(minEdge)) return false;
+      
+      return true;
+    });
+    
+    // DEDUPLICATE by marketId - keep only the most recent signal for each market
+    const marketMap = new Map();
+    filtered.forEach(s => {
+      const marketId = s.marketId || s.id;
+      const existing = marketMap.get(marketId);
+      
+      if (!existing) {
+        marketMap.set(marketId, s);
+      } else {
+        // Keep the signal with the newer timestamp
+        const existingTime = new Date(existing.timestamp || 0).getTime();
+        const currentTime = new Date(s.timestamp || 0).getTime();
+        if (currentTime > existingTime) {
+          marketMap.set(marketId, s);
+        }
+      }
+    });
+    
+    // Convert back to array
+    filtered = Array.from(marketMap.values());
+    
+    // Sort by timestamp (newest first)
+    filtered.sort((a, b) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      return timeB - timeA;
+    });
+    
+    // Limit results
+    filtered = filtered.slice(0, parseInt(limit));
+    
+    // Transform to frontend format
+    const signals = filtered.map(s => ({
+      id: s.marketId || s.id,
+      marketId: s.marketId || s.id,
+      question: s.question || s.marketQuestion || s.market,
+      marketQuestion: s.question || s.marketQuestion || s.market,
+      category: s.category,
+      predictedProbability: (s.probZigma || s.zigmaOdds || 50) / 100,
+      confidenceScore: s.confidence || s.confidenceScore || 0,
+      confidence: s.confidence || s.confidenceScore || 0,
+      edge: s.effectiveEdge || s.edge || 0,
+      timestamp: s.timestamp || new Date().toISOString(),
+      zigmaOdds: s.probZigma || s.zigmaOdds || 0,
+      marketOdds: s.probMarket || s.marketOdds || 0,
+      action: s.action,
+      price: s.probMarket || s.marketOdds || 0,
+      link: s.link,
+      source: 'LIVE_CYCLE'
+    }));
+    
+    res.json(signals);
+  } catch (error) {
+    console.error('Get recent signals error:', error);
+    res.status(500).json({ error: 'Failed to fetch recent signals' });
+  }
+});
+
+// GET /api/signals/historical - Get historical executable trades (PUBLIC - no auth required)
+router.get('/historical', async (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Read historical trades from file
+    const historicalFile = path.join(__dirname, '../../historical_trades.json');
+    
+    if (!fs.existsSync(historicalFile)) {
+      return res.json([]);
+    }
+    
+    const data = JSON.parse(fs.readFileSync(historicalFile, 'utf8'));
+    const trades = data.trades || [];
+    
+    // Transform to frontend format
+    const historicalTrades = trades.map(t => ({
+      timestamp: t.timestamp || t.date || new Date().toISOString(),
+      marketQuestion: t.marketQuestion || t.question || t.market,
+      action: t.action || 'EXECUTE BUY YES',
+      price: t.price || t.marketOdds || 0,
+      edge: t.edge || t.effectiveEdge || 0,
+      confidence: t.confidence || t.confidenceScore || 0,
+      tradeTier: t.tradeTier || t.tier || 'STRONG_TRADE',
+      link: t.link
+    }));
+    
+    // Sort by timestamp (newest first)
+    historicalTrades.sort((a, b) => {
+      const timeA = new Date(a.timestamp).getTime();
+      const timeB = new Date(b.timestamp).getTime();
+      return timeB - timeA;
+    });
+    
+    res.json(historicalTrades);
+  } catch (error) {
+    console.error('Get historical signals error:', error);
+    res.status(500).json({ error: 'Failed to fetch historical signals' });
+  }
+});
+
 module.exports = router;
