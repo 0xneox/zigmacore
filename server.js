@@ -1860,33 +1860,49 @@ app.get('/admin/backup/verify/:filename', authenticate, (req, res) => {
 
 app.get('/api/risk-metrics', async (req, res) => {
   try {
-    const cycleHistory = global.getCycleHistory ? global.getCycleHistory() : [];
+    const { initDb } = require('./src/db');
+    const db = initDb();
     
-    if (cycleHistory.length < 2) {
+    // Get RESOLVED signals from database with actual P&L
+    const { data: resolvedSignals, error } = await db
+      .from('trade_signals')
+      .select('*')
+      .eq('status', 'RESOLVED')
+      .order('generated_at', { ascending: true });
+    
+    if (error) throw error;
+    
+    // If less than 10 resolved signals, return early warning
+    if (!resolvedSignals || resolvedSignals.length < 10) {
       return res.json({
+        message: `Insufficient data: Only ${resolvedSignals?.length || 0} resolved signals. Need 30+ for reliable metrics.`,
         sharpeRatio: 0,
         sortinoRatio: 0,
         maxDrawdown: 0,
         var95: 0,
         cvar95: 0,
         calmarRatio: 0,
-        message: 'Insufficient data for risk metrics'
+        dataPoints: resolvedSignals?.length || 0,
+        lastUpdated: new Date().toISOString()
       });
     }
-
-    // Calculate returns from cycle history
-    const returns = cycleHistory.map((cycle, i) => {
-      if (i === 0) return 0;
-      const prevSignals = cycleHistory[i - 1].signalsGenerated || 0;
-      const currentSignals = cycle.signalsGenerated || 0;
-      return (currentSignals - prevSignals) / Math.max(1, prevSignals);
-    }).filter(r => !isNaN(r) && r !== 0);
-
-    // Calculate portfolio values for drawdown
-    const portfolioValues = cycleHistory.map((cycle, i) => {
-      return cycle.marketsFetched || 0;
+    
+    // Calculate actual portfolio values from P&L
+    let portfolioValue = 1000;
+    const portfolioValues = [portfolioValue];
+    const returns = [];
+    
+    resolvedSignals.forEach(signal => {
+      const pnl = parseFloat(signal.pnl || 0);
+      const prevValue = portfolioValue;
+      portfolioValue += pnl;
+      portfolioValues.push(portfolioValue);
+      
+      const returnPct = prevValue > 0 ? pnl / prevValue : 0;
+      returns.push(returnPct);
     });
-
+    
+    // Now calculate metrics with REAL data
     const {
       calculateSharpeRatio,
       calculateSortinoRatio,
@@ -1895,7 +1911,7 @@ app.get('/api/risk-metrics', async (req, res) => {
       calculateCVaR,
       calculateCalmarRatio
     } = require('./src/utils/risk-metrics');
-
+    
     const sharpeRatio = calculateSharpeRatio(returns);
     const sortinoRatio = calculateSortinoRatio(returns);
     const { maxDrawdown } = calculateMaxDrawdown(portfolioValues);
@@ -1910,7 +1926,7 @@ app.get('/api/risk-metrics', async (req, res) => {
       var95: Number(var95.toFixed(2)),
       cvar95: Number(cvar95.toFixed(2)),
       calmarRatio: Number(calmarRatio.toFixed(3)),
-      dataPoints: cycleHistory.length,
+      dataPoints: resolvedSignals.length,
       lastUpdated: new Date().toISOString()
     });
   } catch (error) {
@@ -2027,14 +2043,26 @@ app.get('/api/analytics/accuracy', async (req, res) => {
     const {
       calculateAccuracyMetrics
     } = require('./src/utils/analytics');
+    const { initDb } = require('./src/db');
+    const db = initDb();
 
-    // Get signals from cycle history
-    const cycleHistory = global.getCycleHistory ? global.getCycleHistory() : [];
+    // Get RESOLVED signals from database, not cycleHistory
+    const { data: resolvedSignals, error } = await db
+      .from('trade_signals')
+      .select('*')
+      .eq('status', 'RESOLVED')
+      .order('generated_at', { ascending: false });
     
-    // Flatten signals from all cycles
-    const allSignals = cycleHistory.flatMap(cycle => cycle.liveSignals || []);
+    if (error) throw error;
+    
+    // Transform to format expected by calculateAccuracyMetrics
+    const signals = (resolvedSignals || []).map(s => ({
+      ...s,
+      outcome: s.actual_result, // Map actual_result to outcome
+      predictedProbability: s.predicted_probability || 0.5
+    }));
 
-    const accuracy = calculateAccuracyMetrics(allSignals);
+    const accuracy = calculateAccuracyMetrics(signals);
 
     res.json(accuracy);
   } catch (error) {
@@ -2101,11 +2129,26 @@ app.get('/api/analytics/category-performance', async (req, res) => {
     const {
       calculateCategoryPerformance
     } = require('./src/utils/analytics');
+    const { initDb } = require('./src/db');
+    const db = initDb();
 
-    const cycleHistory = global.getCycleHistory ? global.getCycleHistory() : [];
-    const allSignals = cycleHistory.flatMap(cycle => cycle.liveSignals || []);
+    // Get RESOLVED signals from database, not cycleHistory
+    const { data: resolvedSignals, error } = await db
+      .from('trade_signals')
+      .select('*')
+      .eq('status', 'RESOLVED')
+      .order('generated_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    // Transform to format expected by calculateCategoryPerformance
+    const signals = (resolvedSignals || []).map(s => ({
+      ...s,
+      outcome: s.actual_result,
+      predictedProbability: s.predicted_probability || 0.5
+    }));
 
-    const categoryPerf = calculateCategoryPerformance(allSignals);
+    const categoryPerf = calculateCategoryPerformance(signals);
 
     res.json(categoryPerf);
   } catch (error) {

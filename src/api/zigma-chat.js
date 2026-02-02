@@ -403,10 +403,19 @@ ${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price
       confidence: analysis?.confidence || 0,
       recommendation: recommendation,
       analysis: analysis,
-      market: matchedMarket
+      market: matchedMarket,
+      allMarkets: intent.allMarkets || null, // Multi-outcome events
+      isMultiOutcome: !!intent.allMarkets
     };
     
     console.log('[ZIGMA CHAT] Sending response (length:', assistantMessage.length, 'chars)');
+    console.log('[ZIGMA CHAT] Multi-outcome data:', {
+      isMultiOutcome: response.isMultiOutcome,
+      allMarketsCount: response.allMarkets?.length || 0,
+      hasIntent: !!intent,
+      hasIntentAllMarkets: !!intent.allMarkets,
+      intentAllMarketsCount: intent.allMarkets?.length || 0
+    });
     
     // Deduct credit after successful chat
     if (req.chatInfo?.userId) {
