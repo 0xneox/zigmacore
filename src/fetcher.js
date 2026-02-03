@@ -149,12 +149,12 @@ async function fetchAllMarkets() {
   // Real alpha is in established markets (7-30 days) with volume and mispricing
   const params = {
     closed: 'false',
-    limit: 1008,
+    limit: 2008,
     order: 'liquidity',  // Changed from 'startDate' to 'liquidity'
     sort: 'desc'         // Get highest liquidity markets first
   };
   // DEV: Limit to 5000 markets for production
-  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 1008;
+  const MAX_MARKETS = parseInt(process.env.MAX_MARKETS) || 2008;
   let offset = 0;
   let allMarkets = [];
 

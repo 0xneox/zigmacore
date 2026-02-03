@@ -1876,9 +1876,10 @@ function filterHighValueMarkets(marketList) {
     const days = (now - new Date(startIso)) / (1000 * 60 * 60 * 24);
     return days > 0;
   }).sort((a, b) => {
-    const edgeA = Math.abs(getBaseRate(a.question, a) - (a.yesPrice || 0.5));
-    const edgeB = Math.abs(getBaseRate(b.question, b) - (b.yesPrice || 0.5));
-    return edgeB - edgeA;
+    // FIXED: Sort by liquidity + volume, not fake base rate edge
+    const scoreA = (a.liquidity || 0) + (a.volume24h || a.volume || 0);
+    const scoreB = (b.liquidity || 0) + (b.volume24h || b.volume || 0);
+    return scoreB - scoreA;
   }).slice(0, 15);
 
   const trends = dedupedList.filter(m => {
@@ -1918,7 +1919,12 @@ function filterHighValueMarkets(marketList) {
     const selectedIds = new Set(selectedFiltered.map(m => m.id));
     const fallback = dedupedList
       .filter(m => !selectedIds.has(m.id))
-      .sort((a, b) => Math.abs(getBaseRate(b.question, b) - (b.yesPrice || 0.5)) - Math.abs(getBaseRate(a.question, a) - (a.yesPrice || 0.5)))
+      .sort((a, b) => {
+        // FIXED: Sort by liquidity + volume, not fake base rate edge
+        const scoreA = (a.liquidity || 0) + (a.volume24h || a.volume || 0);
+        const scoreB = (b.liquidity || 0) + (b.volume24h || b.volume || 0);
+        return scoreB - scoreA;
+      })
       .slice(0, needed);
     selectedFiltered = [...selectedFiltered, ...fallback];
   }
@@ -2019,9 +2025,8 @@ async function generateSignals(selectedMarkets) {
     }
 
     if (!analysis) {
-      const pBucketPrior = getBaseRate(market.question);
-      if (Math.abs((market.yesPrice || 0.5) - pBucketPrior) < 0.05) continue;
-
+      // FIXED: Removed base rate filter - let LLM analyze all markets
+      // Real mispricing will be found by LLM analysis, not category base rates
       log(`[LLM] Analyzing: ${market.id} - ${market.question}`, 'INFO');
 
       let orderBook = {};
