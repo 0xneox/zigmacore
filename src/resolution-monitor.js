@@ -44,7 +44,7 @@ async function checkPendingResolutions() {
       .from('trade_signals')
       .select('*')
       .in('status', ['PENDING', 'EXECUTED'])
-      .order('created_at', { ascending: false });
+      .order('timestamp', { ascending: false });
     
     if (error) throw error;
     

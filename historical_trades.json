@@ -1,6 +1,7 @@
-[
-  {
-    "timestamp": "2026-01-14T16:52:13.428Z",
+{
+  "trades": [
+    {
+      "timestamp": "2026-01-14T16:52:13.428Z",
     "marketQuestion": "Will Trump nominate Kevin Warsh as the next Fed chair?",
     "action": "BUY YES",
     "price": 0.645,
@@ -149,4 +150,5 @@
     "tradeTier": "STRONG_TRADE",
     "link": "https://polymarket.com/search?q=Will%20Donald%20Trump%20announce%20a%20new%20nominee%20for%20Chair%20of%20the%20Federal%20Reserve%20by%20June%2030%2C%202026%3F"
   }
-]
+  ]
+}

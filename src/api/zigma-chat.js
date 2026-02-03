@@ -372,6 +372,119 @@ ${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price
     }
     
     const matchedMarket = intent.market;
+    const isMultiOutcome = !!intent.allMarkets && intent.allMarkets.length > 1;
+    
+    // MULTI-OUTCOME: Analyze ALL outcomes and return top opportunities
+    if (isMultiOutcome) {
+      console.log(`[ZIGMA CHAT] Multi-outcome event detected: ${intent.allMarkets.length} outcomes`);
+      console.log('[ZIGMA CHAT] Analyzing all outcomes...');
+      
+      const allAnalyses = [];
+      
+      for (const market of intent.allMarkets) {
+        try {
+          const analysis = await generateEnhancedAnalysis(market);
+          allAnalyses.push({
+            market,
+            analysis,
+            edge: analysis?.effectiveEdge || 0,
+            confidence: analysis?.confidence || 0
+          });
+        } catch (error) {
+          console.error(`[ZIGMA CHAT] Error analyzing ${market.question}:`, error.message);
+        }
+      }
+      
+      // Sort by edge (best opportunities first)
+      allAnalyses.sort((a, b) => Math.abs(b.edge) - Math.abs(a.edge));
+      
+      // Filter to only active markets (exclude resolved ones with yesPrice 0 or 1)
+      const activeAnalyses = allAnalyses.filter(a => {
+        const yesPrice = a.market?.yesPrice;
+        return typeof yesPrice === 'number' && yesPrice > 0.001 && yesPrice < 0.999;
+      });
+      
+      // Take top 5 opportunities from active markets only
+      const topOpportunities = activeAnalyses.slice(0, 5);
+      
+      console.log(`[ZIGMA CHAT] Found ${topOpportunities.length} top opportunities`);
+      
+      // Build multi-outcome response
+      let multiOutcomeMessage = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      multiOutcomeMessage += `🎯 MULTI-OUTCOME EVENT ANALYSIS\n`;
+      multiOutcomeMessage += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      multiOutcomeMessage += `📊 Analyzed ${intent.allMarkets.length} outcomes\n`;
+      multiOutcomeMessage += `🏆 Top ${topOpportunities.length} Opportunities:\n\n`;
+      
+      topOpportunities.forEach((opp, idx) => {
+        const action = normalizeAction(opp.analysis?.action);
+        const actionEmoji = action === 'BUY_YES' ? '🟢' : action === 'BUY_NO' ? '🔴' : '⚪';
+        multiOutcomeMessage += `${idx + 1}. ${actionEmoji} ${opp.market.question}\n`;
+        multiOutcomeMessage += `   Action: ${action}\n`;
+        multiOutcomeMessage += `   Zigma Odds: ${(opp.analysis?.probability * 100).toFixed(1)}%\n`;
+        multiOutcomeMessage += `   Market Odds: ${(opp.market.yesPrice * 100).toFixed(1)}%\n`;
+        multiOutcomeMessage += `   Edge: ${opp.edge > 0 ? '+' : ''}${opp.edge.toFixed(2)}%\n`;
+        multiOutcomeMessage += `   Confidence: ${opp.confidence}%\n\n`;
+      });
+      
+      // Filter out resolved/closed markets - only show active ones with valid prices
+      // Exclude markets where yesPrice is 0 or 1 (resolved to NO or YES)
+      const activeMarkets = intent.allMarkets.filter(m => {
+        const hasValidPrice = typeof m.yesPrice === 'number' && m.yesPrice > 0.001 && m.yesPrice < 0.999;
+        const isActive = m.active !== false && m.closed !== true;
+        const hasLiquidity = !m.liquidity || m.liquidity > 0; // Allow if liquidity undefined or > 0
+        return hasValidPrice && isActive && hasLiquidity;
+      });
+      
+      console.log(`[ZIGMA CHAT] Filtered markets: ${intent.allMarkets.length} total → ${activeMarkets.length} active`);
+      
+      const response = {
+        success: true,
+        answer: multiOutcomeMessage,
+        confidence: topOpportunities[0]?.confidence || 0,
+        recommendation: {
+          action: normalizeAction(topOpportunities[0]?.analysis?.action),
+          confidence: topOpportunities[0]?.confidence || 0,
+          probability: topOpportunities[0]?.analysis?.probability 
+            ? Number((topOpportunities[0].analysis.probability * 100).toFixed(2))
+            : null,
+          marketOdds: topOpportunities[0]?.market?.yesPrice
+            ? Number((topOpportunities[0].market.yesPrice * 100).toFixed(2))
+            : null,
+          effectiveEdge: topOpportunities[0]?.edge || null
+        },
+        analysis: topOpportunities[0]?.analysis,
+        market: topOpportunities[0]?.market,
+        allMarkets: activeMarkets, // Only send active markets to frontend
+        allAnalyses: topOpportunities,
+        isMultiOutcome: true
+      };
+      
+      console.log('[ZIGMA CHAT] Sending multi-outcome response (length:', multiOutcomeMessage.length, 'chars)');
+      console.log('[ZIGMA CHAT] Multi-outcome data:', {
+        isMultiOutcome: response.isMultiOutcome,
+        allMarketsCount: response.allMarkets?.length || 0,
+        topOpportunitiesCount: topOpportunities.length
+      });
+      
+      // Deduct credit after successful chat
+      if (req.chatInfo?.userId) {
+        console.log('[ZIGMA CHAT] Attempting to deduct credit...');
+        const { deductCredit } = require('./credits');
+        const deducted = await deductCredit(req.chatInfo.userId, chatId, req.chatInfo.usingFreeTrial);
+        if (deducted) {
+          console.log('[ZIGMA CHAT] ✅ Credit successfully deducted');
+        } else {
+          console.error('[ZIGMA CHAT] ❌ Failed to deduct credit');
+        }
+      } else {
+        console.error('[ZIGMA CHAT] ⚠️ No userId in chatInfo, credit deduction skipped');
+      }
+      
+      return res.json(response);
+    }
+    
+    // SINGLE OUTCOME: Original logic
     console.log('[ZIGMA CHAT] Analyzing market:', matchedMarket.question);
     
     // Generate analysis using the original LLM logic
@@ -405,7 +518,7 @@ ${metrics.recentActivity.slice(0, 5).map(a => `  ${a.side} ${a.size} @ ${a.price
       analysis: analysis,
       market: matchedMarket,
       allMarkets: intent.allMarkets || null, // Multi-outcome events
-      isMultiOutcome: !!intent.allMarkets
+      isMultiOutcome: false
     };
     
     console.log('[ZIGMA CHAT] Sending response (length:', assistantMessage.length, 'chars)');

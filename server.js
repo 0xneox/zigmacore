@@ -348,8 +348,26 @@ app.get('/admin/debug', (req, res) => {
 });
 
 // Data endpoint for UI (structured cycle data)
-app.get('/data', (req, res) => {
-  res.json(global.latestData);
+app.get('/data', async (req, res) => {
+  try {
+    const { getTradeSignals } = require('./src/db');
+    const allSignals = await getTradeSignals(500);
+    
+    // Enhance with database signal count
+    const responseData = {
+      ...(global.latestData || {}),
+      cycleSummary: {
+        ...(global.latestData?.cycleSummary || {}),
+        totalActiveSignals: allSignals?.length || 0, // Total signals in database
+        signalsGenerated: global.latestData?.cycleSummary?.signalsGenerated || 0 // This cycle only
+      }
+    };
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.json(global.latestData || {});
+  }
 });
 
 // Visualization data endpoint (for risk metrics visualization)
@@ -860,18 +878,30 @@ function needsHydration(market = {}) {
 }
 
 async function hydrateMarket(market) {
-  if (!needsHydration(market)) {
-    return normalizeMarketPrices(market);
-  }
-  try {
-    const detailed = await fetchMarketById(market.id || market.conditionId);
-    if (detailed) {
-      return normalizeMarketPrices({ ...market, ...detailed });
+  let result = market;
+  
+  if (needsHydration(market)) {
+    try {
+      const detailed = await fetchMarketById(market.id || market.conditionId);
+      if (detailed) {
+        result = { ...market, ...detailed };
+      }
+    } catch (error) {
+      console.warn(`Hydration failed for market ${market?.id}:`, error.message);
     }
-  } catch (error) {
-    console.warn(`Hydration failed for market ${market?.id}:`, error.message);
   }
-  return normalizeMarketPrices(market);
+  
+  result = normalizeMarketPrices(result);
+  
+  // Ensure URL is present for frontend
+  if (!result.url && result.slug) {
+    result.url = `https://polymarket.com/event/${result.slug}`;
+  } else if (!result.url && result.id) {
+    // Fallback: use market ID if no slug
+    result.url = `https://polymarket.com/market/${result.id}`;
+  }
+  
+  return result;
 }
 
 async function findMarketByUrl(urlOrQuery, markets) {
@@ -928,12 +958,32 @@ async function findMarketByUrl(urlOrQuery, markets) {
 
 async function respondWithIntent({ market, similarity = 1, source, event, allMarkets = null }) {
   const hydrated = await hydrateMarket(market);
+  
+  // Hydrate all markets in multi-outcome events so they have proper prices
+  let hydratedAllMarkets = null;
+  if (allMarkets && allMarkets.length > 0) {
+    console.log('[MULTI-OUTCOME] Hydrating', allMarkets.length, 'markets');
+    console.log('[MULTI-OUTCOME] Sample raw market:', JSON.stringify(allMarkets[0], null, 2));
+    
+    hydratedAllMarkets = await Promise.all(
+      allMarkets.map(m => hydrateMarket(m))
+    );
+    
+    console.log('[MULTI-OUTCOME] Sample hydrated market:', JSON.stringify(hydratedAllMarkets[0], null, 2));
+    console.log('[MULTI-OUTCOME] Hydrated markets have yesPrice:', hydratedAllMarkets.map(m => ({ 
+      question: m.question?.slice(0, 30), 
+      yesPrice: m.yesPrice,
+      hasOutcomePrices: !!m.outcomePrices,
+      hasPrices: !!m.prices
+    })));
+  }
+  
   return {
     market: hydrated || market,
     similarity,
     source,
     event,
-    allMarkets // Pass through all markets for multi-outcome events
+    allMarkets: hydratedAllMarkets || allMarkets // Return hydrated markets with prices
   };
 }
 
@@ -1858,82 +1908,7 @@ app.get('/admin/backup/verify/:filename', authenticate, (req, res) => {
   }
 });
 
-app.get('/api/risk-metrics', async (req, res) => {
-  try {
-    const { initDb } = require('./src/db');
-    const db = initDb();
-    
-    // Get RESOLVED signals from database with actual P&L
-    const { data: resolvedSignals, error } = await db
-      .from('trade_signals')
-      .select('*')
-      .eq('status', 'RESOLVED')
-      .order('created_at', { ascending: true });
-    
-    if (error) throw error;
-    
-    // If less than 10 resolved signals, return early warning
-    if (!resolvedSignals || resolvedSignals.length < 10) {
-      return res.json({
-        message: `Insufficient data: Only ${resolvedSignals?.length || 0} resolved signals. Need 30+ for reliable metrics.`,
-        sharpeRatio: 0,
-        sortinoRatio: 0,
-        maxDrawdown: 0,
-        var95: 0,
-        cvar95: 0,
-        calmarRatio: 0,
-        dataPoints: resolvedSignals?.length || 0,
-        lastUpdated: new Date().toISOString()
-      });
-    }
-    
-    // Calculate actual portfolio values from P&L
-    let portfolioValue = 1000;
-    const portfolioValues = [portfolioValue];
-    const returns = [];
-    
-    resolvedSignals.forEach(signal => {
-      const pnl = parseFloat(signal.pnl || 0);
-      const prevValue = portfolioValue;
-      portfolioValue += pnl;
-      portfolioValues.push(portfolioValue);
-      
-      const returnPct = prevValue > 0 ? pnl / prevValue : 0;
-      returns.push(returnPct);
-    });
-    
-    // Now calculate metrics with REAL data
-    const {
-      calculateSharpeRatio,
-      calculateSortinoRatio,
-      calculateMaxDrawdown,
-      calculateVaR,
-      calculateCVaR,
-      calculateCalmarRatio
-    } = require('./src/utils/risk-metrics');
-    
-    const sharpeRatio = calculateSharpeRatio(returns);
-    const sortinoRatio = calculateSortinoRatio(returns);
-    const { maxDrawdown } = calculateMaxDrawdown(portfolioValues);
-    const { varPercentage: var95 } = calculateVaR(returns, 0.95);
-    const { cvarPercentage: cvar95 } = calculateCVaR(returns, 0.95);
-    const calmarRatio = calculateCalmarRatio(returns, portfolioValues);
-
-    res.json({
-      sharpeRatio: Number(sharpeRatio.toFixed(3)),
-      sortinoRatio: Number(sortinoRatio.toFixed(3)),
-      maxDrawdown: Number(maxDrawdown.toFixed(2)),
-      var95: Number(var95.toFixed(2)),
-      cvar95: Number(cvar95.toFixed(2)),
-      calmarRatio: Number(calmarRatio.toFixed(3)),
-      dataPoints: resolvedSignals.length,
-      lastUpdated: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Error calculating risk metrics:', error);
-    res.status(500).json({ error: 'Failed to calculate risk metrics' });
-  }
-});
+// Old /api/risk-metrics endpoint removed - replaced by /api/analytics/risk
 
 app.get('/api/performance-history', async (req, res) => {
   try {
@@ -2038,74 +2013,6 @@ app.post('/api/risk-management/slippage', async (req, res) => {
 });
 
 // Analytics API endpoints
-app.get('/api/analytics/accuracy', async (req, res) => {
-  try {
-    const {
-      calculateAccuracyMetrics
-    } = require('./src/utils/analytics');
-    const { initDb } = require('./src/db');
-    const db = initDb();
-
-    // Get RESOLVED signals from database, not cycleHistory
-    const { data: resolvedSignals, error } = await db
-      .from('trade_signals')
-      .select('*')
-      .eq('status', 'RESOLVED')
-      .order('generated_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    // Transform to format expected by calculateAccuracyMetrics
-    const signals = (resolvedSignals || []).map(s => ({
-      ...s,
-      outcome: s.actual_result, // Map actual_result to outcome
-      predictedProbability: s.predicted_probability || 0.5
-    }));
-
-    const accuracy = calculateAccuracyMetrics(signals);
-
-    res.json(accuracy);
-  } catch (error) {
-    console.error('Error calculating accuracy metrics:', error);
-    res.status(500).json({ error: 'Failed to calculate accuracy metrics' });
-  }
-});
-
-app.get('/api/analytics/win-loss', async (req, res) => {
-  try {
-    const {
-      calculateWinLossRatio
-    } = require('./src/utils/analytics');
-
-    // Get trades from trade log
-    const tradesPath = path.join(__dirname, 'trades.log');
-    let trades = [];
-
-    try {
-      if (fs.existsSync(tradesPath)) {
-        const tradesData = fs.readFileSync(tradesPath, 'utf8');
-        const lines = tradesData.split('\n').filter(line => line.trim());
-        trades = lines.map(line => {
-          try {
-            return JSON.parse(line);
-          } catch {
-            return null;
-          }
-        }).filter(t => t !== null);
-      }
-    } catch (err) {
-      console.error('Error reading trades log:', err.message);
-    }
-
-    const winLoss = calculateWinLossRatio(trades);
-
-    res.json(winLoss);
-  } catch (error) {
-    console.error('Error calculating win/loss ratio:', error);
-    res.status(500).json({ error: 'Failed to calculate win/loss ratio' });
-  }
-});
-
 app.get('/api/analytics/calibration', async (req, res) => {
   try {
     const {
@@ -2124,38 +2031,7 @@ app.get('/api/analytics/calibration', async (req, res) => {
   }
 });
 
-app.get('/api/analytics/category-performance', async (req, res) => {
-  try {
-    const {
-      calculateCategoryPerformance
-    } = require('./src/utils/analytics');
-    const { initDb } = require('./src/db');
-    const db = initDb();
-
-    // Get RESOLVED signals from database, not cycleHistory
-    const { data: resolvedSignals, error } = await db
-      .from('trade_signals')
-      .select('*')
-      .eq('status', 'RESOLVED')
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    // Transform to format expected by calculateCategoryPerformance
-    const signals = (resolvedSignals || []).map(s => ({
-      ...s,
-      outcome: s.actual_result,
-      predictedProbability: s.predicted_probability || 0.5
-    }));
-
-    const categoryPerf = calculateCategoryPerformance(signals);
-
-    res.json(categoryPerf);
-  } catch (error) {
-    console.error('Error calculating category performance:', error);
-    res.status(500).json({ error: 'Failed to calculate category performance' });
-  }
-});
+// Old /api/analytics/category-performance endpoint removed - replaced below
 
 app.get('/api/analytics/time-of-day', async (req, res) => {
   try {
@@ -2599,8 +2475,258 @@ app.use('/api/signals', signalRoutes);
 app.use('/api/token', tokenRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/credits', require('./src/api/credits').router);
+app.use('/api/basket', require('./src/api/basket').router);
 app.use('/api/auth/magic', magicAuthRouter);
 app.use('/api/chat', zigmaChatRouter);
+
+// Analytics API endpoints
+app.get('/api/analytics/accuracy', async (req, res) => {
+  try {
+    const { getTradeSignals } = require('./src/db');
+    const signals = await getTradeSignals(500); // Get more signals for accuracy calculation
+    
+    if (!signals || signals.length === 0) {
+      return res.json({
+        totalSignals: 0,
+        resolvedSignals: 0,
+        correctSignals: 0,
+        incorrectSignals: 0,
+        accuracy: 0,
+        precision: 0,
+        recall: 0,
+        f1Score: 0,
+        message: 'No signals found in database'
+      });
+    }
+    
+    // Count resolved signals (those with outcome)
+    const resolvedSignals = signals.filter(s => s.outcome).length;
+    
+    if (resolvedSignals < 10) {
+      return res.json({
+        totalSignals: signals.length,
+        resolvedSignals,
+        correctSignals: 0,
+        incorrectSignals: 0,
+        accuracy: 0,
+        precision: 0,
+        recall: 0,
+        f1Score: 0,
+        message: `Only ${resolvedSignals} of ${signals.length} signals have resolved (${(resolvedSignals/signals.length*100).toFixed(1)}%). Historical accuracy metrics require 30+ resolutions for statistical significance.`
+      });
+    }
+    
+    // Calculate accuracy for resolved signals
+    const correctSignals = signals.filter(s => {
+      if (!s.outcome) return false;
+      const predictedYes = s.direction === 'BUY_YES' || s.action?.includes('YES');
+      const actualYes = s.outcome === 'YES';
+      return predictedYes === actualYes;
+    }).length;
+    
+    const accuracy = resolvedSignals > 0 ? correctSignals / resolvedSignals : 0;
+    
+    res.json({
+      totalSignals: signals.length,
+      resolvedSignals,
+      correctSignals,
+      incorrectSignals: resolvedSignals - correctSignals,
+      accuracy: Number((accuracy * 100).toFixed(2)),
+      precision: 0, // TODO: Calculate when more data available
+      recall: 0,
+      f1Score: 0,
+      message: resolvedSignals < 30 ? `Early stage - ${resolvedSignals} resolved signals` : undefined
+    });
+  } catch (error) {
+    console.error('[ERROR] Error calculating accuracy metrics:', error);
+    res.status(500).json({ error: 'Failed to calculate accuracy metrics' });
+  }
+});
+
+app.get('/api/analytics/win-loss', async (req, res) => {
+  try {
+    const { getTradeSignals } = require('./src/db');
+    const signals = await getTradeSignals(500);
+    
+    // Filter for signals with P&L data
+    const tradesWithPnL = signals.filter(s => s.pnl !== undefined && s.pnl !== null);
+    
+    if (tradesWithPnL.length === 0) {
+      return res.json({
+        totalTrades: 0,
+        winningTrades: 0,
+        losingTrades: 0,
+        winRate: 0,
+        winLossRatio: 0,
+        avgWin: 0,
+        avgLoss: 0,
+        totalProfit: 0,
+        totalLoss: 0,
+        netProfit: 0,
+        message: 'No settled trades yet. Win/loss metrics will populate as markets resolve.'
+      });
+    }
+    
+    const winningTrades = tradesWithPnL.filter(t => t.pnl > 0);
+    const losingTrades = tradesWithPnL.filter(t => t.pnl < 0);
+    
+    const totalProfit = winningTrades.reduce((sum, t) => sum + t.pnl, 0);
+    const totalLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.pnl, 0));
+    const avgWin = winningTrades.length > 0 ? totalProfit / winningTrades.length : 0;
+    const avgLoss = losingTrades.length > 0 ? totalLoss / losingTrades.length : 0;
+    
+    res.json({
+      totalTrades: tradesWithPnL.length,
+      winningTrades: winningTrades.length,
+      losingTrades: losingTrades.length,
+      winRate: Number((winningTrades.length / tradesWithPnL.length * 100).toFixed(2)),
+      winLossRatio: losingTrades.length > 0 ? Number((winningTrades.length / losingTrades.length).toFixed(2)) : winningTrades.length,
+      avgWin: Number(avgWin.toFixed(2)),
+      avgLoss: Number(avgLoss.toFixed(2)),
+      totalProfit: Number(totalProfit.toFixed(2)),
+      totalLoss: Number(totalLoss.toFixed(2)),
+      netProfit: Number((totalProfit - totalLoss).toFixed(2))
+    });
+  } catch (error) {
+    console.error('[ERROR] Error calculating win/loss metrics:', error);
+    res.status(500).json({ error: 'Failed to calculate win/loss metrics' });
+  }
+});
+
+app.get('/api/analytics/risk', async (req, res) => {
+  try {
+    const { getTradeSignals } = require('./src/db');
+    const signals = await getTradeSignals(500);
+    
+    if (!signals || signals.length < 10) {
+      return res.json({
+        sharpeRatio: 0,
+        sortinoRatio: 0,
+        maxDrawdown: 0,
+        var95: 0,
+        cvar95: 0,
+        calmarRatio: 0,
+        dataPoints: signals?.length || 0,
+        lastUpdated: new Date().toISOString(),
+        message: 'Insufficient data for risk metrics. Need 10+ signals.'
+      });
+    }
+    
+    // Calculate basic risk metrics from edge distribution
+    const edges = signals.map(s => (s.edge || 0) * 100); // Convert to percentage
+    const avgEdge = edges.reduce((sum, e) => sum + e, 0) / edges.length;
+    const variance = edges.reduce((sum, e) => sum + Math.pow(e - avgEdge, 2), 0) / edges.length;
+    const stdDev = Math.sqrt(variance);
+    
+    // Sharpe ratio (assuming risk-free rate of 0)
+    const sharpeRatio = stdDev > 0 ? avgEdge / stdDev : 0;
+    
+    // Sortino ratio (only downside deviation)
+    const downsideEdges = edges.filter(e => e < avgEdge);
+    const downsideVariance = downsideEdges.length > 0
+      ? downsideEdges.reduce((sum, e) => sum + Math.pow(e - avgEdge, 2), 0) / downsideEdges.length
+      : variance;
+    const downsideStdDev = Math.sqrt(downsideVariance);
+    const sortinoRatio = downsideStdDev > 0 ? avgEdge / downsideStdDev : 0;
+    
+    res.json({
+      sharpeRatio: Number(sharpeRatio.toFixed(2)),
+      sortinoRatio: Number(sortinoRatio.toFixed(2)),
+      maxDrawdown: 0, // TODO: Calculate from actual trade history
+      var95: Number((avgEdge - 1.645 * stdDev).toFixed(2)),
+      cvar95: 0,
+      calmarRatio: 0,
+      dataPoints: signals.length,
+      lastUpdated: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[ERROR] Error calculating risk metrics:', error);
+    res.status(500).json({ error: 'Failed to calculate risk metrics' });
+  }
+});
+
+app.get('/api/analytics/category-performance', async (req, res) => {
+  try {
+    const { getTradeSignals } = require('./src/db');
+    const signals = await getTradeSignals(500);
+    
+    if (!signals || signals.length === 0) {
+      return res.json([]);
+    }
+    
+    // Group by category
+    const categoryMap = {};
+    signals.forEach(signal => {
+      const category = signal.category || 'UNKNOWN';
+      if (!categoryMap[category]) {
+        categoryMap[category] = {
+          category,
+          totalSignals: 0,
+          avgEdge: 0,
+          avgConfidence: 0,
+          resolvedSignals: 0,
+          correctSignals: 0
+        };
+      }
+      
+      categoryMap[category].totalSignals++;
+      categoryMap[category].avgEdge += (signal.edge || 0) * 100;
+      categoryMap[category].avgConfidence += signal.confidence || 0;
+      
+      if (signal.outcome) {
+        categoryMap[category].resolvedSignals++;
+        const predictedYes = signal.direction === 'BUY_YES' || signal.action?.includes('YES');
+        const actualYes = signal.outcome === 'YES';
+        if (predictedYes === actualYes) {
+          categoryMap[category].correctSignals++;
+        }
+      }
+    });
+    
+    // Calculate averages and format for frontend
+    const categories = {};
+    Object.entries(categoryMap).forEach(([category, cat]) => {
+      categories[category] = {
+        totalSignals: cat.totalSignals,
+        resolvedSignals: cat.resolvedSignals,
+        correctSignals: cat.correctSignals,
+        accuracy: cat.resolvedSignals > 0 
+          ? cat.correctSignals / cat.resolvedSignals
+          : 0,
+        avgEdge: (cat.avgEdge / cat.totalSignals) / 100, // Convert back to decimal
+        avgConfidence: cat.avgConfidence / cat.totalSignals
+      };
+    });
+    
+    // Find best and worst categories (by accuracy, only if resolved > 0)
+    const categoriesWithData = Object.entries(categories)
+      .filter(([_, stats]) => stats.resolvedSignals > 0);
+    
+    let bestCategory = null;
+    let worstCategory = null;
+    
+    if (categoriesWithData.length > 0) {
+      categoriesWithData.sort((a, b) => b[1].accuracy - a[1].accuracy);
+      bestCategory = {
+        category: categoriesWithData[0][0],
+        accuracy: categoriesWithData[0][1].accuracy
+      };
+      worstCategory = {
+        category: categoriesWithData[categoriesWithData.length - 1][0],
+        accuracy: categoriesWithData[categoriesWithData.length - 1][1].accuracy
+      };
+    }
+    
+    res.json({
+      categories,
+      bestCategory,
+      worstCategory
+    });
+  } catch (error) {
+    console.error('[ERROR] Error calculating category performance:', error);
+    res.status(500).json({ error: 'Failed to calculate category performance' });
+  }
+});
 
 // Visualization API endpoints
 app.get('/api/visualization/price-history', async (req, res) => {
@@ -3211,6 +3337,9 @@ app.use((req, res) => {
   });
 });
 
+// Import basket selector
+const { generateBasketRecommendations } = require('./src/basket-selector');
+
 module.exports = {
   app,
   server,
@@ -3221,6 +3350,7 @@ module.exports = {
   buildAssistantMessage,
   normalizeAction,
   fetchUserProfile,
+  generateBasketRecommendations,
   startServer: () => {
     server.listen(PORT, () => {
       console.log(`Agent Zigma server running on port ${PORT}`);

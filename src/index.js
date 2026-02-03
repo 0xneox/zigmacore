@@ -2345,17 +2345,35 @@ async function generateSignals(selectedMarkets) {
       marketId: market.id,
       marketSlug: market.slug,
       marketQuestion: market.question,
-      category: market.category, // Add category to signal
+      question: market.question,
+      market: market.question,
+      category: categoryKey,
+      probZigma: llmProbability * 100,
+      probMarket: yesPrice * 100,
+      revisedPrior: llmProbability,
+      marketPrice: yesPrice,
+      effectiveEdge: rawEdge,
+      rawEdge: rawEdge,
+      netEdge: rawEdge,
+      edgeScore: rawEdge * 100,
+      confidence: confidencePercent,
+      confidenceScore: confidencePercent,
+      reasoning: analysis.llmAnalysis?.reasoning || analysis.reasoning || '',
       action,
-      direction,  // 'BUY_YES' or 'BUY_NO' - for frontend display
-      price: yesPrice,
-      predictedProbability: llmProbability, // Add predicted probability for analytics
-      confidence: finalConfidence, // Add confidence for analytics
-      edge: effectiveEdge, // Add edge for analytics
-      timestamp: signalTimestamp, // Add timestamp for analytics
-      confidenceClass: normalizedConfidence >= 0.7 ? 'HIGH' : normalizedConfidence >= 0.4 ? 'MEDIUM' : 'LOW',
-      intentExposure,
-      edgeScore: Math.abs(effectiveEdge) * 100,       // PERCENTAGE (0-100)
+      direction,
+      tradeTier: getTradeTier(netEdge, finalConfidence),
+      tier: getTradeTier(netEdge, finalConfidence),
+      timestamp: signalTimestamp,
+      generatedAt: signalTimestamp,
+      endDate: market.endDateIso || market.endDate || market.end_date_iso,
+      link: market.url || `https://polymarket.com/event/${market.slug || market.id}`,
+      slug: market.slug,
+      liquidity: market.liquidity || 0,
+      volume: market.volumeNum || market.volume || market.volume24hr || 0,
+      volumeNum: market.volumeNum || market.volume || market.volume24hr || 0,
+      yesPrice,
+      noPrice: 1 - yesPrice,
+      intentExposure: intentExposure,             // ADD MISSING FIELD
       edgeScoreDecimal: Math.abs(effectiveEdge),      // DECIMAL (0-1) for threshold comparisons
       rawEdge: rawEdge * 100,                         // PERCENTAGE - signed for reference
       rawEdgeDecimal: rawEdge,                        // DECIMAL - signed
@@ -2449,7 +2467,7 @@ ZIGMA Odds (YES): ${(winProb * 100).toFixed(1)}%
 Edge: ${(rawEdge > 0 ? '+' : '')}${(rawEdge * 100).toFixed(1)}%
 Action: ${action === 'SKIP_NO_TRADE' ? 'NO TRADE' : action.replace('EXECUTE ', '')}
 Tier: ${signal.tradeTier}
-Exposure: ${signal.intentExposure.toFixed(1)}%`;
+Exposure: ${(signal.intentExposure || 0).toFixed(1)}%`;
       try {
         await postToX(tweet);
         signalsGenerated++;

@@ -75,7 +75,7 @@ router.get('/signals', async (req, res) => {
     let query = db
       .from('trade_signals')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('timestamp', { ascending: false })
       .range(offset, offset + limit - 1);
     
     if (status !== 'all') {

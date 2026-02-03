@@ -40,7 +40,7 @@ router.get('/', authenticateUser, async (req, res) => {
       .from('user_signals')
       .select('*')
       .eq('user_id', req.user.id)
-      .order('generated_at', { ascending: false })
+      .order('timestamp', { ascending: false })
       .limit(parseInt(limit));
 
     if (status) {
@@ -127,7 +127,7 @@ router.get('/watchlist/:watchlistId', authenticateUser, async (req, res) => {
       .select('*')
       .eq('user_id', req.user.id)
       .eq('watchlist_item_id', watchlistId)
-      .order('generated_at', { ascending: false })
+      .order('timestamp', { ascending: false })
       .limit(parseInt(limit));
 
     if (error) throw error;
@@ -184,10 +184,17 @@ router.get('/recent', async (req, res) => {
       return true;
     });
     
-    // DEDUPLICATE by marketId - keep only the most recent signal for each market
+    // DEDUPLICATE by marketId ONLY - keep only the most recent signal for each unique market
     const marketMap = new Map();
     filtered.forEach(s => {
-      const marketId = s.marketId || s.id;
+      const marketId = s.marketId;
+      
+      // Skip signals without a valid marketId
+      if (!marketId) {
+        console.warn('[API] Skipping signal without marketId:', s.question);
+        return;
+      }
+      
       const existing = marketMap.get(marketId);
       
       if (!existing) {
@@ -215,23 +222,33 @@ router.get('/recent', async (req, res) => {
     // Limit results
     filtered = filtered.slice(0, parseInt(limit));
     
-    // Transform to frontend format
+    // Transform to frontend format with CONSISTENT field names
     const signals = filtered.map(s => ({
       id: s.marketId || s.id,
       marketId: s.marketId || s.id,
-      question: s.question || s.marketQuestion || s.market,
-      marketQuestion: s.question || s.marketQuestion || s.market,
+      question: s.marketQuestion || s.question || s.market,
+      marketQuestion: s.marketQuestion || s.question || s.market,
       category: s.category,
-      predictedProbability: (s.probZigma || s.zigmaOdds || 50) / 100,
-      confidenceScore: s.confidence || s.confidenceScore || 0,
-      confidence: s.confidence || s.confidenceScore || 0,
-      edge: s.effectiveEdge || s.edge || 0,
+      // Use probZigma as the single source of truth for AI prediction
+      predictedProbability: (s.probZigma || 50) / 100,
+      zigmaOdds: s.probZigma || 0,
+      // Use probMarket as the single source of truth for market price
+      marketOdds: s.probMarket || 0,
+      price: s.yesPrice || s.marketPrice || (s.probMarket || 0) / 100,  // Use yesPrice (already decimal) or marketPrice
+      marketPrice: s.marketPrice || s.yesPrice || (s.probMarket || 0) / 100,  // Frontend expects this field
+      // Confidence and edge - backend provides as percentage (3 = 3%), convert to decimal (0.03)
+      confidence: s.confidence || 0,
+      confidenceScore: s.confidence || 0,
+      edge: (s.effectiveEdge || s.rawEdge || 0) / 100,  // Convert percentage to decimal: 3 → 0.03
+      netEdge: (s.netEdge || s.effectiveEdge || 0) / 100,  // Convert percentage to decimal
+      rawEdge: (s.rawEdge || s.effectiveEdge || 0) / 100,  // Convert percentage to decimal
+      // Metadata
       timestamp: s.timestamp || new Date().toISOString(),
-      zigmaOdds: s.probZigma || s.zigmaOdds || 0,
-      marketOdds: s.probMarket || s.marketOdds || 0,
       action: s.action,
-      price: s.probMarket || s.marketOdds || 0,
+      direction: s.direction || s.action,
       link: s.link,
+      volume: s.marketLiquidity || s.volumeNum || s.volume || 0,
+      volumeNum: s.marketLiquidity || s.volumeNum || s.volume || 0,
       source: 'LIVE_CYCLE'
     }));
     
