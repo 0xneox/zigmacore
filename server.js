@@ -2471,10 +2471,28 @@ app.use('/api/helius', require('./src/api/helius-webhook'));
 
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/signals', signalRoutes);
 app.use('/api/token', tokenRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/credits', require('./src/api/credits').router);
+
+// Public signals endpoint (must be BEFORE authenticated /api/signals route)
+app.get('/api/signals', (req, res) => {
+  try {
+    const signals = global.latestData?.liveSignals || [];
+    res.json({ 
+      success: true,
+      data: signals,
+      count: signals.length,
+      timestamp: global.latestData?.lastRun || new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[API/signals] Error:', error);
+    res.status(500).json({ error: 'Failed to fetch signals' });
+  }
+});
+
+// Authenticated user signals routes (for saved signals, not live signals)
+app.use('/api/user-signals', signalRoutes);
 app.use('/api/basket', require('./src/api/basket').router);
 app.use('/api/auth/magic', magicAuthRouter);
 app.use('/api/chat', zigmaChatRouter);
@@ -2879,19 +2897,60 @@ app.get('/backtest', async (req, res) => {
   }
 });
 
-// Historical trades endpoint
+// Historical trades endpoint - ONLY unresolved/open trades (for historical signals page)
 app.get('/api/signals/historical', (req, res) => {
   try {
-    const historicalTradesPath = path.join(__dirname, 'historical_trades.json');
+    const historicalTradesPath = path.join(__dirname, 'executable_trades.json');
     
     if (!fs.existsSync(historicalTradesPath)) {
       return res.json([]);
     }
 
-    const historicalTrades = JSON.parse(fs.readFileSync(historicalTradesPath, 'utf8'));
-    res.json(historicalTrades);
+    const historicalData = JSON.parse(fs.readFileSync(historicalTradesPath, 'utf8'));
+    const allTrades = historicalData.trades || historicalData;
+    
+    // Filter OUT resolved trades (they show in analytics instead)
+    const unresolvedTrades = Array.isArray(allTrades)
+      ? allTrades.filter(trade => 
+          trade.status !== 'WON' && 
+          trade.status !== 'LOST' && 
+          trade.resolved !== true &&
+          !trade.outcome
+        )
+      : [];
+    
+    res.json(unresolvedTrades);
   } catch (error) {
     console.error('Error fetching historical trades:', error);
+    res.json([]);
+  }
+});
+
+// Analytics endpoint - ONLY resolved/won trades (for analytics page)
+app.get('/api/analytics/resolved-trades', (req, res) => {
+  try {
+    const historicalTradesPath = path.join(__dirname, 'executable_trades.json');
+    
+    if (!fs.existsSync(historicalTradesPath)) {
+      return res.json([]);
+    }
+
+    const historicalData = JSON.parse(fs.readFileSync(historicalTradesPath, 'utf8'));
+    const allTrades = historicalData.trades || historicalData;
+    
+    // Filter only resolved/won trades
+    const resolvedTrades = Array.isArray(allTrades) 
+      ? allTrades.filter(trade => 
+          trade.status === 'WON' || 
+          trade.status === 'LOST' || 
+          trade.resolved === true ||
+          trade.outcome
+        )
+      : [];
+    
+    res.json(resolvedTrades);
+  } catch (error) {
+    console.error('Error fetching resolved trades:', error);
     res.json([]);
   }
 });

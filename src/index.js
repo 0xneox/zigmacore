@@ -92,6 +92,9 @@ const LOG_LEVEL_NUM = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
 const ACTIVE_LOG_LEVEL = LOG_LEVEL_NUM[NORMALIZED_LOG_LEVEL] != null ? NORMALIZED_LOG_LEVEL : 'INFO';
 const CURRENT_LOG_LEVEL = LOG_LEVEL_NUM[ACTIVE_LOG_LEVEL];
 
+// Cycle counter for calibration reporting
+let cycleCount = 0;
+
 const log = (msg, level = 'INFO') => {
   const normalizedLevel = (level || 'INFO').toUpperCase();
   const levelValue = LOG_LEVEL_NUM[normalizedLevel] ?? LOG_LEVEL_NUM.INFO;
@@ -122,6 +125,10 @@ const { getClobPrice, startPolling, getOrderBook, fetchOrderBook } = require('./
 const { startServer, updateHealthMetrics } = require('../server');
 const { crossReferenceNews } = require('./processor');
 const { startResolutionTracker } = require('./resolution_tracker');
+const { applySignalFilters } = require('./signal-filters');
+const { processConfidence, logConfidenceProcessing } = require('./confidence-validator');
+const { getConfidenceAdjustment, logCalibrationReport } = require('./historical-calibration');
+const { analyzeWithEnsemble } = require('./multi-model-ensemble');
 
 // ============================================================
 // NEW MODULE INTEGRATIONS
@@ -2045,7 +2052,8 @@ async function generateSignals(selectedMarkets) {
         log(`News fetch failed for ${market.id}`);
       }
 
-      const enhanced = await generateEnhancedAnalysis(market, orderBook, news);
+      // Use ensemble for high-stakes markets (>$50k liquidity), single LLM otherwise
+      const enhanced = await analyzeWithEnsemble(market, { orderBook, news });
       analysis = enhanced;
       
       // Extract numeric confidence value
@@ -2096,8 +2104,10 @@ async function generateSignals(selectedMarkets) {
     const analysis = data.analysis;
     const probability = ensureProbability(analysis, market);
     const yesPrice = getYesNoPrices(market)?.yes || market.yesPrice || 0.5;
-    const confidence = analysis.confidence || analysis.llmAnalysis?.confidence || analysis.confidenceScore || 50;
-    let normalizedConfidence = confidence > 1 ? confidence / 100 : confidence;
+    
+    // Extract raw LLM confidence (no hardcoding)
+    const rawConfidence = analysis.confidence || analysis.llmAnalysis?.confidence || analysis.confidenceScore || 50;
+    let normalizedConfidence = rawConfidence > 1 ? rawConfidence / 100 : rawConfidence;
 
     // Category caps REMOVED - trust LLM confidence entirely
     const categoryKey = getCategoryKey(market.question, market);
@@ -2161,6 +2171,34 @@ async function generateSignals(selectedMarkets) {
     let kellyFraction = calculateKelly(winProb, betPrice, 0, market.liquidity || 10000);
     log(`[POSITION SIZING] Step 1 - Base Kelly: ${(kellyFraction * 100).toFixed(2)}%`);
 
+    // STRICT BOND FILTER: Reject >90% and <10% markets BEFORE analysis
+    if (yesPrice > 0.90 || yesPrice < 0.10) {
+      log(`[BOND_FILTER] Rejecting extreme probability market: ${(yesPrice * 100).toFixed(1)}%`);
+      rejectedSignals.push({
+        marketId: market.id,
+        marketQuestion: market.question,
+        reason: 'BOND_MARKET',
+        details: `Market price ${(yesPrice * 100).toFixed(1)}% is too extreme (>90% or <10%)`
+      });
+      continue;
+    }
+    
+    // MINIMUM ROI FILTER: Reject markets <10¢ unless edge is massive
+    const minPrice = Math.min(yesPrice, 1 - yesPrice);
+    if (minPrice < 0.10) {
+      const requiredEdge = 0.20; // 20% minimum edge for <10¢ markets
+      if (Math.abs(rawEdge) < requiredEdge) {
+        log(`[ROI_FILTER] Rejecting low-price market: ${(minPrice * 100).toFixed(1)}¢ with only ${(Math.abs(rawEdge) * 100).toFixed(1)}% edge`);
+        rejectedSignals.push({
+          marketId: market.id,
+          marketQuestion: market.question,
+          reason: 'LOW_ROI',
+          details: `Market <10¢ requires ${(requiredEdge * 100)}% edge, got ${(Math.abs(rawEdge) * 100).toFixed(1)}%`
+        });
+        continue;
+      }
+    }
+    
     // SMART TAIL MARKET FILTER: Enable high-ROI opportunities with risk controls
     // Reject only extreme bonds (>95% or <5%) - these are true bonds
     if (yesPrice > EXTREME_TAIL_THRESHOLD && direction === 'BUY_NO') {
@@ -2314,30 +2352,45 @@ async function generateSignals(selectedMarkets) {
 
     const cluster = getClusterForCategory(market.category);
 
-    // Apply confidence calibration based on category performance
+    // Apply dynamic confidence validation and adjustment
     const categoryStats = categoryPerformance[categoryKey];
-    let calibratedSignal = {
-      action,
-      confidence: finalConfidence * 100, // Convert to percentage
-      edge: effectiveEdge * 100 // Convert to percentage
-    };
+    const confidenceResult = processConfidence(
+      analysis.llmAnalysis || analysis,
+      market,
+      categoryKey,
+      categoryStats
+    );
     
-    // Only calibrate if we have sufficient historical data (20+ samples)
-    if (categoryStats && categoryStats.sampleSize >= 20) {
-      calibratedSignal = calibrateForWinRate(calibratedSignal, {
-        winRate: categoryStats.winRate || 0.5,
-        sampleSize: categoryStats.sampleSize || 0
-      });
-      
-      // Update confidence with calibrated value
-      finalConfidence = Math.min(0.99, Math.max(0.01, calibratedSignal.confidence / 100));
-      effectiveEdge = calibratedSignal.edge / 100;
-      
-      log(`[CALIBRATION] ${categoryKey}: winRate=${(categoryStats.winRate || 0.5).toFixed(3)}, sampleSize=${categoryStats.sampleSize}, adjustedConf=${finalConfidence.toFixed(3)}`);
-    } else {
-      // Preserve LLM confidence when no historical data
-      log(`[CALIBRATION] ${categoryKey}: Insufficient data (sampleSize=${categoryStats?.sampleSize || 0}), using LLM confidence=${finalConfidence.toFixed(3)}`);
+    // Log confidence processing
+    logConfidenceProcessing(market.id, confidenceResult);
+    
+    // Apply historical calibration adjustment
+    let finalConfidenceValue = confidenceResult.confidence;
+    try {
+      const calibrationAdjustment = await getConfidenceAdjustment(finalConfidenceValue, categoryKey);
+      if (calibrationAdjustment.adjustment !== 1.0 && calibrationAdjustment.samples >= 10) {
+        finalConfidenceValue = calibrationAdjustment.adjustedConfidence;
+        log(`[HISTORICAL_CAL] ${categoryKey}: ${confidenceResult.confidence}% → ${finalConfidenceValue}% (${calibrationAdjustment.adjustment}x, ${calibrationAdjustment.samples} samples)`);
+      }
+    } catch (error) {
+      log(`[HISTORICAL_CAL] Failed to apply calibration: ${error.message}`);
     }
+    
+    // Use validated and calibrated confidence
+    finalConfidence = finalConfidenceValue / 100; // Convert to decimal
+    
+    // Apply edge calibration if we have historical data
+    let calibratedEdge = effectiveEdge;
+    if (categoryStats && categoryStats.sampleSize >= 20) {
+      const edgeMultiplier = categoryStats.winRate > 0.60 ? 0.9 : 
+                            categoryStats.winRate < 0.50 ? 1.25 : 1.0;
+      calibratedEdge = effectiveEdge * edgeMultiplier;
+      
+      if (Math.abs(edgeMultiplier - 1.0) > 0.01) {
+        log(`[EDGE_CALIBRATION] ${categoryKey}: ${(effectiveEdge * 100).toFixed(1)}% → ${(calibratedEdge * 100).toFixed(1)}% (winRate=${(categoryStats.winRate * 100).toFixed(0)}%)`);
+      }
+    }
+    effectiveEdge = calibratedEdge;
 
     // Create signal timestamp before using it
     const signalTimestamp = new Date().toISOString();
@@ -2559,8 +2612,16 @@ Exposure: ${(signal.intentExposure || 0).toFixed(1)}%`;
   applyClusterDampening(outlookSignals);
   applyGlobalExposureCap(executableTrades);
 
+  // Apply comprehensive signal filters to remove bad signals
+  const filteredTrades = applySignalFilters(executableTrades);
+  const removedCount = executableTrades.length - filteredTrades.length;
+  
+  if (removedCount > 0) {
+    log(`[FILTERS] Removed ${removedCount} signals (bonds, conflicts, low ROI)`);
+  }
+
   return {
-    executableTrades,
+    executableTrades: filteredTrades,
     outlookSignals,
     rejectedSignals,
     signalsGenerated
@@ -3118,6 +3179,15 @@ async function runCycle() {
   isRunning = true;
   const cycleStartTime = Date.now(); // Track cycle start time
   
+  // Log calibration report every 10 cycles (approximately every 5 hours)
+  if (cycleCount % 10 === 0) {
+    try {
+      await logCalibrationReport();
+    } catch (error) {
+      log(`[CALIBRATION] Failed to generate report: ${error.message}`);
+    }
+  }
+  
   // Fetch crypto prices at start of cycle for correlation analysis
   try {
     global.cryptoPrices = await fetchCryptoPrices();
@@ -3406,6 +3476,7 @@ async function runCycle() {
     
     log(`CRITICAL CYCLE ERROR: ${error.message}\n${error.stack}`, 'ERROR');
   } finally {
+    cycleCount++; // Increment cycle counter for calibration reporting
     isRunning = false;
   }
 }

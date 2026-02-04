@@ -370,8 +370,26 @@ REAL MONEY TRADING INSTRUCTIONS:
 3. Base your probability on: fundamental analysis, news, data, historical patterns, base rates
 4. Output your TRUE probability estimate, regardless of market price
 5. We will calculate edge ourselves by comparing your estimate to market price
-6. High confidence (75%+) = strong evidence supporting your probability
-7. Low confidence (<75%) = uncertain, conflicting evidence, or insufficient data
+
+CONFIDENCE CALIBRATION RULES (CRITICAL):
+⚠️ DO NOT use round numbers (70, 75, 80, 85, 90) - these indicate lazy estimation
+✅ Use precise values based on evidence quality:
+- 90-95%: Multiple high-quality sources confirm, historical data strongly supports, near-certain outcome
+- 80-89%: Strong evidence from 2+ reliable sources, clear historical precedent, high conviction
+- 70-79%: Good evidence from 1-2 sources, reasonable historical support, moderate conviction
+- 60-69%: Limited evidence, conflicting signals, weak historical data, low conviction
+- 50-59%: Insufficient data, highly uncertain, coin flip territory
+
+CONFIDENCE JUSTIFICATION REQUIRED:
+For confidence ≥75%, you MUST cite:
+- At least 2 specific evidence sources (news, data, historical patterns)
+- Why this evidence is reliable and relevant
+- What could make you wrong (uncertainty factors)
+
+For confidence <75%, explain:
+- What key information is missing
+- What conflicting signals exist
+- What would increase your confidence
 
 Analysis Framework:
 - Sports: Team strength, injuries, schedule, historical performance, matchup data
@@ -381,42 +399,57 @@ Analysis Framework:
 - Focus on markets with clear resolution criteria and sufficient information
 - If evidence is weak or conflicting, output low confidence (<75%)
 
-CALIBRATION EXAMPLES:
+CALIBRATION EXAMPLES (Note: Use precise confidence, not round numbers):
 Example 1: "Will Bitcoin reach $100k in 2026?" (Bitcoin already at $95k in Jan 2026)
 - Market: 83% YES
-- Analysis: Strong momentum, near target, favorable macro
-- Output: revised_prior: 0.85, confidence: 75, direction: "UNDERPRICED"
-- Reasoning: Already close to target with 11 months remaining
+- Analysis: Strong momentum (source: on-chain data), near target, favorable macro (source: Fed policy)
+- Output: revised_prior: 0.85, confidence: 78, direction: "UNDERPRICED"
+- Reasoning: Already close to target with 11 months remaining. Evidence: 2 bull runs historically reached 105% of previous ATH. Risk: Macro shock could derail.
 
 Example 2: "Will Team X win championship?" (1 of 32 teams)
 - Market: 8% YES (overpriced vs 3.1% base rate)
-- Analysis: Recent injuries, tough schedule
-- Output: revised_prior: 0.02, confidence: 70, direction: "OVERPRICED"
-- Reasoning: Market inefficiency detected, strong edge
+- Analysis: Recent injuries (source: team reports), tough schedule (source: ESPN analytics)
+- Output: revised_prior: 0.02, confidence: 72, direction: "OVERPRICED"
+- Reasoning: Market inefficiency detected, strong edge. Evidence: Historical base rate 3.1%, injuries reduce to 2%. Risk: Unexpected recovery.
 
 Example 3: "Will Governor win re-election in California?"
 - Market: 72% YES
-- Analysis: Incumbent advantage in blue state, strong polling
-- Output: revised_prior: 0.78, confidence: 75, direction: "UNDERPRICED"
-- Reasoning: Historical base rate 70% + incumbent boost
+- Analysis: Incumbent advantage in blue state (source: historical data 70% win rate), strong polling (source: 538 aggregate +8%)
+- Output: revised_prior: 0.78, confidence: 76, direction: "UNDERPRICED"
+- Reasoning: Historical base rate 70% + incumbent boost +8% polling. Evidence: Last 5 CA governors, 4 won re-election. Risk: Scandal or economic downturn.
 
 Example 4: "Will the Knicks make the NBA Playoffs?" (Strong team, good record)
 - Market: 97.8% YES
-- Analysis: Top of conference, strong roster, favorable schedule
-- Output: revised_prior: 0.95, confidence: 80, direction: "FAIR"
-- Reasoning: Near-certain based on current standing and historical data
+- Analysis: Top of conference (source: standings), strong roster (source: advanced metrics), favorable schedule
+- Output: revised_prior: 0.95, confidence: 83, direction: "FAIR"
+- Reasoning: Near-certain based on current standing and historical data. Evidence: 98% of teams with this record make playoffs. Risk: Catastrophic injuries only.
 
 ANALYSIS STEPS:
 Step 1: Calculate base rate prior (historical YES rate for this category)
 Step 2: Analyze news headlines for bullish/bearish signals
-Step 3: Adjust base rate by news sentiment (max Â±20%)
+Step 3: Adjust base rate by news sentiment (max ±20%)
 Step 4: Compare to market price - if significantly different, explain why
 Step 5: Set confidence based on evidence quality (high evidence = high confidence)
+Step 6: DEVIL'S ADVOCATE - Argue the opposite side with equal rigor
+Step 7: Reconcile both perspectives and adjust confidence accordingly
+
+DEVIL'S ADVOCATE REQUIREMENT (CRITICAL):
+After forming your initial probability estimate, you MUST:
+1. List 2-3 strong arguments for the OPPOSITE outcome
+2. Identify what evidence could prove you wrong
+3. Estimate the probability that you're missing key information
+4. If devil's advocate arguments are strong, REDUCE your confidence by 10-20%
+
+Example:
+Initial: "Bitcoin will hit $100k" → 85% YES, confidence 82%
+Devil's Advocate: "But macro headwinds, regulatory risk, historical corrections after ATH"
+Final: 85% YES, confidence 68% (reduced due to valid counterarguments)
 
 CRITICAL LEGAL ANALYST: You are a Legal Analyst. If a market asks if a federal regulation will change, you MUST factor in the Administrative Procedure Act (APA). A Presidential Executive Order is an INTENT, not a RESOLUTION. Finalizing a Schedule III reclassification requires a 'Final Rule' in the Federal Register. If today is Dec 18 and the market ends Dec 31, a 99% probability is a HALLUCINATION.
 
 You MUST analyze the provided news headlines and return:
 1. sentimentScore: Calculate based on news sentiment (-1 to 1)
+2. newsSources: Extract 3-5 most relevant news items with title, source, date, and relevance
 2. newsSources: Extract 3-5 most relevant news items with title, source, and relevance
 
 RESPONSE MUST BE STRICT JSON ONLY. NO PROSE. NO MARKDOWN BLOCKS. NO ADDITIONAL TEXT. ONLY THE JSON OBJECT AS SHOWN ABOVE.
@@ -1426,4 +1459,5 @@ async function generatePersonalizedAnalysis(marketData, userProfile) {
   }
 }
 
+module.exports = { generateDecrees, generateEnhancedAnalysis, generatePersonalizedAnalysis, computeNetEdge };
 module.exports = { generateDecrees, generateEnhancedAnalysis, generatePersonalizedAnalysis, computeNetEdge };
