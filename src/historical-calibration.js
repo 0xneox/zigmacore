@@ -4,7 +4,7 @@
  * "When we say 80% confident, we're actually right X% of the time"
  */
 
-const { supabase } = require('./supabase');
+const { getSupabase } = require('./supabase');
 
 // Confidence bins for calibration analysis
 const CONFIDENCE_BINS = [
@@ -25,7 +25,13 @@ async function getResolvedSignals(days = CALIBRATION_WINDOW_DAYS) {
   try {
     const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
     
-    const { data, error } = await supabase
+    const db = getSupabase();
+    if (!db) {
+      console.warn('[CALIBRATION] Database unavailable');
+      return [];
+    }
+
+    const { data, error } = await db
       .from('trade_signals')
       .select('id, market_id, confidence, was_correct, category, action, timestamp, resolved_at')
       .not('outcome', 'is', null)

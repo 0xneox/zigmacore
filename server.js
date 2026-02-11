@@ -31,7 +31,7 @@ const wsServer = new PriceWebSocketServer(server, {
 });
 
 // API Key authentication
-const API_KEY = process.env.API_KEY || 'zigma-api-key-2024';
+const API_KEY = process.env.API_KEY;
 
 const authenticate = (req, res, next) => {
   const authHeader = req.headers['x-api-key'];
@@ -137,12 +137,28 @@ const validateInput = (req, res, next) => {
 // Apply validation to all routes
 app.use(validateInput);
 
-// Auth middleware (skipped for testing)
+// Global auth middleware — skip for public routes, enforce for everything else
+const PUBLIC_PATHS = [
+  '/health', '/data', '/logs',
+  '/api/signals', '/api/pnl', '/api/analytics',
+  '/api/credits/balance',
+  '/api/payments/webhook', '/api/payments/config',
+  '/api/auth', '/api/helius',
+  '/chat'
+];
+
 app.use((req, res, next) => {
-  // const apiKey = req.headers['x-api-key'];
-  // if (process.env.API_KEY && (!apiKey || apiKey !== process.env.API_KEY)) {
-  //   return res.status(401).json({ error: 'Unauthorized' });
-  // }
+  // Skip auth for OPTIONS (CORS preflight) and public paths
+  if (req.method === 'OPTIONS') return next();
+  if (PUBLIC_PATHS.some(p => req.path === p || req.path.startsWith(p + '/'))) return next();
+
+  // Enforce API key if configured
+  if (API_KEY) {
+    const apiKey = req.headers['x-api-key'];
+    if (!apiKey || apiKey !== API_KEY) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'Invalid or missing API key' });
+    }
+  }
   next();
 });
 
@@ -375,8 +391,8 @@ app.get('/api/visualization/risk-metrics', (req, res) => {
   res.json(prometheusMetrics.getMetricsJSON());
 });
 
-// Logs endpoint for UI (sanitized for public display) - REQUIRES AUTHENTICATION
-app.get('/logs', authenticate, (req, res) => {
+// Logs endpoint for UI (sanitized for public display)
+app.get('/logs', (req, res) => {
   try {
     const logPath = 'console_output.log';
     const stats = fs.statSync(logPath);
@@ -1859,13 +1875,22 @@ app.post('/inject-signal', express.json(), (req, res) => {
 });
 
 app.post('/analyze-market', async (req, res) => {
-  const { question } = req.body;
-  if (!question) return res.status(400).json({ error: 'Missing question' });
-  const marketData = await global.fetchSearchMarkets(question);
-  if (!marketData) return res.status(404).json({ error: 'No matching market found on Polymarket' });
-  const signal = await global.analyzeMarket(marketData);
-  if (!signal) return res.status(500).json({ error: 'Analysis failed' });
-  res.json(signal);
+  try {
+    const { question } = req.body;
+    if (!question) return res.status(400).json({ error: 'Missing question' });
+
+    const { fetchSearchMarkets } = require('./src/fetcher');
+    const marketData = await fetchSearchMarkets(question);
+    if (!marketData || (Array.isArray(marketData) && marketData.length === 0)) {
+      return res.status(404).json({ error: 'No matching market found on Polymarket' });
+    }
+
+    const market = Array.isArray(marketData) ? marketData[0] : marketData;
+    res.json({ success: true, market });
+  } catch (error) {
+    console.error('[ANALYZE-MARKET] Error:', error.message);
+    res.status(500).json({ error: 'Analysis failed', message: error.message });
+  }
 });
 
 // Backup management endpoints (require authentication)
@@ -2494,8 +2519,9 @@ app.get('/api/signals', (req, res) => {
 // Authenticated user signals routes (for saved signals, not live signals)
 app.use('/api/user-signals', signalRoutes);
 app.use('/api/basket', require('./src/api/basket').router);
-app.use('/api/auth/magic', magicAuthRouter);
-app.use('/api/chat', zigmaChatRouter);
+// NOTE: magicAuthRouter already mounted at /api/auth (line 2467)
+// NOTE: zigmaChatRouter already mounted at /api/chat (line 2468)
+// Duplicate mounts removed — see ZV2-H1
 
 // Analytics API endpoints
 app.get('/api/analytics/accuracy', async (req, res) => {
@@ -2958,16 +2984,8 @@ app.get('/api/analytics/resolved-trades', (req, res) => {
 
 
 
-// Category P&L endpoint
-app.get('/api/pnl/by-category', (req, res) => {
-  try {
-    // Return empty category P&L data for now
-    res.json({});
-  } catch (error) {
-    console.error('Error fetching category P&L:', error);
-    res.json({});
-  }
-});
+// Category P&L endpoint — NOTE: functional version registered earlier in file (line ~2248)
+// Duplicate stub removed — see ZV2-M3
 
 // Graceful shutdown handler
 const gracefulShutdown = async (signal) => {

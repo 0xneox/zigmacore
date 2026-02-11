@@ -364,7 +364,12 @@ router.get('/history', async (req, res) => {
       });
     }
 
-    const { data: history, error } = await supabase
+    const db = getSupabase();
+    if (!db) {
+      return res.json({ history: [], message: 'Database unavailable' });
+    }
+
+    const { data: history, error } = await db
       .from('credit_usage')
       .select('*')
       .eq('user_id', userId)
@@ -401,8 +406,19 @@ router.get('/stats', async (req, res) => {
       });
     }
 
+    const db = getSupabase();
+    if (!db) {
+      return res.json({
+        totalCreditsUsed: 0,
+        totalChats: 0,
+        avgCreditsPerDay: 0,
+        creditsPerChat: CREDIT_CONFIG.CREDITS_PER_CHAT,
+        message: 'Database unavailable'
+      });
+    }
+
     // Get user's total credit usage
-    const { data: usageData, error: usageError } = await supabase
+    const { data: usageData, error: usageError } = await db
       .from('credit_usage')
       .select('credits_used, created_at')
       .eq('user_id', userId);

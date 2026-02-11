@@ -36,7 +36,8 @@ const PAYMENT_CONFIG = {
 
 // Helper: Validate Solana address format
 function isValidSolanaAddress(address) {
-  const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+  if (!address || typeof address !== 'string') return false;
+  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) return false;
   return base58Test(address);
 }
 
@@ -134,6 +135,12 @@ function extractTokenTransfers(transaction) {
 // Process payment transaction
 async function processPayment(transfer, transaction) {
   try {
+    const supabase = getSupabase();
+    if (!supabase) {
+      console.warn('[PAYMENT] Database unavailable - cannot process payment');
+      return;
+    }
+
     // Validate token mint
     if (transfer.tokenMint !== PAYMENT_CONFIG.ZIGMA_TOKEN_MINT) {
       console.log(`[PAYMENT] Invalid token mint: ${transfer.tokenMint}`);
@@ -194,17 +201,35 @@ async function processPayment(transfer, transaction) {
       return;
     }
 
-    // Update user credits
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        chat_credits: (user.chat_credits || 0) + creditsEarned,
-        total_credits_earned: (user.total_credits_earned || 0) + creditsEarned,
-        last_payment_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
+    // Update user credits atomically using Supabase RPC to avoid race conditions
+    const { error: updateError } = await supabase.rpc('increment_user_credits', {
+      p_user_id: user.id,
+      p_credits: creditsEarned
+    });
 
-    if (updateError) {
+    // Fallback: if RPC doesn't exist yet, use direct update with refetch
+    if (updateError && updateError.code === '42883') {
+      console.warn('[PAYMENT] increment_user_credits RPC not found, using direct update');
+      const { data: freshUser } = await supabase
+        .from('users')
+        .select('chat_credits, total_credits_earned')
+        .eq('id', user.id)
+        .single();
+
+      const { error: fallbackError } = await supabase
+        .from('users')
+        .update({
+          chat_credits: (freshUser?.chat_credits || 0) + creditsEarned,
+          total_credits_earned: (freshUser?.total_credits_earned || 0) + creditsEarned,
+          last_payment_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (fallbackError) {
+        console.error('[PAYMENT] Error updating user credits (fallback):', fallbackError);
+        return;
+      }
+    } else if (updateError) {
       console.error('[PAYMENT] Error updating user credits:', updateError);
       return;
     }
@@ -275,6 +300,9 @@ router.get('/config', async (req, res) => {
 // GET /api/payments/user/:userId - Get user payment history
 router.get('/user/:userId', async (req, res) => {
   try {
+    const supabase = getSupabase();
+    if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
     const { userId } = req.params;
     
     const { data: payments, error } = await supabase
@@ -315,6 +343,9 @@ router.post('/manual', async (req, res) => {
 
     const creditsEarned = PAYMENT_CONFIG.CREDITS_PER_PAYMENT;
 
+    const supabase = getSupabase();
+    if (!supabase) return res.status(503).json({ error: 'Database unavailable' });
+
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
@@ -337,26 +368,50 @@ router.post('/manual', async (req, res) => {
       return res.status(500).json({ error: 'Failed to record payment' });
     }
 
-    // Update user credits
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        chat_credits: (user.chat_credits || 0) + creditsEarned,
-        total_credits_earned: (user.total_credits_earned || 0) + creditsEarned,
-        last_payment_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
+    // Update user credits atomically using RPC, with fallback
+    const { error: updateError } = await supabase.rpc('increment_user_credits', {
+      p_user_id: user.id,
+      p_credits: creditsEarned
+    });
 
-    if (updateError) {
+    if (updateError && updateError.code === '42883') {
+      console.warn('[PAYMENT] increment_user_credits RPC not found, using direct update');
+      const { data: freshUser } = await supabase
+        .from('users')
+        .select('chat_credits, total_credits_earned')
+        .eq('id', user.id)
+        .single();
+
+      const { error: fallbackError } = await supabase
+        .from('users')
+        .update({
+          chat_credits: (freshUser?.chat_credits || 0) + creditsEarned,
+          total_credits_earned: (freshUser?.total_credits_earned || 0) + creditsEarned,
+          last_payment_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (fallbackError) {
+        console.error('[PAYMENT] Error updating user credits (fallback):', fallbackError);
+        return res.status(500).json({ error: 'Failed to update credits' });
+      }
+    } else if (updateError) {
       console.error('[PAYMENT] Error updating user credits:', updateError);
       return res.status(500).json({ error: 'Failed to update credits' });
     }
+
+    // Re-fetch updated balance for response
+    const { data: updatedUser } = await supabase
+      .from('users')
+      .select('chat_credits')
+      .eq('id', user.id)
+      .single();
 
     res.json({ 
       success: true, 
       payment,
       creditsEarned,
-      newBalance: (user.chat_credits || 0) + creditsEarned
+      newBalance: updatedUser?.chat_credits || 0
     });
   } catch (error) {
     console.error('[PAYMENT] Error in manual payment:', error);

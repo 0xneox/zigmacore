@@ -2,22 +2,36 @@ const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
 const router = express.Router();
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+// Lazy Supabase client initialization
+let supabase = null;
+
+function getSupabase() {
+  if (supabase) return supabase;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.warn('[USERS] Supabase credentials not found (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)');
+    return null;
+  }
+  supabase = createClient(url, key);
+  return supabase;
+}
 
 // Middleware to verify user authentication
 const authenticateUser = async (req, res, next) => {
   try {
+    const db = getSupabase();
+    if (!db) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Unauthorized - No token provided' });
     }
 
     const token = authHeader.substring(7);
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await db.auth.getUser(token);
     
     if (error || !user) {
       return res.status(401).json({ error: 'Unauthorized - Invalid token' });
@@ -34,7 +48,10 @@ const authenticateUser = async (req, res, next) => {
 // GET /api/users/profile - Get user profile
 router.get('/profile', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const db = getSupabase();
+    if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+    const { data, error } = await db
       .from('users')
       .select('*')
       .eq('id', req.user.id)
@@ -52,7 +69,7 @@ router.get('/profile', authenticateUser, async (req, res) => {
         email_verified: req.user.email_confirmed || false
       };
 
-      const { data: createdUser, error: createError } = await supabase
+      const { data: createdUser, error: createError } = await db
         .from('users')
         .insert(newUser)
         .select()
@@ -78,7 +95,10 @@ router.put('/profile', authenticateUser, async (req, res) => {
     if (name) updates.name = name;
     if (avatar_url) updates.avatar_url = avatar_url;
 
-    const { data, error } = await supabase
+    const db = getSupabase();
+    if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+    const { data, error } = await db
       .from('users')
       .update(updates)
       .eq('id', req.user.id)
@@ -97,7 +117,10 @@ router.put('/profile', authenticateUser, async (req, res) => {
 // GET /api/users/preferences - Get user preferences
 router.get('/preferences', authenticateUser, async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const db = getSupabase();
+    if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+    const { data, error } = await db
       .from('user_preferences')
       .select('*')
       .eq('user_id', req.user.id)
@@ -131,7 +154,7 @@ router.get('/preferences', authenticateUser, async (req, res) => {
         filter_preferences: {}
       };
 
-      const { data: createdPrefs, error: createError } = await supabase
+      const { data: createdPrefs, error: createError } = await db
         .from('user_preferences')
         .insert(defaultPreferences)
         .select()
@@ -153,7 +176,10 @@ router.put('/preferences', authenticateUser, async (req, res) => {
   try {
     const preferences = req.body;
     
-    const { data, error } = await supabase
+    const db = getSupabase();
+    if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+    const { data, error } = await db
       .from('user_preferences')
       .upsert({ ...preferences, user_id: req.user.id })
       .select()
@@ -183,7 +209,10 @@ router.post('/link-wallet', authenticateUser, async (req, res) => {
     }
 
     // Check if wallet is already linked to another user
-    const { data: existingWallet } = await supabase
+    const db = getSupabase();
+    if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+    const { data: existingWallet } = await db
       .from('users')
       .select('id')
       .eq('wallet_address', wallet_address)
@@ -193,7 +222,7 @@ router.post('/link-wallet', authenticateUser, async (req, res) => {
       return res.status(409).json({ error: 'Wallet already linked to another account' });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('users')
       .update({ 
         wallet_address,

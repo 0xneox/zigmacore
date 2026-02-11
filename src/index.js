@@ -5,18 +5,64 @@ require('dotenv').config();
 
 // Create write streams for logging to prevent file descriptor leaks
 const CONSOLE_LOG_FILE = path.join(__dirname, '..', 'console_output.log');
-const consoleLogStream = fsSync.createWriteStream(CONSOLE_LOG_FILE, { flags: 'a' });
+const MAX_LOG_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB max before rotation
+const MAX_ROTATED_FILES = 3; // Keep up to 3 rotated files
 
-// Add error handler to prevent unhandled stream errors
-consoleLogStream.on('error', (err) => {
-  originalConsoleError('[STREAM ERROR]', err.message);
-  // Attempt to recreate stream
+let consoleLogStream = fsSync.createWriteStream(CONSOLE_LOG_FILE, { flags: 'a' });
+let logBytesWritten = 0;
+
+// Check initial file size
+try {
+  const stats = fsSync.statSync(CONSOLE_LOG_FILE);
+  logBytesWritten = stats.size;
+} catch (e) {
+  logBytesWritten = 0;
+}
+
+// Rotate log file when it exceeds MAX_LOG_SIZE_BYTES
+function rotateLogFile() {
   try {
     consoleLogStream.end();
+
+    // Shift existing rotated files: .3 → delete, .2 → .3, .1 → .2, current → .1
+    for (let i = MAX_ROTATED_FILES; i >= 1; i--) {
+      const older = `${CONSOLE_LOG_FILE}.${i}`;
+      const newer = i === 1 ? CONSOLE_LOG_FILE : `${CONSOLE_LOG_FILE}.${i - 1}`;
+      try {
+        if (i === MAX_ROTATED_FILES && fsSync.existsSync(older)) {
+          fsSync.unlinkSync(older);
+        }
+        if (fsSync.existsSync(newer)) {
+          fsSync.renameSync(newer, older);
+        }
+      } catch (e) {
+        // Ignore rotation errors for individual files
+      }
+    }
+
+    consoleLogStream = fsSync.createWriteStream(CONSOLE_LOG_FILE, { flags: 'a' });
+    consoleLogStream.on('error', handleStreamError);
+    logBytesWritten = 0;
   } catch (e) {
-    // Ignore errors during cleanup
+    // If rotation fails, just truncate
+    try {
+      consoleLogStream = fsSync.createWriteStream(CONSOLE_LOG_FILE, { flags: 'w' });
+      consoleLogStream.on('error', handleStreamError);
+      logBytesWritten = 0;
+    } catch (e2) {
+      // Last resort — ignore
+    }
   }
-});
+}
+
+function handleStreamError(err) {
+  // Use process.stderr to avoid circular dependency
+  process.stderr.write(`[STREAM ERROR] ${err.message}\n`);
+  try { consoleLogStream.end(); } catch (e) { /* ignore */ }
+}
+
+// Add error handler to prevent unhandled stream errors
+consoleLogStream.on('error', handleStreamError);
 
 // Cleanup function to properly close streams
 const cleanupStreams = () => {
@@ -54,7 +100,12 @@ console.log = function(...args) {
   const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
   originalConsoleLog(msg);
   // Write to stream instead of appendFile to prevent file descriptor leaks
-  consoleLogStream.write(`[${new Date().toISOString()}] ${msg}\n`);
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  consoleLogStream.write(line);
+  logBytesWritten += Buffer.byteLength(line);
+  if (logBytesWritten >= MAX_LOG_SIZE_BYTES) {
+    rotateLogFile();
+  }
 };
 
 console.error = function(...args) {

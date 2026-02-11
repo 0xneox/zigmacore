@@ -4,7 +4,7 @@
  */
 
 const { initDb } = require('./db');
-const { supabase } = require('./supabase');
+const { getSupabase } = require('./supabase');
 const axios = require('axios');
 
 const GAMMA_API = 'https://gamma-api.polymarket.com';
@@ -38,7 +38,11 @@ async function fetchResolvedMarkets(since = null) {
  * Match our signals against resolved markets
  */
 async function reconcileSignals() {
-  const db = supabase;
+  const db = getSupabase();
+  if (!db) {
+    console.warn('[RESOLUTION] Database unavailable - skipping reconciliation');
+    return { reconciled: 0, pending: 0 };
+  }
   
   // Get unreconciled signals (outcome IS NULL)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
@@ -132,7 +136,8 @@ async function reconcileSignals() {
  * Calculate live accuracy metrics
  */
 function getAccuracyMetrics() {
-  const db = supabase;
+  const db = getSupabase();
+  if (!db) return Promise.resolve([]);
   
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   
@@ -194,8 +199,11 @@ function getAccuracyMetrics() {
  */
 async function getCategoryEdgeAdjustment(category) {
   try {
+    const db = getSupabase();
+    if (!db) return { adjustment: 1.0, sampleSize: 0, category };
+
     // Query Supabase instead of local SQLite
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('trade_signals')
       .select('was_correct, confidence, outcome')
       .eq('category', category)

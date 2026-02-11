@@ -532,8 +532,6 @@ module.exports = {
   getTradeSignals,
   saveVolumeSnapshot,
   getVolumeSnapshots,
-  saveTradeSignal,
-  getTradeSignals,
   saveClobPriceCache,
   getClobPriceCache,
   saveAnalysisCacheV2,

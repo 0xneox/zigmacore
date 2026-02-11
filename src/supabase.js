@@ -1,22 +1,44 @@
 /**
- * Supabase Database Configuration
+ * Supabase Database Configuration — centralized lazy-init singleton
+ * All modules should import getSupabase / getServiceSupabase from here.
  */
 
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Anon-key client (for public / RLS-aware queries)
+let anonClient = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('[SUPABASE] Missing environment variables: SUPABASE_URL or SUPABASE_ANON_KEY');
-  throw new Error('Supabase configuration missing');
+function getSupabase() {
+  if (anonClient) return anonClient;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    console.warn('[SUPABASE] Missing SUPABASE_URL or SUPABASE_ANON_KEY — anon client unavailable');
+    return null;
+  }
+  anonClient = createClient(url, key);
+  console.log('[SUPABASE] Anon client initialized');
+  return anonClient;
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Service-role client (for admin / bypasses RLS)
+let serviceClient = null;
 
-console.log('[SUPABASE] Client initialized successfully');
+function getServiceSupabase() {
+  if (serviceClient) return serviceClient;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.warn('[SUPABASE] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY — service client unavailable');
+    return null;
+  }
+  serviceClient = createClient(url, key);
+  console.log('[SUPABASE] Service-role client initialized');
+  return serviceClient;
+}
 
 module.exports = {
-  supabase
+  getSupabase,
+  getServiceSupabase
 };

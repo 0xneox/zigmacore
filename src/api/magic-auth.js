@@ -3,7 +3,10 @@ const { Magic } = require('@magic-sdk/admin');
 const router = express.Router();
 
 // Initialize Magic Admin SDK with secret key
-const magic = new Magic(process.env.MAGIC_SECRET_KEY || 'sk_live_8EE99E3C64B862F9');
+if (!process.env.MAGIC_SECRET_KEY) {
+  console.error('[MAGIC AUTH] MAGIC_SECRET_KEY environment variable is required');
+}
+const magic = new Magic(process.env.MAGIC_SECRET_KEY);
 
 /**
  * Middleware to verify Magic.link token
